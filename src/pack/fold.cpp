@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
+#include <random>
 #include <vector>
 
 namespace crankle {
@@ -51,18 +51,21 @@ int fold_f32(const float *data, size_t count, uint64_t *out_slots, size_t n_slot
         size_t slice_len = std::min<size_t>(8, count > base ? count - base : 0);
         double best_j = fold_objective(best, data + base, slice_len, lambda, mu);
 
-        // Simulated annealing: 32 proposals per slot
+        std::mt19937 rng(static_cast<uint32_t>(0xC8411E00u ^ static_cast<uint32_t>(s)));
+        std::uniform_real_distribution<double> coin(0.0, 1.0);
+
+        // Simulated annealing: 64 proposals per slot (deterministic seed per slot)
         double temp = 1.0;
-        for (int step = 0; step < 32; ++step) {
+        for (int step = 0; step < 64; ++step) {
             Multivector trial = best;
-            perturb_mv(trial, static_cast<int>(s * 32 + step));
+            perturb_mv(trial, static_cast<int>(s * 64 + step));
             double j = fold_objective(trial, data + base, slice_len, lambda, mu);
             double delta = j - best_j;
-            if (delta < 0.0 || std::exp(-delta / temp) > static_cast<double>(rand()) / RAND_MAX) {
+            if (delta < 0.0 || std::exp(-delta / temp) > coin(rng)) {
                 best = trial;
                 best_j = j;
             }
-            temp *= 0.92;
+            temp *= 0.94;
         }
         out_slots[s] = pack_crank_word(best, 1, 0);
     }
