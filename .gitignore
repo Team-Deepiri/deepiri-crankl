@@ -1,0 +1,13 @@
+build/
+.cache/
+*.o
+*.a
+*.so
+*.dylib
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.swp
+.DS_Store
+compile_commands.json
