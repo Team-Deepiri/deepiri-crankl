@@ -37,3 +37,6 @@ jobs:
 
       - name: Golden parity
         run: bash scripts/verify_parity.sh
+
+      - name: E2E integration
+        run: bash scripts/integration_test.sh
