@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BUILD="${ROOT}/build/crankle"
-if [[ ! -x "${BUILD}" ]]; then
-  cmake -B "${ROOT}/build" -DCMAKE_BUILD_TYPE=Release
-  cmake --build "${ROOT}/build" --parallel
-fi
-python3 "${ROOT}/scripts/export_golden.py"
-echo "parity ok"
+cd "$ROOT"
+
+python3 scripts/export_golden.py
+
+cmake -B build -DCMAKE_BUILD_TYPE=Release >/dev/null
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+
+CLI="$ROOT/build/crankle"
+"$CLI" version | grep -q "0.2"
+"$CLI" pack --input tests/golden/sample_small.f32 --shape 4 -o /tmp/parity.cran
+"$CLI" verify /tmp/parity.cran
+"$CLI" unpack --input /tmp/parity.cran -o /tmp/parity_out.f32
+"$CLI" stats /tmp/parity.cran | grep -q beta1
+
+echo "parity ok — golden + ctest + CLI pipeline"
