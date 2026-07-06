@@ -27,10 +27,16 @@ def main() -> None:
     }
     (GOLDEN / "clifford_ref.json").write_text(json.dumps(clifford, indent=2))
 
+    sheaf = {"beta1_proxy_min": 0, "slots": [1.0, -1.0, 0.5, 0.2]}
+    (GOLDEN / "sheaf_ref.json").write_text(json.dumps(sheaf, indent=2))
+
+    holonomy = {"gamma": 1.0, "input": [1.0] + [0.0] * 7, "expect_nonzero": True}
+    (GOLDEN / "holonomy_ref.json").write_text(json.dumps(holonomy, indent=2))
+
     manifest = {
-        "version": "0.1.0",
+        "version": "0.2.0-alpha",
         "tolerance": 1e-3,
-        "files": ["sample.f32", "clifford_ref.json"],
+        "files": ["sample.f32", "clifford_ref.json", "sheaf_ref.json", "holonomy_ref.json"],
     }
     (GOLDEN / "manifest.json").write_text(json.dumps(manifest, indent=2))
     print(f"exported golden to {GOLDEN}")
