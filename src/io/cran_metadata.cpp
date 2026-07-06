@@ -59,27 +59,35 @@ int read_cran_metadata(const ::crankle_cran_t *cran, CranMetadata *out) {
     if (!cran || !out || !cran->mmap_base)
         return -1;
     if ((cran->header.flags & 1u) == 0) {
-        std::strncpy(out->model_name, "", sizeof(out->model_name) - 1);
-        std::strncpy(out->source_hash, "", sizeof(out->source_hash) - 1);
+        out->model_name[0] = '\0';
+        out->source_hash[0] = '\0';
         return 1; // no metadata
     }
+
     const auto *base = static_cast<const uint8_t *>(cran->mmap_base);
-    size_t sz = cran->mmap_size;
-    if (sz < sizeof(CranHeaderDisk) + 8)
+    const size_t payload_off = sizeof(CranHeaderDisk);
+    const size_t slot_bytes = static_cast<size_t>(cran->header.n_slots) * 8;
+    if (cran->mmap_size < payload_off + slot_bytes + 8)
         return -2;
+
+    const uint8_t *footer = base + payload_off + slot_bytes;
     uint32_t magic = 0;
-    std::memcpy(&magic, base + sz - 8, 4);
+    std::memcpy(&magic, footer, 4);
     if (magic != FOOTER_MAGIC)
         return -3;
+
     uint32_t json_len = 0;
-    std::memcpy(&json_len, base + sz - 4, 4);
-    if (json_len >= sizeof(out->model_name))
-        json_len = static_cast<uint32_t>(sizeof(out->model_name) - 1);
-    if (sz < sizeof(CranHeaderDisk) + 8 + json_len)
+    std::memcpy(&json_len, footer + 4, 4);
+    if (json_len >= 256)
+        json_len = 255;
+    if (cran->mmap_size < payload_off + slot_bytes + 8 + json_len)
         return -4;
+
     char buf[256] = {};
-    std::memcpy(buf, base + sz - 8 - json_len, json_len);
-    // minimal parse
+    std::memcpy(buf, footer + 8, json_len);
+
+    out->model_name[0] = '\0';
+    out->source_hash[0] = '\0';
     const char *m = std::strstr(buf, "\"model\":\"");
     if (m) {
         m += 9;
