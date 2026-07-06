@@ -12,7 +12,7 @@
 static void usage() {
     std::cout << "crankle v" << CRANKLE_VERSION_STRING << " — Grand Unified Crank Theory engine\n"
               << "Usage: crankle <command> [options]\n"
-              << "Commands: pack, unpack, resonance, turn, peel, bind, holonomy, stats, verify\n";
+              << "Commands: pack, unpack, resonance, turn, peel, bind, holonomy, stats, verify, diff, version\n";
 }
 
 static std::vector<float> read_f32(const char *path, size_t &count) {
@@ -252,6 +252,32 @@ static int cmd_verify(int argc, char **argv) {
     return rc;
 }
 
+static int cmd_version(int, char **) {
+    std::cout << "crankle " << CRANKLE_VERSION_STRING;
+    if (crankle_has_avx2())
+        std::cout << " avx2=1";
+    else
+        std::cout << " avx2=0";
+    std::cout << "\n";
+    return 0;
+}
+
+static int cmd_diff(int argc, char **argv) {
+    if (argc < 4)
+        return 1;
+    crankle_cran_t a{}, b{};
+    std::vector<uint64_t> sa, sb;
+    if (load_cran_slots(argv[2], sa, a) != 0 || load_cran_slots(argv[3], sb, b) != 0)
+        return 2;
+    size_t n = std::min(sa.size(), sb.size());
+    size_t changed = crankle_crank_diff_count(sa.data(), sb.data(), n);
+    double ham = crankle_crank_diff_hamming(sa.data(), sb.data(), n);
+    std::cout << "slots_changed=" << changed << "/" << n << " hamming=" << ham << "\n";
+    crankle_cran_close(&a);
+    crankle_cran_close(&b);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         usage();
@@ -276,6 +302,10 @@ int main(int argc, char **argv) {
         return cmd_stats(argc, argv);
     if (std::strcmp(cmd, "verify") == 0)
         return cmd_verify(argc, argv);
+    if (std::strcmp(cmd, "version") == 0)
+        return cmd_version(argc, argv);
+    if (std::strcmp(cmd, "diff") == 0)
+        return cmd_diff(argc, argv);
     usage();
     return 1;
 }
