@@ -1,0 +1,19 @@
+#ifndef CRANKLE_SHEAF_H
+#define CRANKLE_SHEAF_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+double crankle_sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other,
+                               size_t n_other);
+int crankle_sheaf_beta1_proxy(const uint64_t *slots, size_t n);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
