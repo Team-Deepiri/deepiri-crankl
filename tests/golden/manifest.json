@@ -1,8 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0-alpha",
   "tolerance": 0.001,
   "files": [
     "sample.f32",
-    "clifford_ref.json"
+    "clifford_ref.json",
+    "sheaf_ref.json",
+    "holonomy_ref.json"
   ]
 }
