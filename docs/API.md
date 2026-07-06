@@ -1,6 +1,21 @@
-# Crankle C API
+# Crankle C API (v0.2)
 
 See `include/crankle/crankle.h`.
+
+## New in v0.2
+
+| Function | Description |
+|----------|-------------|
+| `crankle_crank_diff_count` | Count slots that differ between crank tensors |
+| `crankle_crank_diff_hamming` | Normalized bit Hamming distance |
+| `crankle_has_avx2` | Runtime SIMD probe |
+
+## CLI
+
+```bash
+crankle version
+crankle diff a.cran b.cran
+```
 
 ## Core types
 
@@ -12,7 +27,7 @@ See `include/crankle/crankle.h`.
 
 | Function | Description |
 |----------|-------------|
-| `crankle_pack_f32` | Fold float buffer into crank slots |
+| `crankle_pack_f32` | Fold float buffer into crank slots (annealing) |
 | `crankle_unpack_f32` | Unfold crank slots to floats |
 | `crankle_clifford_resonance` | Clifford inner product resonance |
 | `crankle_sheaf_resonance` | Sheaf χ proxy resonance |
