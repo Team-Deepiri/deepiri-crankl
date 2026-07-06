@@ -2,6 +2,10 @@
 
 See `include/crankle/crankle.h`.
 
+Crankle is meant to be called from training scripts, CI, and agent tooling — subprocess
+the CLI or link `libcrankle` directly. Typical flow: `pack` after finetune → `turn` to anneal
+→ ship `.cran` → `diff` / `resonance` when comparing runs.
+
 ## New in v0.2
 
 | Function | Description |

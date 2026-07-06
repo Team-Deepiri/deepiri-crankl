@@ -1,13 +1,39 @@
 # Crankle
 
-**Crankle** — Grand Unified Crank Theory (GUCT) engine: Clifford multivector cranks,
-symplectic turn annealing, sheaf resonance, and `.cran` archives.
+**Crankle** — low-level engine for compressing, finetuning, and comparing model weights in
+Deepiri's AI development flow. GUCT math under the hood; `crankle` on the CLI.
+
+Use it when you need to pack adapter deltas, anneal a finetune (`turn`), diff two checkpoints,
+or run forward on compressed weights — in training, eval, or agent pipelines.
 
 | Artifact | Name |
 |----------|------|
 | CLI | `crankle` |
 | Library | `libcrankle` |
 | Format | `.cran` |
+
+## AI dev flow
+
+```
+train / finetune → crankle pack → .cran artifact
+                      ↓
+              crankle turn (anneal)
+                      ↓
+         deploy / eval / agent loop
+                      ↓
+         crankle diff (what changed?)
+```
+
+| You are… | Reach for… |
+|----------|------------|
+| Shipping a LoRA / adapter | `crankle pack` |
+| Cheap finetune pass on cranks | `crankle turn` |
+| Debugging two agent runs | `crankle diff` + `resonance` |
+| Merging specialist heads | `crankle bind` |
+| Undoing a finetune layer | `crankle peel` |
+| Inference on compressed weights | `crankle holonomy` |
+
+Install once, pipe from anything. No Python wheel required — shell out from Helox, Cyrex, Tombstone, or your own scripts.
 
 ## Quick start
 
@@ -17,15 +43,15 @@ cmake --build build --parallel
 python3 scripts/export_golden.py   # generate parity headers
 ctest --test-dir build --output-on-failure
 bash scripts/verify_parity.sh    # golden + 11 tests + CLI smoke
-bash scripts/integration_test.sh # full pack→turn→peel pipeline
+bash scripts/integration_test.sh # pack → turn → peel → diff → holonomy
 ```
 
 ## What is verified
 
-- **Cl(3) algebra** — `e₁²=1`, `e₁e₂=e₁₂`, `e₁₂²=-1` (see `test_clifford_parity`)
-- **Notebook parity** — Python `export_golden.py` generates `clifford_cases.hpp` compared in CI
-- **Pack roundtrip** — 64-float matrix → crank → reconstruct (max err bounded)
-- **Integration** — cran I/O, turn, holonomy, diff in one test
+- **Cl(3) algebra** — `e₁²=1`, `e₁e₂=e₁₂`, `e₁₂²=-1` (`test_clifford_parity`)
+- **Notebook parity** — `export_golden.py` → `clifford_cases.hpp` checked in CI
+- **Pack roundtrip** — 64-float matrix → crank → reconstruct (bounded error)
+- **Integration** — cran I/O, turn, holonomy, diff end-to-end
 
 ## Commands
 
@@ -45,7 +71,7 @@ crankle verify adapter.cran
 
 ## Theory
 
-See [docs/GUCT.md](docs/GUCT.md). Runnable math: [notebooks/](notebooks/).
+See [docs/GUCT.md](docs/GUCT.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 
