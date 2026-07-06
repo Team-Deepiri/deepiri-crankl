@@ -1,0 +1,11 @@
+add_executable(test_trit ctest/test_trit.cpp)
+add_executable(test_clifford ctest/test_clifford.cpp)
+add_executable(test_cran ctest/test_cran.cpp)
+add_executable(test_pack ctest/test_pack.cpp)
+add_executable(test_guct ctest/test_guct.cpp)
+
+foreach(t test_trit test_clifford test_cran test_pack test_guct)
+    target_link_libraries(${t} PRIVATE crankle)
+    crankle_set_warnings(${t})
+    add_test(NAME ${t} COMMAND ${t})
+endforeach()
