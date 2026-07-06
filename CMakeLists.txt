@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankle VERSION 0.1.0 LANGUAGES C CXX)
+project(deepiri-crankle VERSION 0.2.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,11 +21,14 @@ set(CRANKLE_CORE_SOURCES
     src/core/resonance.cpp
     src/core/symplectic.cpp
     src/core/rg.cpp
+    src/core/simd.cpp
+    src/core/diff.cpp
     src/pack/fold.cpp
     src/pack/unfold.cpp
     src/pack/persistence.cpp
     src/io/cran_reader.cpp
     src/io/cran_writer.cpp
+    src/io/cran_metadata.cpp
     src/holonomy/wilson.cpp
     src/c_api/c_api.cpp
 )
@@ -34,7 +37,7 @@ add_library(crankle SHARED ${CRANKLE_CORE_SOURCES})
 target_include_directories(crankle
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-set_target_properties(crankle PROPERTIES OUTPUT_NAME crankle VERSION 0.1.0 SOVERSION 0)
+set_target_properties(crankle PROPERTIES OUTPUT_NAME crankle VERSION 0.2.0 SOVERSION 0)
 crankle_set_warnings(crankle)
 
 if(CRANKLE_ENABLE_SIMD)
@@ -54,6 +57,9 @@ install(TARGETS crankle crankle-cli
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib)
 install(FILES include/crankle/crankle.h include/crankle/version.h DESTINATION include/crankle)
+
+configure_file(crankle.pc.in crankle.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/crankle.pc DESTINATION lib/pkgconfig)
 
 if(CRANKLE_BUILD_TESTS)
     enable_testing()
