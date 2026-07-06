@@ -5,7 +5,7 @@ set -euo pipefail
 REPO="${1:-Team-Deepiri/deepiri-crankle}"
 
 apply_main() {
-  gh api -X PUT "repos/${REPO}/branches/main/protection" \
+  if ! gh api -X PUT "repos/${REPO}/branches/main/protection" \
     --input - <<'EOF'
 {
   "required_pull_request_reviews": {
@@ -20,11 +20,17 @@ apply_main() {
   "allow_deletions": false
 }
 EOF
+  then
+    echo "⚠ main branch protection requires GitHub Team/Pro for private repos."
+    echo "  deepiri-platform is public; deepiri-crankle is private."
+    echo "  Apply rules manually in GitHub Settings → Branches, or make the repo public."
+    return 1
+  fi
   echo "✓ main protection applied"
 }
 
 apply_dev() {
-  gh api -X PUT "repos/${REPO}/branches/dev/protection" \
+  if ! gh api -X PUT "repos/${REPO}/branches/dev/protection" \
     --input - <<'EOF'
 {
   "required_pull_request_reviews": {
@@ -44,6 +50,10 @@ apply_dev() {
   "allow_deletions": false
 }
 EOF
+  then
+    echo "⚠ dev branch protection requires GitHub Team/Pro for private repos."
+    return 1
+  fi
   echo "✓ dev protection applied"
 }
 

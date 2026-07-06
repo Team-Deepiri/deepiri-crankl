@@ -32,5 +32,11 @@ jobs:
           languages: ${{ matrix.language }}
           config-file: ./.github/codeql/codeql-config.yml
 
+      - name: Install dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y cmake ninja-build build-essential
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
