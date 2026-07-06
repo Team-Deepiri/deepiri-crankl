@@ -40,3 +40,5 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        # Private repos require GitHub Advanced Security to upload SARIF (public platform repo does not).
+        continue-on-error: true
