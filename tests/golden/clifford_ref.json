@@ -1,0 +1,14 @@
+{
+  "pairs": [
+    {
+      "a_scalar": 1.0,
+      "b_scalar": 1.0,
+      "resonance_approx": 0.5
+    },
+    {
+      "a_scalar": 1.0,
+      "b_scalar": 0.0,
+      "resonance_approx": 0.0
+    }
+  ]
+}

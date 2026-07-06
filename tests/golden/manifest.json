@@ -1,0 +1,8 @@
+{
+  "version": "0.1.0-scaffold",
+  "tolerance": 0.001,
+  "files": [
+    "sample.f32",
+    "clifford_ref.json"
+  ]
+}
