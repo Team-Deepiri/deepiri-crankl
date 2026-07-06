@@ -1,6 +1,7 @@
 #include "crankle/crankle.h"
 #include "crankle_internal_api.hpp"
 #include "core/internal.hpp"
+#include "core/simd.hpp"
 
 #include <cstring>
 
@@ -151,5 +152,15 @@ int crankle_cran_verify(const crankle_cran_t *cran) { return io::verify_cran(cra
 int crankle_holonomy(const crankle_cran_t *cran, const float *x, size_t dim, float *y) {
     return holonomy::forward(cran, x, dim, y);
 }
+
+size_t crankle_crank_diff_count(const uint64_t *a, const uint64_t *b, size_t n) {
+    return crank_diff_count(a, b, n);
+}
+
+double crankle_crank_diff_hamming(const uint64_t *a, const uint64_t *b, size_t n) {
+    return crank_diff_hamming(a, b, n);
+}
+
+int crankle_has_avx2(void) { return simd::has_avx2() ? 1 : 0; }
 
 } // extern "C"

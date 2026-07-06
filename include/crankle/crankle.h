@@ -71,6 +71,10 @@ void crankle_cran_close(crankle_cran_t *cran);
 int crankle_cran_verify(const crankle_cran_t *cran);
 int crankle_holonomy(const crankle_cran_t *cran, const float *x, size_t dim, float *y);
 
+size_t crankle_crank_diff_count(const uint64_t *a, const uint64_t *b, size_t n);
+double crankle_crank_diff_hamming(const uint64_t *a, const uint64_t *b, size_t n);
+int crankle_has_avx2(void);
+
 #ifdef __cplusplus
 }
 #endif
