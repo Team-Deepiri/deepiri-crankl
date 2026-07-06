@@ -44,4 +44,7 @@ int symplectic_turn(uint64_t &word, double lr);
 int rg_peel(uint64_t &word, uint32_t layers);
 uint64_t bind_cranks(uint64_t a, uint64_t b);
 
+size_t crank_diff_count(const uint64_t *a, const uint64_t *b, size_t n);
+double crank_diff_hamming(const uint64_t *a, const uint64_t *b, size_t n);
+
 } // namespace crankle
