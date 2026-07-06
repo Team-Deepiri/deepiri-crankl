@@ -107,8 +107,16 @@ double clifford_resonance(uint64_t a, uint64_t b) {
     (void)db;
     clifford_reversion(ma, rev);
     clifford_product(rev, mb, prod);
-    double norm = std::sqrt(std::max(1e-12, ma.s * ma.s + mb.s * mb.s));
-    return prod.s / norm;
+    auto norm = [](const Multivector &m) {
+        double n = m.s * m.s;
+        for (int i = 0; i < 3; ++i) {
+            n += m.v[i] * m.v[i];
+            n += m.b[i] * m.b[i];
+        }
+        n += m.p * m.p;
+        return std::sqrt(std::max(1e-12, n));
+    };
+    return prod.s / (norm(ma) * norm(mb));
 }
 
 void decrank_matrix(uint64_t word, std::array<double, 64> &out) {

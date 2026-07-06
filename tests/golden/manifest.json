@@ -1,9 +1,13 @@
 {
-  "version": "0.2.0-alpha",
+  "version": "0.2.1",
   "tolerance": 0.001,
+  "pack_roundtrip_max_err": 2.0,
   "files": [
     "sample.f32",
-    "clifford_ref.json",
+    "sample_small.f32",
+    "algebra_ref.json",
+    "clifford_cases.hpp",
+    "clifford_cases.json",
     "sheaf_ref.json",
     "holonomy_ref.json"
   ]
