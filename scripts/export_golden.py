@@ -28,7 +28,7 @@ def main() -> None:
     (GOLDEN / "clifford_ref.json").write_text(json.dumps(clifford, indent=2))
 
     manifest = {
-        "version": "0.1.0-scaffold",
+        "version": "0.1.0",
         "tolerance": 1e-3,
         "files": ["sample.f32", "clifford_ref.json"],
     }

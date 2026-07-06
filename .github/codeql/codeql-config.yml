@@ -1,0 +1,16 @@
+name: deepiri-crankle-codeql-config
+
+# Let CodeQL scan checked-out repository files, excluding noisy artifacts.
+
+paths-ignore:
+  - '**/build/**'
+  - '**/dist/**'
+  - '**/third_party/**'
+  - '**/docs/**'
+  - '**/notebooks/**'
+  - '**/.venv/**'
+  - '**/venv/**'
+  - '**/.cache/**'
+  - '**/__pycache__/**'
+  - '**/.pytest_cache/**'
+  - '**/tests/golden/**'

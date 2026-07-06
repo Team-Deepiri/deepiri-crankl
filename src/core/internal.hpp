@@ -44,9 +44,4 @@ int symplectic_turn(uint64_t &word, double lr);
 int rg_peel(uint64_t &word, uint32_t layers);
 uint64_t bind_cranks(uint64_t a, uint64_t b);
 
-void mat8_identity(double out[64]);
-void mat8_mul(const double a[64], const double b[64], double out[64]);
-void mat8_vec(const double a[64], const double x[8], double out[8]);
-void mat8_exp_i_apply(const double a[64], double gamma, const double x[8], double y[8]);
-
 } // namespace crankle
