@@ -1,4 +1,5 @@
 #include "core/internal.hpp"
+#include "core/simd.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -32,6 +33,10 @@ void mat8_scale(const double a[N * N], double s, double out[N * N]) {
 }
 
 void mat8_mul(const double a[N * N], const double b[N * N], double out[N * N]) {
+    if (simd::has_avx2()) {
+        simd::mat8_mul_avx2(a, b, out);
+        return;
+    }
     for (int r = 0; r < N; ++r) {
         for (int c = 0; c < N; ++c) {
             double sum = 0.0;
