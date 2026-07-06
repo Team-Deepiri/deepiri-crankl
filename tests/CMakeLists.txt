@@ -9,11 +9,12 @@ add_executable(test_sheaf ctest/test_sheaf.cpp)
 add_executable(test_clifford_parity ctest/test_clifford_parity.cpp)
 add_executable(test_pack_roundtrip ctest/test_pack_roundtrip.cpp)
 add_executable(test_integration ctest/test_integration.cpp)
+add_executable(test_c_api ctest/test_c_api.cpp)
 
 set(CRANKLE_TEST_INCLUDE ${CMAKE_SOURCE_DIR}/tests/golden)
 
 foreach(t test_trit test_clifford test_cran test_pack test_guct test_diff test_simd test_sheaf
-        test_clifford_parity test_pack_roundtrip test_integration)
+        test_clifford_parity test_pack_roundtrip test_integration test_c_api)
     target_link_libraries(${t} PRIVATE crankle)
     target_include_directories(${t} PRIVATE ${CRANKLE_TEST_INCLUDE})
     crankle_set_warnings(${t})
