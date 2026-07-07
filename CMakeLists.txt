@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankle VERSION 0.3.0 LANGUAGES C CXX)
+project(deepiri-crankle VERSION 0.4.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -42,6 +42,7 @@ set(CRANKLE_CORE_SOURCES
     src/pack/fold.cpp
     src/pack/unfold.cpp
     src/pack/persistence.cpp
+    src/pack/tiling.cpp
     src/io/cran_reader.cpp
     src/io/cran_writer.cpp
     src/io/cran_metadata.cpp
@@ -54,7 +55,7 @@ add_library(crankle SHARED ${CRANKLE_CORE_SOURCES})
 target_include_directories(crankle
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-set_target_properties(crankle PROPERTIES OUTPUT_NAME crankle VERSION 0.3.0 SOVERSION 0)
+set_target_properties(crankle PROPERTIES OUTPUT_NAME crankle VERSION 0.4.0 SOVERSION 0)
 crankle_set_warnings(crankle)
 
 if(CRANKLE_ENABLE_SIMD)
