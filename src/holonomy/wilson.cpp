@@ -1,4 +1,4 @@
-#include "crankle/crankle.h"
+#include "crankl/crankl.h"
 #include "core/internal.hpp"
 #include "pack/tiling.hpp"
 
@@ -7,10 +7,10 @@
 #include <cstring>
 #include <vector>
 
-namespace crankle {
+namespace crankl {
 namespace holonomy {
 
-int forward_blocked(const ::crankle_cran_t *cran, const float *x, size_t dim, float *y);
+int forward_blocked(const ::crankl_cran_t *cran, const float *x, size_t dim, float *y);
 
 static void apply_slot(const uint64_t *slot, float gamma, double state[8], size_t d) {
     std::array<double, 64> M{};
@@ -21,9 +21,9 @@ static void apply_slot(const uint64_t *slot, float gamma, double state[8], size_
         state[i] = next[i];
 }
 
-int forward_blocked(const ::crankle_cran_t *cran, const float *x, size_t dim, float *y);
+int forward_blocked(const ::crankl_cran_t *cran, const float *x, size_t dim, float *y);
 
-int forward(const ::crankle_cran_t *cran, const float *x, size_t dim, float *y) {
+int forward(const ::crankl_cran_t *cran, const float *x, size_t dim, float *y) {
     if (!cran || !x || !y || dim == 0)
         return -1;
 
@@ -49,7 +49,7 @@ int forward(const ::crankle_cran_t *cran, const float *x, size_t dim, float *y) 
     return forward_blocked(cran, x, dim, y);
 }
 
-int forward_blocked(const ::crankle_cran_t *cran, const float *x, size_t dim, float *y) {
+int forward_blocked(const ::crankl_cran_t *cran, const float *x, size_t dim, float *y) {
     if (!cran || !x || !y || dim == 0)
         return -1;
 
@@ -81,7 +81,7 @@ int forward_blocked(const ::crankle_cran_t *cran, const float *x, size_t dim, fl
     return 0;
 }
 
-double holonomy_mse(const ::crankle_cran_t *cran, const float *calib_x, const float *calib_y,
+double holonomy_mse(const ::crankl_cran_t *cran, const float *calib_x, const float *calib_y,
                     size_t dim) {
     if (!cran || !calib_x || !calib_y || dim == 0)
         return 0.0;
@@ -101,4 +101,4 @@ double holonomy_mse(const ::crankle_cran_t *cran, const float *calib_x, const fl
 }
 
 } // namespace holonomy
-} // namespace crankle
+} // namespace crankl

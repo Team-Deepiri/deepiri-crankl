@@ -1,4 +1,4 @@
-# CodeQL Setup for deepiri-crankle
+# CodeQL Setup for deepiri-crankl
 
 This folder contains the CodeQL configuration for repository-level security scanning.
 
@@ -9,11 +9,11 @@ This folder contains the CodeQL configuration for repository-level security scan
 
 ## Language
 
-Crankle is analyzed as **C/C++** (`cpp` in the CodeQL matrix). The workflow runs `autobuild` so CodeQL traces the CMake compile.
+Crankl is analyzed as **C/C++** (`cpp` in the CodeQL matrix). The workflow runs `autobuild` so CodeQL traces the CMake compile.
 
 ## Private repository note
 
-`deepiri-crankle` is private; uploading CodeQL results requires **GitHub Advanced Security** on the repo or org. Until GHAS is enabled, the analyze step uses `continue-on-error` so CI stays green while scans still run. `deepiri-platform` is public and uploads SARIF without GHAS.
+`deepiri-crankl` is private; uploading CodeQL results requires **GitHub Advanced Security** on the repo or org. Until GHAS is enabled, the analyze step uses `continue-on-error` so CI stays green while scans still run. `deepiri-platform` is public and uploads SARIF without GHAS.
 
 ## Maintenance
 

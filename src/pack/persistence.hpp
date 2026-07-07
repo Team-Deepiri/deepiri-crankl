@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 
-namespace crankle {
+namespace crankl {
 namespace pack {
 
 struct PersistencePair {
@@ -17,4 +17,4 @@ float wasserstein_persistence(const std::vector<PersistencePair> &a,
 float spectral_range(const float *data, size_t n);
 
 } // namespace pack
-} // namespace crankle
+} // namespace crankl

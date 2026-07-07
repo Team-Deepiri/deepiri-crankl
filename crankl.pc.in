@@ -2,8 +2,8 @@ prefix=/usr/local
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: crankle
-Description: Crankle GUCT engine
+Name: crankl
+Description: Crankl GUCT engine
 Version: 0.4.0
-Libs: -L${libdir} -lcrankle
+Libs: -L${libdir} -lcrankl
 Cflags: -I${includedir}

@@ -1,6 +1,6 @@
 # Grand Unified Crank Theory (GUCT)
 
-Crankle treats each vector slot not as a scalar float but as a **collapsed crank** — a
+Crankl treats each vector slot not as a scalar float but as a **collapsed crank** — a
 64-bit word encoding a Clifford multivector over ternary generators {-1, 0, +1}.
 
 ## Pillars
@@ -10,7 +10,7 @@ Crankle treats each vector slot not as a scalar float but as a **collapsed crank
 3. **Symplectic Turn** — Lie-group evolution on crank space instead of float gradient descent.
 4. **RG depth** — stacked layers as UV→IR coarse-graining; peel integrates out high-frequency modes.
 5. **Persistent packing** — fold float matrices minimizing Frobenius + persistence Wasserstein proxy.
-6. **Holonomy** — path-ordered product of decrankled operators as forward pass.
+6. **Holonomy** — path-ordered product of decrankld operators as forward pass.
 
 ## Crank word layout (64 bits)
 
@@ -36,7 +36,7 @@ See notebooks `00`–`07` for derivations and golden references.
 
 ## Role in AI development
 
-Crankle is a **native toolchain primitive** for Deepiri's model and agent work:
+Crankl is a **native toolchain primitive** for Deepiri's model and agent work:
 
 - **Training** — compress and anneal adapter weights after finetune runs
 - **Eval** — diff `.cran` checkpoints between harness iterations

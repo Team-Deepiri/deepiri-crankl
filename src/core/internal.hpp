@@ -1,12 +1,12 @@
 #pragma once
 
-#include "crankle/types.h"
+#include "crankl/types.h"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 
-namespace crankle {
+namespace crankl {
 
 constexpr int TRIT_ZERO = 0;
 constexpr int TRIT_PLUS = 1;
@@ -48,9 +48,9 @@ int symplectic_turn(uint64_t &word, double lr);
 int symplectic_turn_toward(uint64_t &word, double lr, const float *target, size_t target_len);
 int symplectic_turn_loss(uint64_t &word, double lr, double (*loss_fn)(uint64_t, void *), void *ctx);
 
-typedef double (*crankle_loss_fn)(const crankle_cran_t *cran, void *ctx);
-int symplectic_finetune(uint64_t *slots, size_t n_slots, crankle_cran_t *cran,
-                        const float *target_blocks, crankle_loss_fn task_loss, void *task_ctx,
+typedef double (*crankl_loss_fn)(const crankl_cran_t *cran, void *ctx);
+int symplectic_finetune(uint64_t *slots, size_t n_slots, crankl_cran_t *cran,
+                        const float *target_blocks, crankl_loss_fn task_loss, void *task_ctx,
                         int steps, double lr, double recon_weight, double task_weight);
 int rg_peel(uint64_t &word, uint32_t layers);
 int rg_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_stacks,
@@ -74,4 +74,4 @@ struct ArchiveMetrics {
 
 int compute_archive_metrics(const uint64_t *slots, size_t n_slots, ArchiveMetrics &out);
 
-} // namespace crankle
+} // namespace crankl

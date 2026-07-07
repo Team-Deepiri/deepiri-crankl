@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstring>
 
-namespace crankle {
+namespace crankl {
 namespace pack {
 
 size_t n_slots_from_count(size_t count) {
@@ -22,4 +22,4 @@ void copy_weight_block(const float *data, size_t count, size_t slot_idx, float o
 }
 
 } // namespace pack
-} // namespace crankle
+} // namespace crankl

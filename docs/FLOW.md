@@ -1,19 +1,19 @@
-# Crankle Flow
+# Crankl Flow
 
-Crankle Flow is the AI development layer above the GUCT kernels. It turns `.cran` from a
+Crankl Flow is the AI development layer above the GUCT kernels. It turns `.cran` from a
 compressed weight container into a workflow artifact that can be inspected, compared, and dropped
 into training/eval automation.
 
 ## Commands
 
 ```bash
-crankle inspect adapter.cran
-crankle inspect adapter.cran --json
+crankl inspect adapter.cran
+crankl inspect adapter.cran --json
 
-crankle compare baseline.cran tuned.cran
-crankle compare baseline.cran tuned.cran --json
+crankl compare baseline.cran tuned.cran
+crankl compare baseline.cran tuned.cran --json
 
-crankle pipeline \
+crankl pipeline \
   --input weights.f32 \
   --target target.f32 \
   --steps 64 \
@@ -39,7 +39,7 @@ crankle pipeline \
 
 ## Why this matters
 
-Crankle now has the minimum usable loop for AI development:
+Crankl now has the minimum usable loop for AI development:
 
 1. **Pack** raw adapter / embedding weights into `.cran`.
 2. **Turn** cranks toward a target or anneal them without a target.

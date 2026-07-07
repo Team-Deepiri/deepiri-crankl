@@ -1,4 +1,4 @@
-#include "crankle_internal_api.hpp"
+#include "crankl_internal_api.hpp"
 
 #include <cstdio>
 #include <string>
@@ -11,7 +11,7 @@
 int main() {
     std::string path = std::string(GOLDEN_DIR) + "/tiny.safetensors";
     std::vector<float> out;
-    if (crankle::io::read_safetensors_f32(path.c_str(), "weights", out) != 0) {
+    if (crankl::io::read_safetensors_f32(path.c_str(), "weights", out) != 0) {
         std::fprintf(stderr, "FAIL: read safetensors %s\n", path.c_str());
         return 1;
     }

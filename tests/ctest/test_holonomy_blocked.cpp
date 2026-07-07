@@ -1,4 +1,4 @@
-#include "crankle/crankle.h"
+#include "crankl/crankl.h"
 
 #include <cmath>
 #include <cstdio>
@@ -9,13 +9,13 @@ int main() {
     const size_t n_slots = 2;
 
     std::vector<uint64_t> slots(n_slots);
-    crankle_multivector_t mv{};
+    crankl_multivector_t mv{};
     mv.s = 0.1;
     mv.v[0] = 0.2;
     for (size_t s = 0; s < n_slots; ++s)
-        slots[s] = crankle_crank_from_multivector(&mv, 1);
+        slots[s] = crankl_crank_from_multivector(&mv, 1);
 
-    crankle_cran_t cran{};
+    crankl_cran_t cran{};
     cran.header.n_slots = n_slots;
     cran.header.gamma = 0.5f;
     cran.slots = slots.data();
@@ -24,7 +24,7 @@ int main() {
     for (size_t i = 0; i < dim; ++i)
         x[i] = static_cast<float>(i) * 0.05f;
 
-    if (crankle_holonomy(&cran, x.data(), dim, y.data()) != 0)
+    if (crankl_holonomy(&cran, x.data(), dim, y.data()) != 0)
         return 1;
 
     double energy = 0.0;
@@ -39,7 +39,7 @@ int main() {
     for (size_t i = 0; i < dim; ++i)
         y_target[i] = y[i] * 0.9f;
 
-    double mse = crankle_holonomy_mse(&cran, x.data(), y_target.data(), dim);
+    double mse = crankl_holonomy_mse(&cran, x.data(), y_target.data(), dim);
     if (!(mse >= 0.0)) {
         std::fprintf(stderr, "FAIL: holonomy_mse invalid\n");
         return 3;

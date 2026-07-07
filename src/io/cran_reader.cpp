@@ -1,4 +1,4 @@
-#include "crankle/crankle.h"
+#include "crankl/crankl.h"
 #include "io/cran_format.hpp"
 #include "io/cran_metadata.hpp"
 #include "io/security_limits.hpp"
@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace crankle {
+namespace crankl {
 namespace io {
 
 static void *g_mmap_base = MAP_FAILED;
@@ -19,7 +19,7 @@ static int g_mmap_fd = -1;
 
 static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
                                 const uint8_t *&layers_out) {
-    if (hd->n_slots == 0 || hd->n_slots > CRANKLE_MAX_SLOTS)
+    if (hd->n_slots == 0 || hd->n_slots > CRANKL_MAX_SLOTS)
         return -8;
 
     uint64_t slots_bytes = 0;
@@ -48,7 +48,7 @@ static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
     if (hd->version >= 2 && tail_len >= 4) {
         uint32_t n_stack_layers = 0;
         std::memcpy(&n_stack_layers, tail, 4);
-        if (n_stack_layers > CRANKLE_MAX_STACK_LAYERS)
+        if (n_stack_layers > CRANKL_MAX_STACK_LAYERS)
             return -13;
 
         uint64_t stack_word_count = 0;
@@ -64,7 +64,7 @@ static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
     return 0;
 }
 
-int read_cran(const char *path, ::crankle_cran_t *out) {
+int read_cran(const char *path, ::crankl_cran_t *out) {
     if (!path || !out)
         return -1;
     int fd = open(path, O_RDONLY);
@@ -75,7 +75,7 @@ int read_cran(const char *path, ::crankle_cran_t *out) {
         close(fd);
         return -3;
     }
-    if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKLE_MAX_FILE_BYTES) {
+    if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKL_MAX_FILE_BYTES) {
         close(fd);
         return -14;
     }
@@ -107,7 +107,7 @@ int read_cran(const char *path, ::crankle_cran_t *out) {
         return layout_rc;
     }
 
-    uint64_t chk = crankle_xxhash64(payload, payload_len, 0);
+    uint64_t chk = crankl_xxhash64(payload, payload_len, 0);
     if (chk != hd->checksum) {
         munmap(base, sz);
         close(fd);
@@ -134,7 +134,7 @@ int read_cran(const char *path, ::crankle_cran_t *out) {
     return 0;
 }
 
-void close_cran(::crankle_cran_t *cran) {
+void close_cran(::crankl_cran_t *cran) {
     (void)cran;
     if (g_mmap_base != MAP_FAILED) {
         munmap(g_mmap_base, g_mmap_size);
@@ -146,13 +146,13 @@ void close_cran(::crankle_cran_t *cran) {
     }
 }
 
-int verify_cran(const ::crankle_cran_t *cran) {
+int verify_cran(const ::crankl_cran_t *cran) {
     if (!cran || !cran->mmap_base || cran->mmap_size < sizeof(CranHeaderDisk))
         return -1;
-    if (cran->header.n_slots == 0 || cran->header.n_slots > CRANKLE_MAX_SLOTS)
+    if (cran->header.n_slots == 0 || cran->header.n_slots > CRANKL_MAX_SLOTS)
         return -2;
     return 0;
 }
 
 } // namespace io
-} // namespace crankle
+} // namespace crankl

@@ -7,7 +7,7 @@
 #include <cstring>
 #include <random>
 
-namespace crankle {
+namespace crankl {
 namespace pack {
 
 static void block_to_seed_mv(const float W[BLOCK_FLOATS], Multivector &mv) {
@@ -91,4 +91,4 @@ int fold_f32(const float *data, size_t count, uint64_t *out_slots, size_t n_slot
 }
 
 } // namespace pack
-} // namespace crankle
+} // namespace crankl

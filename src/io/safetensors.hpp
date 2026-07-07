@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace crankle {
+namespace crankl {
 namespace io {
 
 struct SafetensorsTensor {
@@ -20,4 +20,4 @@ int read_safetensors_f32(const char *path, const char *tensor_name, std::vector<
                          SafetensorsTensor *meta = nullptr);
 
 } // namespace io
-} // namespace crankle
+} // namespace crankl

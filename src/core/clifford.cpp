@@ -2,5 +2,5 @@
 
 // Clifford algebra helpers — product/reversion live in crank_word.cpp for v1 scaffold.
 
-namespace crankle {
-} // namespace crankle
+namespace crankl {
+} // namespace crankl

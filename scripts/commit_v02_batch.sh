@@ -36,10 +36,10 @@ MSG="core: add crank diff hamming utilities"
 commit_files src/core/diff.cpp src/core/internal.hpp
 
 MSG="api: expose diff count and avx2 probe in C ABI"
-commit_files include/crankle/crankle.h src/c_api/c_api.cpp
+commit_files include/crankl/crankl.h src/c_api/c_api.cpp
 
 MSG="build: bump version to 0.2.0-alpha"
-commit_files include/crankle/version.h CMakeLists.txt crankle.pc.in
+commit_files include/crankl/version.h CMakeLists.txt crankl.pc.in
 
 MSG="cli: add version subcommand"
 commit_files src/cli/main.cpp
@@ -69,9 +69,9 @@ commit_files scripts/export_golden.py tests/golden/
 MSG="docs: update API reference for v0.2"
 commit_files docs/API.md
 
-MSG="build: add pkg-config crankle.pc"
-git add crankle.pc.in CMakeLists.txt
-git diff --cached --quiet && git commit --allow-empty -m "build: add pkg-config crankle.pc" || git commit -m "build: add pkg-config crankle.pc"
+MSG="build: add pkg-config crankl.pc"
+git add crankl.pc.in CMakeLists.txt
+git diff --cached --quiet && git commit --allow-empty -m "build: add pkg-config crankl.pc" || git commit -m "build: add pkg-config crankl.pc"
 
 MSG="release: v0.2.0-alpha expansion"
 git add -A

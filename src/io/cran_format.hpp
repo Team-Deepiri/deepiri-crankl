@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace crankle {
+namespace crankl {
 namespace io {
 
 constexpr char CRAN_MAGIC[6] = {'C', 'R', 'A', 'N', '\x01', '\0'};
@@ -23,4 +23,4 @@ struct CranHeaderDisk {
 #pragma pack(pop)
 
 } // namespace io
-} // namespace crankle
+} // namespace crankl

@@ -2,7 +2,7 @@
 
 ## Input limits
 
-Crankle rejects oversized or malformed inputs before mmap, allocation, or parsing:
+Crankl rejects oversized or malformed inputs before mmap, allocation, or parsing:
 
 | Surface | Limit |
 |---------|-------|

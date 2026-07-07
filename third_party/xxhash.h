@@ -1,9 +1,9 @@
-/* Minimal xxhash64 for Crankle checksums — subset for scaffold */
+/* Minimal xxhash64 for Crankl checksums — subset for scaffold */
 #pragma once
 #include <cstddef>
 #include <cstdint>
 
-static inline uint64_t crankle_xxhash64(const void *input, size_t len, uint64_t seed) {
+static inline uint64_t crankl_xxhash64(const void *input, size_t len, uint64_t seed) {
     const uint8_t *p = static_cast<const uint8_t *>(input);
     uint64_t h = seed + 0x9E3779B97F4A7C15ULL + len;
     for (size_t i = 0; i < len; ++i) {

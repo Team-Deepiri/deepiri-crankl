@@ -1,33 +1,33 @@
-#include "crankle/errors.h"
-#include "crankle/version.h"
-#include "crankle/version_api.h"
+#include "crankl/errors.h"
+#include "crankl/version.h"
+#include "crankl/version_api.h"
 
 extern "C" {
 
-const char *crankle_version_string(void) { return CRANKLE_VERSION_STRING; }
+const char *crankl_version_string(void) { return CRANKL_VERSION_STRING; }
 
-void crankle_version(int *major, int *minor, int *patch) {
+void crankl_version(int *major, int *minor, int *patch) {
     if (major)
-        *major = CRANKLE_VERSION_MAJOR;
+        *major = CRANKL_VERSION_MAJOR;
     if (minor)
-        *minor = CRANKLE_VERSION_MINOR;
+        *minor = CRANKL_VERSION_MINOR;
     if (patch)
-        *patch = CRANKLE_VERSION_PATCH;
+        *patch = CRANKL_VERSION_PATCH;
 }
 
-const char *crankle_strerror(int code) {
+const char *crankl_strerror(int code) {
     switch (code) {
-    case CRANKLE_OK:
+    case CRANKL_OK:
         return "ok";
-    case CRANKLE_ERR_NULL:
+    case CRANKL_ERR_NULL:
         return "null argument";
-    case CRANKLE_ERR_INVALID:
+    case CRANKL_ERR_INVALID:
         return "invalid argument";
-    case CRANKLE_ERR_IO:
+    case CRANKL_ERR_IO:
         return "I/O error";
-    case CRANKLE_ERR_FORMAT:
+    case CRANKL_ERR_FORMAT:
         return "format error";
-    case CRANKLE_ERR_NO_METADATA:
+    case CRANKL_ERR_NO_METADATA:
         return "no metadata footer";
     default:
         return "unknown error";
