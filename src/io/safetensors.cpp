@@ -1,4 +1,5 @@
 #include "io/safetensors.hpp"
+#include "io/security_limits.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -90,7 +91,7 @@ int read_safetensors_f32(const char *path, const char *tensor_name, std::vector<
 
     uint64_t header_len = 0;
     f.read(reinterpret_cast<char *>(&header_len), 8);
-    if (!f || header_len == 0 || header_len > 1 << 24)
+    if (!f || header_len == 0 || header_len > CRANKLE_MAX_SAFETENSORS_HEADER)
         return -3;
 
     std::string header(header_len, '\0');
@@ -101,8 +102,15 @@ int read_safetensors_f32(const char *path, const char *tensor_name, std::vector<
     SafetensorsTensor tensor;
     if (!parse_tensor_block(header, tensor_name, tensor))
         return -5;
+    if (tensor.byte_len == 0 || tensor.byte_len > CRANKLE_MAX_TENSOR_BYTES ||
+        tensor.byte_len % sizeof(float) != 0)
+        return -8;
 
     size_t data_base = 8 + header_len;
+    if (tensor.byte_offset > CRANKLE_MAX_FILE_BYTES ||
+        data_base + tensor.byte_offset > CRANKLE_MAX_FILE_BYTES ||
+        data_base + tensor.byte_offset + tensor.byte_len > CRANKLE_MAX_FILE_BYTES)
+        return -9;
     f.seekg(static_cast<std::streamoff>(data_base + tensor.byte_offset));
     if (!f)
         return -6;

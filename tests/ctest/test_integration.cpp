@@ -12,7 +12,7 @@ int main() {
     const char *path = "/tmp/crankle_integration.cran";
     const char *tuned = "/tmp/crankle_integration_tuned.cran";
 
-    std::vector<uint64_t> slots(4);
+    std::vector<uint64_t> slots(crankle_pack_n_slots(data.size()));
     if (crankle_pack_f32(data.data(), data.size(), slots.data(), slots.size(), 0.1f, 0.01f) != 0)
         return 1;
 
