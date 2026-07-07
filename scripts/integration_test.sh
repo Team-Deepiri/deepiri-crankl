@@ -11,7 +11,9 @@ cmake --build "$ROOT/build" --parallel
 
 "$CLI" pack --input "$IN" --shape 4 -o "${BASE}.cran"
 "$CLI" turn --input "${BASE}.cran" --steps 10 --lr 0.05 -o "${BASE}_turned.cran"
-"$CLI" peel --input "${BASE}_turned.cran" --layers 1 -o "${BASE}_peeled.cran"
+"$CLI" finetune --input "${BASE}_turned.cran" --target "$IN" --steps 20 --lr 0.04 \
+    -o "${BASE}_finetuned.cran" | grep -q recon_after
+"$CLI" peel --input "${BASE}_finetuned.cran" --layers 1 -o "${BASE}_peeled.cran"
 "$CLI" diff "${BASE}.cran" "${BASE}_turned.cran" | grep -q slots_changed
 "$CLI" inspect "${BASE}_peeled.cran" --json | grep -q trit_density
 "$CLI" compare "${BASE}.cran" "${BASE}_turned.cran" --json | grep -q clifford_resonance
