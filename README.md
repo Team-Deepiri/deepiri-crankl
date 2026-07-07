@@ -27,7 +27,8 @@ train / finetune → crankle pack → .cran artifact
 | You are… | Reach for… |
 |----------|------------|
 | Shipping a LoRA / adapter | `crankle pack` |
-| Cheap finetune pass on cranks | `crankle turn` |
+| Cheap symplectic anneal on cranks | `crankle turn` |
+| Decrank-unified finetune loop | `crankle finetune` |
 | Creating a full training artifact | `crankle pipeline --manifest run.json` |
 | Auditing a `.cran` checkpoint | `crankle inspect --json` |
 | Comparing two checkpoints | `crankle compare --json` |
@@ -64,6 +65,8 @@ crankle pack   --input weights.f32 --shape 8,8 -o adapter.cran
 crankle unpack --input adapter.cran -o reconstructed.f32
 crankle resonance a.cran b.cran [--mode clifford|sheaf|both]
 crankle turn   --input adapter.cran --steps 100 --lr 0.01 -o tuned.cran
+crankle finetune --input adapter.cran --target weights.f32 --steps 200 -o tuned.cran
+crankle finetune --input adapter.cran --target weights.f32 --calib-x x.f32 --calib-y y.f32 -o tuned.cran
 crankle peel   --input adapter.cran --layers 1 -o peeled.cran
 crankle bind   a.cran b.cran -o merged.cran
 crankle diff   a.cran b.cran
@@ -77,7 +80,7 @@ crankle pipeline --input weights.f32 --steps 64 -o tuned.cran --manifest run.jso
 
 ## Theory
 
-See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), and
+See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), [docs/FINETUNE.md](docs/FINETUNE.md), and
 [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
