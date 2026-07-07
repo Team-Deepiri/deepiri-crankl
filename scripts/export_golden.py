@@ -142,13 +142,23 @@ def main() -> None:
     holonomy = {"gamma": 1.0, "input": [1.0] + [0.0] * 7, "expect_nonzero": True}
     (GOLDEN / "holonomy_ref.json").write_text(json.dumps(holonomy, indent=2))
 
+    # Minimal safetensors fixture (F32 tensor "weights")
+    weights = struct.pack("4f", 0.1, 0.2, 0.3, 0.4)
+    header = json.dumps(
+        {"weights": {"dtype": "F32", "shape": [4], "data_offsets": [0, len(weights)]}},
+        separators=(",", ":"),
+    ).encode("utf-8")
+    st_payload = struct.pack("<Q", len(header)) + header + weights
+    (GOLDEN / "tiny.safetensors").write_bytes(st_payload)
+
     manifest = {
-        "version": "0.2.1",
+        "version": "0.3.0-alpha",
         "tolerance": 1e-3,
         "pack_roundtrip_max_err": 2.0,
         "files": [
             "sample.f32",
             "sample_small.f32",
+            "tiny.safetensors",
             "algebra_ref.json",
             "clifford_cases.hpp",
             "clifford_cases.json",

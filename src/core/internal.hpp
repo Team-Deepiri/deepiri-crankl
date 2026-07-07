@@ -41,6 +41,7 @@ double sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other, s
 int sheaf_beta1_proxy(const uint64_t *slots, size_t n);
 
 int symplectic_turn(uint64_t &word, double lr);
+int symplectic_turn_toward(uint64_t &word, double lr, const float *target, size_t target_len);
 int rg_peel(uint64_t &word, uint32_t layers);
 uint64_t bind_cranks(uint64_t a, uint64_t b);
 
