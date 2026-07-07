@@ -151,42 +151,21 @@ void mat8_exp(const double a[N * N], double out[N * N]) {
     }
 }
 
-// exp(i·γ·A) · x  (real x → real y): Re( (cos(γA) + i·sin(γA)) x ) with A skew-symmetric.
+// exp(i·γ·A) · x — uses Padé exp on skew (rotation) and symmetric (scale) parts.
 void mat8_exp_i_apply(const double a[N * N], double gamma, const double x[N], double y[N]) {
-    double skew[N * N], scaled[N * N], cosM[N * N], sinM[N * N];
+    double skew[N * N], sym[N * N], gskew[N * N], gsym[N * N];
+    double rot[N * N], scale[N * N];
     mat8_skew(a, skew);
-    mat8_scale(skew, gamma, scaled);
-
-    double scaled2[N * N], scaled3[N * N];
-    mat8_mul(scaled, scaled, scaled2);
-    mat8_mul(scaled2, scaled, scaled3);
-
-    double I[N * N];
-    mat8_identity(I);
-
-    // cos(M) ≈ I - M²/2 + M⁴/24 ; sin(M) ≈ M - M³/6  (good for small ||γ·skew||)
-    double m2s[N * N], m4s[N * N], m3s[N * N];
-    mat8_scale(scaled2, -0.5, m2s);
-    mat8_mul(scaled2, scaled2, m4s);
-    mat8_scale(m4s, 1.0 / 24.0, m4s);
-    mat8_add(I, m2s, cosM);
-    mat8_add(cosM, m4s, cosM);
-
-    mat8_scale(scaled3, -1.0 / 6.0, m3s);
-    mat8_add(scaled, m3s, sinM);
-
-    double cx[N], sx[N], out[N];
-    mat8_vec(cosM, x, cx);
-    mat8_vec(sinM, x, sx);
-    for (int i = 0; i < N; ++i)
-        out[i] = cx[i]; // Re(exp(iγG)x) = cos(γG)x for skew G
-
-    // Symmetric part: amplitude modulation via exp(γ·sym)
-    double sym[N * N], exp_sym[N * N];
     mat8_sym(a, sym);
-    mat8_scale(sym, gamma, scaled);
-    mat8_exp(scaled, exp_sym);
-    mat8_vec(exp_sym, out, y);
+    mat8_scale(skew, gamma, gskew);
+    mat8_scale(sym, gamma, gsym);
+
+    mat8_exp(gskew, rot);
+    mat8_exp(gsym, scale);
+
+    double rotated[N];
+    mat8_vec(rot, x, rotated);
+    mat8_vec(scale, rotated, y);
 }
 
 } // namespace crankle
