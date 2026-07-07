@@ -1,5 +1,6 @@
 #include "crankle/crankle.h"
 #include "io/cran_format.hpp"
+#include "io/cran_metadata.hpp"
 #include "io/security_limits.hpp"
 #include "xxhash.h"
 
@@ -26,23 +27,38 @@ static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
         return -9;
 
     layers_out = nullptr;
-    const uint8_t *tail = reinterpret_cast<const uint8_t *>(hd) + sizeof(CranHeaderDisk) + slots_bytes;
     size_t tail_len = payload_len - static_cast<size_t>(slots_bytes);
+    const uint8_t *tail = reinterpret_cast<const uint8_t *>(hd) + sizeof(CranHeaderDisk) +
+                          static_cast<size_t>(slots_bytes);
 
-    if (hd->version >= 2) {
-        if (tail_len < 4)
+    if ((hd->flags & 1u) != 0) {
+        if (tail_len < 8)
             return -10;
+        uint32_t magic = 0;
+        uint32_t json_len = 0;
+        std::memcpy(&magic, tail, 4);
+        std::memcpy(&json_len, tail + 4, 4);
+        if (magic != FOOTER_MAGIC || json_len > 4096)
+            return -11;
+        if (tail_len < 8 + json_len)
+            return -12;
+        return 0;
+    }
+
+    if (hd->version >= 2 && tail_len >= 4) {
         uint32_t n_stack_layers = 0;
         std::memcpy(&n_stack_layers, tail, 4);
         if (n_stack_layers > CRANKLE_MAX_STACK_LAYERS)
-            return -11;
-
-        uint64_t stack_bytes = 0;
-        if (size_mul_overflow(n_stack_layers, hd->n_slots, stack_bytes) ||
-            size_mul_overflow(stack_bytes, 8, stack_bytes))
-            return -12;
-        if (tail_len < 4 + stack_bytes)
             return -13;
+
+        uint64_t stack_word_count = 0;
+        if (size_mul_overflow(n_stack_layers, hd->n_slots, stack_word_count))
+            return -14;
+        uint64_t stack_bytes = 0;
+        if (size_mul_overflow(stack_word_count, 8, stack_bytes))
+            return -15;
+        if (tail_len < 4 + stack_bytes)
+            return -16;
         layers_out = tail + 4;
     }
     return 0;
