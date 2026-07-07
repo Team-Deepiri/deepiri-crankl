@@ -27,7 +27,7 @@ int main() {
     hdr.n_slots = 2;
     hdr.depth_max = 5;
     hdr.gamma = 1.0f;
-    const char *path = "/tmp/crankl_metrics.cran";
+    const char *path = "/tmp/crankl_metrics.crank";
     if (crankl_cran_write(path, &hdr, slots, nullptr, nullptr) != CRANKL_OK)
         return 4;
     crankl_cran_t cran{};

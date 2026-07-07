@@ -19,7 +19,7 @@ int main() {
         data[i] = static_cast<float>(i) * 0.05f - 0.5f;
 
     const char *in = "/tmp/crankl_flow_in.f32";
-    const char *out = "/tmp/crankl_flow_out.cran";
+    const char *out = "/tmp/crankl_flow_out.crank";
     if (write_f32(in, data) != 0)
         return 1;
 

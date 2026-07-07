@@ -10,12 +10,12 @@ or run forward on compressed weights — in training, eval, or agent pipelines.
 |----------|------|
 | CLI | `crankl` |
 | Library | `libcrankl` |
-| Format | `.cran` |
+| Format | `.crank` |
 
 ## AI dev flow
 
 ```
-train / finetune → crankl pack → .cran artifact
+train / finetune → crankl pack → .crank artifact
                       ↓
               crankl turn (anneal)
                       ↓
@@ -30,7 +30,7 @@ train / finetune → crankl pack → .cran artifact
 | Cheap symplectic anneal on cranks | `crankl turn` |
 | Decrank-unified finetune loop | `crankl finetune` |
 | Creating a full training artifact | `crankl pipeline --manifest run.json` |
-| Auditing a `.cran` checkpoint | `crankl inspect --json` |
+| Auditing a `.crank` checkpoint | `crankl inspect --json` |
 | Comparing two checkpoints | `crankl compare --json` |
 | Debugging two agent runs | `crankl diff` + `resonance` |
 | Merging specialist heads | `crankl bind` |
@@ -61,21 +61,21 @@ bash scripts/integration_test.sh # pack → turn → peel → diff → holonomy
 
 ```bash
 crankl version
-crankl pack   --input weights.f32 --shape 8,8 -o adapter.cran
-crankl unpack --input adapter.cran -o reconstructed.f32
-crankl resonance a.cran b.cran [--mode clifford|sheaf|both]
-crankl turn   --input adapter.cran --steps 100 --lr 0.01 -o tuned.cran
-crankl finetune --input adapter.cran --target weights.f32 --steps 200 -o tuned.cran
-crankl finetune --input adapter.cran --target weights.f32 --calib-x x.f32 --calib-y y.f32 -o tuned.cran
-crankl peel   --input adapter.cran --layers 1 -o peeled.cran
-crankl bind   a.cran b.cran -o merged.cran
-crankl diff   a.cran b.cran
-crankl holonomy --input adapter.cran --vector x.bin -o y.bin
-crankl stats  adapter.cran
-crankl verify adapter.cran
-crankl inspect adapter.cran [--json]
-crankl compare baseline.cran tuned.cran [--json]
-crankl pipeline --input weights.f32 --steps 64 -o tuned.cran --manifest run.json
+crankl pack   --input weights.f32 --shape 8,8 -o adapter.crank
+crankl unpack --input adapter.crank -o reconstructed.f32
+crankl resonance a.crank b.crank [--mode clifford|sheaf|both]
+crankl turn   --input adapter.crank --steps 100 --lr 0.01 -o tuned.crank
+crankl finetune --input adapter.crank --target weights.f32 --steps 200 -o tuned.crank
+crankl finetune --input adapter.crank --target weights.f32 --calib-x x.f32 --calib-y y.f32 -o tuned.crank
+crankl peel   --input adapter.crank --layers 1 -o peeled.crank
+crankl bind   a.crank b.crank -o merged.crank
+crankl diff   a.crank b.crank
+crankl holonomy --input adapter.crank --vector x.bin -o y.bin
+crankl stats  adapter.crank
+crankl verify adapter.crank
+crankl inspect adapter.crank [--json]
+crankl compare baseline.crank tuned.crank [--json]
+crankl pipeline --input weights.f32 --steps 64 -o tuned.crank --manifest run.json
 ```
 
 ## Theory

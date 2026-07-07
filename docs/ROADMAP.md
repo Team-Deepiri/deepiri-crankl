@@ -2,7 +2,7 @@
 
 | Version | Deliverable |
 |---------|-------------|
-| v0.1 | Scaffold — GUCT core, `.cran` I/O, CLI, notebook parity |
+| v0.1 | Scaffold — GUCT core, `.crank` I/O, CLI, notebook parity |
 | v0.2 | SIMD matmul, sheaf χ v2, cran metadata, diff/version CLI, anneal pack |
 | v0.3 | Topological pack v2, safetensors ingest, loss-guided turn | **done** |
 | v0.4 | Crankl Flow + decrank-unified finetune: inspect, compare, pipeline manifests, Maurer-Cartan turn | **in progress** |
@@ -14,14 +14,14 @@ Crankl is infrastructure for how Deepiri builds and ships AI — not a side expe
 
 | Dev flow stage | Crankl primitive |
 |----------------|-------------------|
-| Compress adapter / embedding deltas | `pack` → `.cran` |
+| Compress adapter / embedding deltas | `pack` → `.crank` |
 | Lightweight finetune without full float soup | `finetune` (Maurer-Cartan + holonomy task loss) |
 | Cheap symplectic anneal on cranks | `turn` |
 | Compare two training runs / checkpoints | `diff`, `resonance` |
 | Merge specialist adapters | `bind` |
 | Roll back a finetune layer | `peel` |
 | Run forward on compressed weights | `holonomy` |
-| Ship artifacts with provenance | `.cran` metadata |
+| Ship artifacts with provenance | `.crank` metadata |
 
 Works in finetuning pipelines, agent eval, vector tooling, and anywhere you move weights — same CLI, same format, no import coupling required.
 
@@ -37,7 +37,7 @@ Works in finetuning pipelines, agent eval, vector tooling, and anywhere you move
 1. **Archive metrics** — density, entropy, energy, depth envelope, β₁ proxy.
 2. **Inspect** — machine-readable archive health for CI and eval logs.
 3. **Compare** — checkpoint deltas with resonance + metric movement.
-4. **Pipeline** — one command to pack → turn → emit `.cran` + manifest.
+4. **Pipeline** — one command to pack → turn → emit `.crank` + manifest.
 5. **Manifest discipline** — JSON artifacts are the stable handoff between training, eval, and agents.
 
 ## v0.4 finetune milestones

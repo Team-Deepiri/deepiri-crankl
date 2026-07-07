@@ -46,8 +46,7 @@ int write_cran(const char *path, const ::crankl_cran_header_t *hdr, const uint64
     }
 
     CranHeaderDisk hd{};
-    std::memcpy(hd.magic, CRAN_MAGIC, 5);
-    hd.magic[5] = '\0';
+    std::memcpy(hd.magic, CRANK_MAGIC, 6);
     hd.version = layer_stacks ? 2 : 1;
     hd.n_slots = hdr->n_slots;
     hd.depth_max = hdr->depth_max;

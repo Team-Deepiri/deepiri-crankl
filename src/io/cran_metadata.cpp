@@ -37,8 +37,7 @@ int write_cran_with_metadata(const char *path, const ::crankl_cran_header_t *hdr
     }
 
     CranHeaderDisk hd{};
-    std::memcpy(hd.magic, CRAN_MAGIC, 5);
-    hd.magic[5] = '\0';
+    std::memcpy(hd.magic, CRANK_MAGIC, 6);
     hd.version = meta ? 2 : 1;
     hd.n_slots = hdr->n_slots;
     hd.depth_max = hdr->depth_max;

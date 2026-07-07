@@ -91,7 +91,7 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
         return -5;
     }
     auto *hd = static_cast<CranHeaderDisk *>(base);
-    if (std::memcmp(hd->magic, CRAN_MAGIC, 5) != 0) {
+    if (!magic_is_valid(hd->magic)) {
         munmap(base, sz);
         close(fd);
         return -6;

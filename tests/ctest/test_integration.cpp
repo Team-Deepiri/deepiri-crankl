@@ -9,8 +9,8 @@ int main() {
     for (int i = 0; i < 16; ++i)
         data[i] = static_cast<float>(i) * 0.1f;
 
-    const char *path = "/tmp/crankl_integration.cran";
-    const char *tuned = "/tmp/crankl_integration_tuned.cran";
+    const char *path = "/tmp/crankl_integration.crank";
+    const char *tuned = "/tmp/crankl_integration_tuned.crank";
 
     std::vector<uint64_t> slots(crankl_pack_n_slots(data.size()));
     if (crankl_pack_f32(data.data(), data.size(), slots.data(), slots.size(), 0.1f, 0.01f) != 0)

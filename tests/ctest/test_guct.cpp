@@ -46,7 +46,7 @@ int main() {
     crankl_cran_header_t hdr{};
     hdr.n_slots = 1;
     hdr.gamma = 0.3f;
-    const char *path = "/tmp/crankl_test_holo.cran";
+    const char *path = "/tmp/crankl_test_holo.crank";
     if (crankl_cran_write(path, &hdr, &slot, nullptr, nullptr) != 0)
         return 1;
     crankl_cran_t cran{};

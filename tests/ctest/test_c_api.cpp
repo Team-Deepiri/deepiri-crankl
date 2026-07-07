@@ -29,7 +29,7 @@ int main() {
         ++fails;
     }
 
-    const char *path = "/tmp/crankl_capi_meta.cran";
+    const char *path = "/tmp/crankl_capi_meta.crank";
     crankl_cran_header_t hdr{};
     hdr.n_slots = 2;
     hdr.gamma = 1.0f;
