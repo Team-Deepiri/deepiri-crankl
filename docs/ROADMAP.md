@@ -4,15 +4,29 @@
 |---------|-------------|
 | v0.1 | Scaffold — GUCT core, `.cran` I/O, CLI, notebook parity |
 | v0.2 | SIMD matmul, sheaf χ v2, cran metadata, diff/version CLI, anneal pack |
-| v0.3 | Topological BO packing, safetensors ingest |
-| v0.4 | Optional Helox adapter (no hard coupling) |
-| v1.0 | Production crank-turn finetune on LoRA-scale adapters |
+| v0.3 | Topological BO packing, safetensors / gguf ingest |
+| v0.4 | Agent-training hooks — checkpoint diff, turn pipelines, eval harness integration |
+| v1.0 | Production crank-turn finetune on LoRA-scale adapters at Deepiri scale |
 
-## v0.2 milestones (in progress)
+## AI development flow (why this exists)
 
-1. **SIMD** — AVX2 trit unpack batch + `mat8_mul` fast path
-2. **Sheaf χ v2** — cycle-rank β₁ + coboundary restriction delta in resonance
-3. **`.cran` metadata** — optional JSON footer (model name, source hash)
-4. **CLI** — `version`, `diff` (trit-level crank delta between archives)
-5. **Pack** — simulated annealing pass on fold objective J(C)
-6. **Golden parity** — sheaf + holonomy reference vectors in CI
+Crankle is infrastructure for how Deepiri builds and ships AI — not a side experiment.
+
+| Dev flow stage | Crankle primitive |
+|----------------|-------------------|
+| Compress adapter / embedding deltas | `pack` → `.cran` |
+| Lightweight finetune without full float soup | `turn` (symplectic anneal) |
+| Compare two training runs / checkpoints | `diff`, `resonance` |
+| Merge specialist adapters | `bind` |
+| Roll back a finetune layer | `peel` |
+| Run forward on compressed weights | `holonomy` |
+| Ship artifacts with provenance | `.cran` metadata |
+
+Works in finetuning pipelines (Helox), agent eval (Tombstone), vector tooling (Topolsea), and anywhere you move weights — same CLI, same format, no import coupling required.
+
+## v0.3+ milestones
+
+1. **Topological BO packing** — Wasserstein persistence objective, not just greedy anneal
+2. **Safetensors / gguf ingest** — `crankle pack --input model.safetensors`
+3. **Training pipeline** — `crankle turn` as a post-training step in standard Deepiri CI
+4. **Checkpoint archaeology** — diff + stats in agent run logs

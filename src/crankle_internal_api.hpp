@@ -1,15 +1,19 @@
 #pragma once
 
 #include "crankle/crankle.h"
+#include "io/cran_metadata.hpp"
 
 namespace crankle {
 namespace io {
 
 int write_cran(const char *path, const crankle_cran_header_t *hdr, const uint64_t *slots,
                const uint64_t *layer_stacks, const uint32_t *depths);
+int write_cran_with_metadata(const char *path, const crankle_cran_header_t *hdr,
+                             const uint64_t *slots, const CranMetadata *meta);
 int read_cran(const char *path, crankle_cran_t *out);
 void close_cran(crankle_cran_t *cran);
 int verify_cran(const crankle_cran_t *cran);
+int read_cran_metadata(const crankle_cran_t *cran, CranMetadata *out);
 
 } // namespace io
 

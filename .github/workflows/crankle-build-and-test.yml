@@ -3,7 +3,7 @@ name: Crankle Build and Test
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Build and test
+    name: Release build and test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -37,3 +37,32 @@ jobs:
 
       - name: Golden parity
         run: bash scripts/verify_parity.sh
+
+      - name: E2E integration
+        run: bash scripts/integration_test.sh
+
+  sanitizer:
+    name: ASan + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y cmake ninja-build build-essential
+
+      - name: Configure
+        run: |
+          cmake -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build
+        run: cmake --build build-asan --parallel
+
+      - name: Test
+        run: ctest --test-dir build-asan --output-on-failure

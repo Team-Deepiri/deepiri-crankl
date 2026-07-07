@@ -33,3 +33,14 @@ Crankle treats each vector slot not as a scalar float but as a **collapsed crank
 - **holonomy** — ∏ exp(iγ·decrank(Cᵢ)) · x
 
 See notebooks `00`–`07` for derivations and golden references.
+
+## Role in AI development
+
+Crankle is a **native toolchain primitive** for Deepiri's model and agent work:
+
+- **Training** — compress and anneal adapter weights after finetune runs
+- **Eval** — diff `.cran` checkpoints between harness iterations
+- **Agents** — resonance for near-duplicate tool outputs; bind for merged behavior heads
+- **Shipping** — `.cran` as the artifact format (metadata, verify, mmap)
+
+It aids the flow whether you invoke it from a finetuning framework, a CI job, or a shell one-liner. The math is GUCT; the job is making AI development faster and lighter.
