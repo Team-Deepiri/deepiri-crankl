@@ -1,4 +1,4 @@
-# Crankle C API (v0.2.2)
+# Crankle C API (v0.4.0)
 
 Modular headers live under `include/crankle/`. Include `crankle/crankle.h` for everything, or pull in domain headers individually.
 
@@ -13,12 +13,13 @@ Modular headers live under `include/crankle/`. Include `crankle/crankle.h` for e
 | `crank.h` | Crank word pack/unpack, decrank matrix |
 | `clifford.h` | Geometric product, resonance |
 | `sheaf.h` | Sheaf resonance, β₁ proxy |
-| `symplectic.h` | Turn, peel, bind |
-| `pack.h` | Float fold/unfold |
+| `symplectic.h` | Turn, peel, bind, finetune, holonomy MSE |
+| `pack.h` | Float fold/unfold, decrank loss, block tiling |
 | `cran.h` | `.cran` archive I/O + metadata footer |
 | `holonomy.h` | Wilson holonomy forward |
 | `diff.h` | Crank tensor diff metrics |
 | `simd.h` | Runtime AVX2 probe |
+| `metrics.h` | Archive health metrics for AI dev-flow automation |
 
 ## Implementation layout
 
@@ -50,7 +51,22 @@ C bindings are split under `src/c_api/` — one translation unit per domain, wit
 ```bash
 crankle version
 crankle diff a.cran b.cran
+crankle inspect a.cran --json
+crankle compare baseline.cran tuned.cran --json
+crankle pipeline --input weights.f32 -o tuned.cran --manifest run.json
+crankle finetune --input adapter.cran --target weights.f32 --steps 200 -o tuned.cran --json
 ```
+
+## New in v0.4.0
+
+| Function | Description |
+|----------|-------------|
+| `crankle_pack_n_slots` | Slots required for N floats (64 floats per slot) |
+| `crankle_unpack_f32_mode` | Unpack decrank blocks or legacy coeffs |
+| `crankle_decrank_frobenius_loss` | Per-slot reconstruction loss vs 64-float block |
+| `crankle_finetune` | Maurer-Cartan loop with recon + task loss callback |
+| `crankle_holonomy_mse` | Calibration MSE via Wilson holonomy forward |
+| `crankle_peel_stack` | Roll back N layers from cran v2 stack history |
 
 ## Core functions
 
@@ -68,3 +84,5 @@ crankle diff a.cran b.cran
 | `crankle_crank_diff_count` | Slots that differ between tensors |
 | `crankle_crank_diff_hamming` | Normalized bit Hamming distance |
 | `crankle_has_avx2` | Runtime SIMD probe |
+| `crankle_compute_archive_metrics` | Density, entropy, energy, depth, and β₁ metrics |
+| `crankle_cran_compute_metrics` | Archive metrics directly from a mapped `.cran` |

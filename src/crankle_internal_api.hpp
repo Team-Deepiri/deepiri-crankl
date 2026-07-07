@@ -23,12 +23,16 @@ namespace pack {
 int fold_f32(const float *data, size_t count, uint64_t *out_slots, size_t n_slots, float lambda,
              float mu);
 int unfold_f32(const uint64_t *slots, size_t n_slots, float *out, size_t count);
+int unfold_f32_mode(const uint64_t *slots, size_t n_slots, float *out, size_t count, int mode);
 
 } // namespace pack
 
 namespace holonomy {
 
 int forward(const crankle_cran_t *cran, const float *x, size_t dim, float *y);
+int forward_blocked(const crankle_cran_t *cran, const float *x, size_t dim, float *y);
+double holonomy_mse(const crankle_cran_t *cran, const float *calib_x, const float *calib_y,
+                    size_t dim);
 
 } // namespace holonomy
 } // namespace crankle

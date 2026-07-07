@@ -4,6 +4,6 @@ includedir=${prefix}/include
 
 Name: crankle
 Description: Crankle GUCT engine
-Version: 0.3.0
+Version: 0.4.0
 Libs: -L${libdir} -lcrankle
 Cflags: -I${includedir}

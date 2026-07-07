@@ -17,5 +17,6 @@
 #include "crankle/holonomy.h"
 #include "crankle/diff.h"
 #include "crankle/simd.h"
+#include "crankle/metrics.h"
 
 #endif
