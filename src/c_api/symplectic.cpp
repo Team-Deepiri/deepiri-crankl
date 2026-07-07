@@ -9,6 +9,12 @@ int crankle_turn(uint64_t *word, double lr) {
     return crankle::symplectic_turn(*word, lr);
 }
 
+int crankle_turn_toward(uint64_t *word, double lr, const float *target, size_t target_len) {
+    if (!word)
+        return CRANKLE_ERR_NULL;
+    return crankle::symplectic_turn_toward(*word, lr, target, target_len);
+}
+
 int crankle_peel(uint64_t *word, uint32_t layers) {
     if (!word)
         return CRANKLE_ERR_NULL;
