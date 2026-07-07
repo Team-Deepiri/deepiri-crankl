@@ -4,7 +4,7 @@
 |---------|-------------|
 | v0.1 | Scaffold — GUCT core, `.cran` I/O, CLI, notebook parity |
 | v0.2 | SIMD matmul, sheaf χ v2, cran metadata, diff/version CLI, anneal pack |
-| v0.3 | Topological BO packing, safetensors / gguf ingest |
+| v0.3 | Topological pack v2, safetensors ingest, loss-guided turn | **in progress** |
 | v0.4 | Agent-training hooks — checkpoint diff, turn pipelines, eval harness integration |
 | v1.0 | Production crank-turn finetune on LoRA-scale adapters at Deepiri scale |
 
