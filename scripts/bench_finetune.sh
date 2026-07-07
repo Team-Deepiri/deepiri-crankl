@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Benchmark crankle finetune: reconstruction + optional holonomy task loss.
+# Benchmark crankl finetune: reconstruction + optional holonomy task loss.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CLI="$ROOT/build/crankle"
+CLI="$ROOT/build/crankl"
 IN="$ROOT/tests/golden/sample_small.f32"
-BASE="/tmp/crankle_bench"
+BASE="/tmp/crankl_bench"
 
 cmake -B "$ROOT/build" -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build "$ROOT/build" --parallel

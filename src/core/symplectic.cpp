@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstring>
 
-namespace crankle {
+namespace crankl {
 
 static double hamiltonian(const Multivector &mv) {
     double h = mv.s * mv.s;
@@ -215,8 +215,8 @@ struct FinetuneSlotCtx {
     size_t slot_idx;
     const float *target_blocks;
     size_t n_slots;
-    crankle_cran_t *cran;
-    crankle_loss_fn task_loss;
+    crankl_cran_t *cran;
+    crankl_loss_fn task_loss;
     void *task_ctx;
     double recon_weight;
     double task_weight;
@@ -242,8 +242,8 @@ static double finetune_slot_loss(uint64_t word, void *ctx) {
     return c->recon_weight * recon + c->task_weight * task;
 }
 
-int symplectic_finetune(uint64_t *slots, size_t n_slots, crankle_cran_t *cran,
-                        const float *target_blocks, crankle_loss_fn task_loss, void *task_ctx,
+int symplectic_finetune(uint64_t *slots, size_t n_slots, crankl_cran_t *cran,
+                        const float *target_blocks, crankl_loss_fn task_loss, void *task_ctx,
                         int steps, double lr, double recon_weight, double task_weight) {
     if (!slots || n_slots == 0 || steps <= 0)
         return -1;
@@ -266,4 +266,4 @@ int symplectic_finetune(uint64_t *slots, size_t n_slots, crankle_cran_t *cran,
     return 0;
 }
 
-} // namespace crankle
+} // namespace crankl

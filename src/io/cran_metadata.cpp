@@ -1,17 +1,17 @@
 #include "io/cran_metadata.hpp"
 #include "io/cran_format.hpp"
-#include "crankle_internal_api.hpp"
-#include "crankle/crankle.h"
+#include "crankl_internal_api.hpp"
+#include "crankl/crankl.h"
 #include "xxhash.h"
 
 #include <cstdio>
 #include <cstring>
 #include <vector>
 
-namespace crankle {
+namespace crankl {
 namespace io {
 
-int write_cran_with_metadata(const char *path, const ::crankle_cran_header_t *hdr,
+int write_cran_with_metadata(const char *path, const ::crankl_cran_header_t *hdr,
                              const uint64_t *slots, const CranMetadata *meta) {
     if (!path || !hdr || !slots)
         return -1;
@@ -44,7 +44,7 @@ int write_cran_with_metadata(const char *path, const ::crankle_cran_header_t *hd
     hd.depth_max = hdr->depth_max;
     hd.gamma = hdr->gamma;
     hd.flags = hdr->flags | (meta ? 1u : 0u);
-    hd.checksum = crankle_xxhash64(payload.data(), payload.size(), 0);
+    hd.checksum = crankl_xxhash64(payload.data(), payload.size(), 0);
 
     FILE *f = std::fopen(path, "wb");
     if (!f)
@@ -55,7 +55,7 @@ int write_cran_with_metadata(const char *path, const ::crankle_cran_header_t *hd
     return 0;
 }
 
-int read_cran_metadata(const ::crankle_cran_t *cran, CranMetadata *out) {
+int read_cran_metadata(const ::crankl_cran_t *cran, CranMetadata *out) {
     if (!cran || !out || !cran->mmap_base)
         return -1;
     if ((cran->header.flags & 1u) == 0) {
@@ -102,4 +102,4 @@ int read_cran_metadata(const ::crankle_cran_t *cran, CranMetadata *out) {
 }
 
 } // namespace io
-} // namespace crankle
+} // namespace crankl

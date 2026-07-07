@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace crankle {
+namespace crankl {
 
 static double blade_energy(const Multivector &mv) {
     double e = mv.s * mv.s;
@@ -82,4 +82,4 @@ int compute_archive_metrics(const uint64_t *slots, size_t n_slots, ArchiveMetric
     return 0;
 }
 
-} // namespace crankle
+} // namespace crankl

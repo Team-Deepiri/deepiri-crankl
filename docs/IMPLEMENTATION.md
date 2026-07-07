@@ -2,26 +2,26 @@
 
 ## Do we need to train anything?
 
-**No separate Crankle model.** Crankle is not a neural network you pretrain.
+**No separate Crankl model.** Crankl is not a neural network you pretrain.
 
 | Question | Answer |
 |----------|--------|
-| Train Crankle itself? | **No** — it's deterministic math + discrete search |
-| Train a model *with* Crankle? | **Yes, in your existing stack** — Helox, PyTorch, etc. produce float weights; Crankle compresses them |
+| Train Crankl itself? | **No** — it's deterministic math + discrete search |
+| Train a model *with* Crankl? | **Yes, in your existing stack** — Helox, PyTorch, etc. produce float weights; Crankl compresses them |
 | What is `turn`? | Discrete symplectic annealing on crank space — optional **post-training** refinement, not backprop |
 | When is loss needed? | Only if you want task-aware anneal (`turn --target`) or eval-driven checkpoint tuning (v0.4) |
 
 **Typical Deepiri flow:**
 
 ```
-finetune (floats)  →  crankle pack  →  .cran artifact
+finetune (floats)  →  crankl pack  →  .cran artifact
                               ↓
-                    crankle turn --target (optional, reconstruction)
+                    crankl turn --target (optional, reconstruction)
                               ↓
                     ship / eval / bind / peel
 ```
 
-You train adapters as today. Crankle is the **compression + geometry layer** on top.
+You train adapters as today. Crankl is the **compression + geometry layer** on top.
 
 ---
 
@@ -44,15 +44,15 @@ You train adapters as today. Crankle is the **compression + geometry layer** on 
 
 ### Phase A — v0.3 (this PR)
 
-1. **Safetensors ingest** — `crankle pack --input adapter.safetensors --tensor lora_A`
-2. **Loss-guided turn** — `crankle turn --target original.f32` minimizes reconstruction, not just H
+1. **Safetensors ingest** — `crankl pack --input adapter.safetensors --tensor lora_A`
+2. **Loss-guided turn** — `crankl turn --target original.f32` minimizes reconstruction, not just H
 3. **Topological pack v2** — Wasserstein between source vs decranked persistence diagrams
 4. **Implementation doc + tests** — golden safetensors, turn-target integration
 
 ### Phase B — v0.4 (agent / training integration)
 
-1. Wire `crankle turn` into finetune CI as post-step
-2. `crankle diff` in Tombstone / eval harness logs
+1. Wire `crankl turn` into finetune CI as post-step
+2. `crankl diff` in Tombstone / eval harness logs
 3. Optional downstream loss callback (C API) for task-aware turn
 4. Checkpoint archaeology: resonance between run N and N+1
 

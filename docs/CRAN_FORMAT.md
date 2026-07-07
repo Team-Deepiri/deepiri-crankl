@@ -1,6 +1,6 @@
 # CRAN format v1
 
-Crankle Archive (`.cran`) — mmap-friendly little-endian container.
+Crankl Archive (`.cran`) — mmap-friendly little-endian container.
 
 ## Header (128 bytes)
 
@@ -21,4 +21,4 @@ Crankle Archive (`.cran`) — mmap-friendly little-endian container.
 
 ## Checksum
 
-`xxhash64(payload, len, seed=0)` using Crankle vendored hash.
+`xxhash64(payload, len, seed=0)` using Crankl vendored hash.

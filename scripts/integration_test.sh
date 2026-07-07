@@ -2,9 +2,9 @@
 # End-to-end CLI integration: pack → turn → peel → inspect → compare → pipeline → holonomy
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CLI="$ROOT/build/crankle"
+CLI="$ROOT/build/crankl"
 IN="$ROOT/tests/golden/sample_small.f32"
-BASE="/tmp/crankle_e2e"
+BASE="/tmp/crankl_e2e"
 
 cmake -B "$ROOT/build" -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build "$ROOT/build" --parallel

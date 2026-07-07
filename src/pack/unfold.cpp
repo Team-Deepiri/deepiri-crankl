@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cstring>
 
-namespace crankle {
+namespace crankl {
 namespace pack {
 
 static int unfold_coeffs(const uint64_t *slots, size_t n_slots, float *out, size_t count) {
@@ -60,4 +60,4 @@ int unfold_f32_mode(const uint64_t *slots, size_t n_slots, float *out, size_t co
 }
 
 } // namespace pack
-} // namespace crankle
+} // namespace crankl

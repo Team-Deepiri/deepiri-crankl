@@ -1,5 +1,5 @@
 ---
 Checks: '-*readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers'
 WarningsAsErrors: ''
-HeaderFilterRegex: 'include/crankle/.*|src/.*'
+HeaderFilterRegex: 'include/crankl/.*|src/.*'
 Exclude: 'build/'

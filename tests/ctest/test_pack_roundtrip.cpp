@@ -1,21 +1,21 @@
-#include "crankle/crankle.h"
+#include "crankl/crankl.h"
 
 #include <cmath>
 #include <cstdio>
 #include <vector>
 
 int main() {
-    std::vector<float> data(CRANKLE_BLOCK_FLOATS);
+    std::vector<float> data(CRANKL_BLOCK_FLOATS);
     for (size_t i = 0; i < data.size(); ++i)
         data[i] = static_cast<float>(std::sin(static_cast<double>(i) * 0.17));
 
-    const size_t n_slots = crankle_pack_n_slots(data.size());
+    const size_t n_slots = crankl_pack_n_slots(data.size());
     std::vector<uint64_t> slots(n_slots);
-    if (crankle_pack_f32(data.data(), data.size(), slots.data(), n_slots, 0.05f, 0.01f) != 0)
+    if (crankl_pack_f32(data.data(), data.size(), slots.data(), n_slots, 0.05f, 0.01f) != 0)
         return 1;
 
     std::vector<float> out(data.size());
-    if (crankle_unpack_f32(slots.data(), n_slots, out.data(), out.size()) != 0)
+    if (crankl_unpack_f32(slots.data(), n_slots, out.data(), out.size()) != 0)
         return 2;
 
     double frob = 0.0;

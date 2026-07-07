@@ -1,13 +1,13 @@
 #pragma once
 
-#include "crankle/errors.h"
-#include "crankle/types.h"
+#include "crankl/errors.h"
+#include "crankl/types.h"
 #include "core/internal.hpp"
 
-namespace crankle::capi {
+namespace crankl::capi {
 
-inline crankle::Multivector mv_from_c(const crankle_multivector_t *mv) {
-    crankle::Multivector m{};
+inline crankl::Multivector mv_from_c(const crankl_multivector_t *mv) {
+    crankl::Multivector m{};
     if (!mv)
         return m;
     m.s = mv->s;
@@ -19,7 +19,7 @@ inline crankle::Multivector mv_from_c(const crankle_multivector_t *mv) {
     return m;
 }
 
-inline void mv_to_c(const crankle::Multivector &m, crankle_multivector_t *out) {
+inline void mv_to_c(const crankl::Multivector &m, crankl_multivector_t *out) {
     if (!out)
         return;
     out->s = m.s;
@@ -32,12 +32,12 @@ inline void mv_to_c(const crankle::Multivector &m, crankle_multivector_t *out) {
 
 template <typename T>
 inline int require_ptr(T *p) {
-    return p ? CRANKLE_OK : CRANKLE_ERR_NULL;
+    return p ? CRANKL_OK : CRANKL_ERR_NULL;
 }
 
 template <typename T>
 inline int require_ptr(const T *p) {
-    return p ? CRANKLE_OK : CRANKLE_ERR_NULL;
+    return p ? CRANKL_OK : CRANKL_ERR_NULL;
 }
 
-} // namespace crankle::capi
+} // namespace crankl::capi

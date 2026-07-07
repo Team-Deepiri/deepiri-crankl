@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstring>
 
-namespace crankle {
+namespace crankl {
 
 static constexpr int N = 8;
 
@@ -168,4 +168,4 @@ void mat8_exp_i_apply(const double a[N * N], double gamma, const double x[N], do
     mat8_vec(scale, rotated, y);
 }
 
-} // namespace crankle
+} // namespace crankl

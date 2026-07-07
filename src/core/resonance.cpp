@@ -1,6 +1,6 @@
 #include "core/internal.hpp"
 
-namespace crankle {
+namespace crankl {
 
 double clifford_resonance_pair(const uint64_t *a, const uint64_t *b, size_t n) {
     double sum = 0.0;
@@ -9,4 +9,4 @@ double clifford_resonance_pair(const uint64_t *a, const uint64_t *b, size_t n) {
     return n ? sum / static_cast<double>(n) : 0.0;
 }
 
-} // namespace crankle
+} // namespace crankl

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace crankle {
+namespace crankl {
 
 int rg_peel(uint64_t &word, uint32_t layers) {
     Multivector mv;
@@ -63,4 +63,4 @@ int rg_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_stacks,
     return 0;
 }
 
-} // namespace crankle
+} // namespace crankl
