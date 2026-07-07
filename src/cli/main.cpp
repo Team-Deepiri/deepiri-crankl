@@ -1,6 +1,7 @@
 #include "crankle/crankle.h"
 #include "crankle/version.h"
 #include "crankle_internal_api.hpp"
+#include "io/security_limits.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -15,21 +16,37 @@
 static void usage() {
     std::cout << "crankle v" << CRANKLE_VERSION_STRING << " — Grand Unified Crank Theory engine\n"
               << "Usage: crankle <command> [options]\n"
-              << "Commands: pack, unpack, resonance, turn, peel, bind, holonomy, stats, verify, diff,\n"
-              << "          inspect, compare, pipeline, version\n";
+              << "Commands: pack, unpack, resonance, turn, finetune, peel, bind, holonomy, stats,\n"
+              << "          verify, diff, inspect, compare, pipeline, version\n";
 }
 
 static std::vector<float> read_f32(const char *path, size_t &count) {
     FILE *f = std::fopen(path, "rb");
     if (!f)
         return {};
-    std::fseek(f, 0, SEEK_END);
+    if (std::fseek(f, 0, SEEK_END) != 0) {
+        std::fclose(f);
+        return {};
+    }
     long sz = std::ftell(f);
-    std::fseek(f, 0, SEEK_SET);
+    if (sz < 0 || static_cast<size_t>(sz) > crankle::io::CRANKLE_MAX_FLOAT_BYTES) {
+        std::fclose(f);
+        return {};
+    }
+    if (std::fseek(f, 0, SEEK_SET) != 0) {
+        std::fclose(f);
+        return {};
+    }
     count = static_cast<size_t>(sz / sizeof(float));
+    if (count == 0 || count * sizeof(float) > static_cast<size_t>(sz)) {
+        std::fclose(f);
+        return {};
+    }
     std::vector<float> data(count);
-    std::fread(data.data(), sizeof(float), count, f);
+    size_t got = std::fread(data.data(), sizeof(float), count, f);
     std::fclose(f);
+    if (got != count)
+        return {};
     return data;
 }
 
@@ -140,7 +157,7 @@ static int cmd_pack(int argc, char **argv) {
     }
 
     if (n_slots == 8 && count > 0)
-        n_slots = (count + 7) / 8;
+        n_slots = crankle_pack_n_slots(count);
 
     std::vector<uint64_t> slots(n_slots);
     crankle_pack_f32(data.data(), count, slots.data(), n_slots, 0.1f, 0.01f);
@@ -153,11 +170,16 @@ static int cmd_pack(int argc, char **argv) {
 
 static int cmd_unpack(int argc, char **argv) {
     const char *input = nullptr, *output = nullptr;
+    int mode = CRANKLE_UNPACK_DECRANK;
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
         else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
             output = argv[++i];
+        else if (std::strcmp(argv[i], "--unpack-mode") == 0 && i + 1 < argc) {
+            const char *m = argv[++i];
+            mode = std::strcmp(m, "coeffs") == 0 ? CRANKLE_UNPACK_COEFFS : CRANKLE_UNPACK_DECRANK;
+        }
     }
     if (!input || !output)
         return 1;
@@ -165,8 +187,9 @@ static int cmd_unpack(int argc, char **argv) {
     std::vector<uint64_t> slots;
     if (load_cran_slots(input, slots, cran) != 0)
         return 2;
-    std::vector<float> out(slots.size() * 8);
-    crankle_unpack_f32(slots.data(), slots.size(), out.data(), out.size());
+  size_t out_count = mode == CRANKLE_UNPACK_COEFFS ? slots.size() * 8 : slots.size() * CRANKLE_BLOCK_FLOATS;
+    std::vector<float> out(out_count);
+    crankle_unpack_f32_mode(slots.data(), slots.size(), out.data(), out.size(), mode);
     crankle_cran_close(&cran);
     return write_f32(output, out.data(), out.size());
 }
@@ -229,20 +252,150 @@ static int cmd_turn(int argc, char **argv) {
     if (target_path)
         target = read_f32(target_path, target_count);
 
+    std::vector<uint64_t> layer_stack;
     for (int s = 0; s < steps; ++s) {
         for (size_t i = 0; i < slots.size(); ++i) {
             if (target_path && !target.empty()) {
-                size_t base = i * 8;
+                size_t base = i * CRANKLE_BLOCK_FLOATS;
                 if (base < target.size())
                     crankle_turn_toward(&slots[i], lr, target.data() + base,
-                                        std::min(target.size() - base, size_t(8)));
+                                        std::min(target.size() - base, size_t(CRANKLE_BLOCK_FLOATS)));
             } else {
                 crankle_turn(&slots[i], lr);
             }
         }
+        layer_stack.insert(layer_stack.end(), slots.begin(), slots.end());
     }
     crankle_cran_header_t hdr = cran.header;
-    crankle_cran_write(output, &hdr, slots.data(), nullptr, nullptr);
+    if (steps > 0)
+        hdr.depth_max = static_cast<uint32_t>(steps);
+    const uint64_t *stacks_ptr = layer_stack.empty() ? nullptr : layer_stack.data();
+    crankle_cran_write(output, &hdr, slots.data(), stacks_ptr, nullptr);
+    crankle_cran_close(&cran);
+    return 0;
+}
+
+struct FinetuneHolonomyCtx {
+    const float *calib_x;
+    const float *calib_y;
+    size_t dim;
+};
+
+static double finetune_holonomy_loss(const crankle_cran_t *cran, void *ctx) {
+    auto *c = static_cast<FinetuneHolonomyCtx *>(ctx);
+    return crankle_holonomy_mse(cran, c->calib_x, c->calib_y, c->dim);
+}
+
+static int cmd_finetune(int argc, char **argv) {
+    const char *input = nullptr, *output = nullptr, *target_path = nullptr;
+    const char *calib_x_path = nullptr, *calib_y_path = nullptr;
+    int steps = 200;
+    double lr = 0.02;
+    double recon_weight = 1.0;
+    double task_weight = 0.1;
+    bool json = false;
+    for (int i = 2; i < argc; ++i) {
+        if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
+            input = argv[++i];
+        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+            output = argv[++i];
+        else if (std::strcmp(argv[i], "--target") == 0 && i + 1 < argc)
+            target_path = argv[++i];
+        else if (std::strcmp(argv[i], "--calib-x") == 0 && i + 1 < argc)
+            calib_x_path = argv[++i];
+        else if (std::strcmp(argv[i], "--calib-y") == 0 && i + 1 < argc)
+            calib_y_path = argv[++i];
+        else if (std::strcmp(argv[i], "--steps") == 0 && i + 1 < argc)
+            steps = std::atoi(argv[++i]);
+        else if (std::strcmp(argv[i], "--lr") == 0 && i + 1 < argc)
+            lr = std::atof(argv[++i]);
+        else if (std::strcmp(argv[i], "--recon-weight") == 0 && i + 1 < argc)
+            recon_weight = std::atof(argv[++i]);
+        else if (std::strcmp(argv[i], "--task-weight") == 0 && i + 1 < argc)
+            task_weight = std::atof(argv[++i]);
+        else if (std::strcmp(argv[i], "--json") == 0)
+            json = true;
+    }
+    if (!input || !output)
+        return 1;
+
+    crankle_cran_t cran{};
+    std::vector<uint64_t> slots;
+    if (load_cran_slots(input, slots, cran) != 0)
+        return 2;
+
+    std::vector<float> target;
+    size_t target_count = 0;
+    if (target_path)
+        target = read_f32(target_path, target_count);
+
+    std::vector<float> calib_x, calib_y;
+    size_t calib_dim = 0;
+    FinetuneHolonomyCtx holo_ctx{};
+    crankle_loss_fn task_loss = nullptr;
+    if (calib_x_path && calib_y_path) {
+        calib_x = read_f32(calib_x_path, calib_dim);
+        size_t y_count = 0;
+        calib_y = read_f32(calib_y_path, y_count);
+        if (calib_x.empty() || calib_y.empty())
+            return 3;
+        calib_dim = std::min(calib_x.size(), calib_y.size());
+        holo_ctx.calib_x = calib_x.data();
+        holo_ctx.calib_y = calib_y.data();
+        holo_ctx.dim = calib_dim;
+        task_loss = finetune_holonomy_loss;
+    }
+
+    crankle_cran_t view = cran;
+    view.slots = slots.data();
+
+    double recon_before = 0.0;
+    if (!target.empty()) {
+        for (size_t s = 0; s < slots.size(); ++s) {
+            size_t base = s * CRANKLE_BLOCK_FLOATS;
+            if (base + CRANKLE_BLOCK_FLOATS <= target.size())
+                recon_before += crankle_decrank_frobenius_loss(slots[s], target.data() + base);
+        }
+    }
+    double task_before = task_loss ? crankle_holonomy_mse(&view, holo_ctx.calib_x, holo_ctx.calib_y,
+                                                           holo_ctx.dim)
+                                   : 0.0;
+
+    std::vector<uint64_t> layer_stack;
+    for (int step = 0; step < steps; ++step) {
+        if (crankle_finetune(slots.data(), slots.size(), &view, target.empty() ? nullptr : target.data(),
+                             task_loss, &holo_ctx, 1, lr, recon_weight, task_weight) != 0)
+            return 4;
+        layer_stack.insert(layer_stack.end(), slots.begin(), slots.end());
+    }
+
+    double recon_after = recon_before;
+    if (!target.empty()) {
+        recon_after = 0.0;
+        for (size_t s = 0; s < slots.size(); ++s) {
+            size_t base = s * CRANKLE_BLOCK_FLOATS;
+            if (base + CRANKLE_BLOCK_FLOATS <= target.size())
+                recon_after += crankle_decrank_frobenius_loss(slots[s], target.data() + base);
+        }
+    }
+    double task_after =
+        task_loss ? crankle_holonomy_mse(&view, holo_ctx.calib_x, holo_ctx.calib_y, holo_ctx.dim) : 0.0;
+
+    crankle_cran_header_t hdr = cran.header;
+    hdr.depth_max = static_cast<uint32_t>(steps);
+    const uint64_t *stacks_ptr = layer_stack.empty() ? nullptr : layer_stack.data();
+    crankle_cran_write(output, &hdr, slots.data(), stacks_ptr, nullptr);
+
+    if (json) {
+        std::cout << "{\"recon_before\":" << recon_before << ",\"recon_after\":" << recon_after
+                  << ",\"task_before\":" << task_before << ",\"task_after\":" << task_after
+                  << ",\"steps\":" << steps << "}\n";
+    } else {
+        std::cout << "recon_before=" << recon_before << " recon_after=" << recon_after << "\n";
+        if (task_loss)
+            std::cout << "task_before=" << task_before << " task_after=" << task_after << "\n";
+    }
+
     crankle_cran_close(&cran);
     return 0;
 }
@@ -264,8 +417,12 @@ static int cmd_peel(int argc, char **argv) {
     std::vector<uint64_t> slots;
     if (load_cran_slots(input, slots, cran) != 0)
         return 2;
-    for (auto &w : slots)
-        crankle_peel(&w, layers);
+    uint32_t stack_depth = cran.header.depth_max;
+    if (cran.layers && cran.layers != cran.slots)
+        crankle_peel_stack(slots.data(), slots.size(), cran.layers, stack_depth, layers);
+    else
+        for (auto &w : slots)
+            crankle_peel(&w, layers);
     crankle_cran_header_t hdr = cran.header;
     crankle_cran_write(output, &hdr, slots.data(), nullptr, nullptr);
     crankle_cran_close(&cran);
@@ -516,7 +673,7 @@ static int cmd_pipeline(int argc, char **argv) {
             return 2;
     }
     if (n_slots == 8 && count > 0)
-        n_slots = (count + 7) / 8;
+        n_slots = crankle_pack_n_slots(count);
 
     std::vector<uint64_t> slots(n_slots);
     if (crankle_pack_f32(data.data(), count, slots.data(), n_slots, 0.1f, 0.01f) != 0)
@@ -530,10 +687,10 @@ static int cmd_pipeline(int argc, char **argv) {
     for (int s = 0; s < steps; ++s) {
         for (size_t i = 0; i < slots.size(); ++i) {
             if (!target.empty()) {
-                size_t base = i * 8;
+                size_t base = i * CRANKLE_BLOCK_FLOATS;
                 if (base < target.size())
                     crankle_turn_toward(&slots[i], lr, target.data() + base,
-                                        std::min(target.size() - base, size_t(8)));
+                                        std::min(target.size() - base, size_t(CRANKLE_BLOCK_FLOATS)));
             } else {
                 crankle_turn(&slots[i], lr);
             }
@@ -578,6 +735,8 @@ int main(int argc, char **argv) {
         return cmd_resonance(argc, argv);
     if (std::strcmp(cmd, "turn") == 0)
         return cmd_turn(argc, argv);
+    if (std::strcmp(cmd, "finetune") == 0)
+        return cmd_finetune(argc, argv);
     if (std::strcmp(cmd, "peel") == 0)
         return cmd_peel(argc, argv);
     if (std::strcmp(cmd, "bind") == 0)
