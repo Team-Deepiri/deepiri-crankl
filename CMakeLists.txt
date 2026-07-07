@@ -24,6 +24,7 @@ set(CRANKLE_C_API_SOURCES
     src/c_api/holonomy.cpp
     src/c_api/diff.cpp
     src/c_api/simd.cpp
+    src/c_api/metrics.cpp
 )
 
 set(CRANKLE_CORE_SOURCES
@@ -37,6 +38,7 @@ set(CRANKLE_CORE_SOURCES
     src/core/rg.cpp
     src/core/simd.cpp
     src/core/diff.cpp
+    src/core/metrics.cpp
     src/pack/fold.cpp
     src/pack/unfold.cpp
     src/pack/persistence.cpp
@@ -88,6 +90,7 @@ install(FILES
     include/crankle/holonomy.h
     include/crankle/diff.h
     include/crankle/simd.h
+    include/crankle/metrics.h
     DESTINATION include/crankle)
 
 configure_file(crankle.pc.in crankle.pc @ONLY)
