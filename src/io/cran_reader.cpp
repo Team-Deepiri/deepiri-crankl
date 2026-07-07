@@ -1,5 +1,6 @@
 #include "crankle/crankle.h"
 #include "io/cran_format.hpp"
+#include "io/security_limits.hpp"
 #include "xxhash.h"
 
 #include <cstring>
@@ -15,6 +16,38 @@ static void *g_mmap_base = MAP_FAILED;
 static size_t g_mmap_size = 0;
 static int g_mmap_fd = -1;
 
+static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
+                                const uint8_t *&layers_out) {
+    if (hd->n_slots == 0 || hd->n_slots > CRANKLE_MAX_SLOTS)
+        return -8;
+
+    uint64_t slots_bytes = 0;
+    if (size_mul_overflow(hd->n_slots, 8, slots_bytes) || slots_bytes > payload_len)
+        return -9;
+
+    layers_out = nullptr;
+    const uint8_t *tail = reinterpret_cast<const uint8_t *>(hd) + sizeof(CranHeaderDisk) + slots_bytes;
+    size_t tail_len = payload_len - static_cast<size_t>(slots_bytes);
+
+    if (hd->version >= 2) {
+        if (tail_len < 4)
+            return -10;
+        uint32_t n_stack_layers = 0;
+        std::memcpy(&n_stack_layers, tail, 4);
+        if (n_stack_layers > CRANKLE_MAX_STACK_LAYERS)
+            return -11;
+
+        uint64_t stack_bytes = 0;
+        if (size_mul_overflow(n_stack_layers, hd->n_slots, stack_bytes) ||
+            size_mul_overflow(stack_bytes, 8, stack_bytes))
+            return -12;
+        if (tail_len < 4 + stack_bytes)
+            return -13;
+        layers_out = tail + 4;
+    }
+    return 0;
+}
+
 int read_cran(const char *path, ::crankle_cran_t *out) {
     if (!path || !out)
         return -1;
@@ -25,6 +58,10 @@ int read_cran(const char *path, ::crankle_cran_t *out) {
     if (fstat(fd, &st) != 0) {
         close(fd);
         return -3;
+    }
+    if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKLE_MAX_FILE_BYTES) {
+        close(fd);
+        return -14;
     }
     size_t sz = static_cast<size_t>(st.st_size);
     void *base = mmap(nullptr, sz, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -45,6 +82,15 @@ int read_cran(const char *path, ::crankle_cran_t *out) {
     }
     const uint8_t *payload = reinterpret_cast<const uint8_t *>(base) + sizeof(CranHeaderDisk);
     size_t payload_len = sz - sizeof(CranHeaderDisk);
+
+    const uint8_t *layers_ptr = nullptr;
+    int layout_rc = validate_cran_layout(hd, payload_len, layers_ptr);
+    if (layout_rc != 0) {
+        munmap(base, sz);
+        close(fd);
+        return layout_rc;
+    }
+
     uint64_t chk = crankle_xxhash64(payload, payload_len, 0);
     if (chk != hd->checksum) {
         munmap(base, sz);
@@ -67,7 +113,8 @@ int read_cran(const char *path, ::crankle_cran_t *out) {
     out->header.gamma = hd->gamma;
     out->header.flags = hd->flags;
     out->slots = reinterpret_cast<const uint64_t *>(payload);
-    out->layers = out->slots + hd->n_slots;
+    out->layers = layers_ptr ? reinterpret_cast<const uint64_t *>(layers_ptr)
+                             : out->slots + hd->n_slots;
     return 0;
 }
 
@@ -84,8 +131,10 @@ void close_cran(::crankle_cran_t *cran) {
 }
 
 int verify_cran(const ::crankle_cran_t *cran) {
-    if (!cran || !cran->mmap_base)
+    if (!cran || !cran->mmap_base || cran->mmap_size < sizeof(CranHeaderDisk))
         return -1;
+    if (cran->header.n_slots == 0 || cran->header.n_slots > CRANKLE_MAX_SLOTS)
+        return -2;
     return 0;
 }
 
