@@ -15,7 +15,7 @@ Modular headers live under `include/crankl/`. Include `crankl/crankl.h` for ever
 | `sheaf.h` | Sheaf resonance, β₁ proxy |
 | `symplectic.h` | Turn, peel, bind, finetune, holonomy MSE |
 | `pack.h` | Float fold/unfold, decrank loss, block tiling |
-| `cran.h` | `.cran` archive I/O + metadata footer |
+| `cran.h` | `.crank` archive I/O + metadata footer |
 | `holonomy.h` | Wilson holonomy forward |
 | `diff.h` | Crank tensor diff metrics |
 | `simd.h` | Runtime AVX2 probe |
@@ -32,7 +32,7 @@ C bindings are split under `src/c_api/` — one translation unit per domain, wit
 | `crankl_version_string` | Runtime version string |
 | `crankl_version` | Major/minor/patch components |
 | `crankl_strerror` | Human-readable status codes |
-| `crankl_cran_write_with_metadata` | Write `.cran` v2 with JSON footer |
+| `crankl_cran_write_with_metadata` | Write `.crank` v2 with JSON footer |
 | `crankl_cran_read_metadata` | Read model name + source hash footer |
 
 ## Error codes
@@ -50,11 +50,11 @@ C bindings are split under `src/c_api/` — one translation unit per domain, wit
 
 ```bash
 crankl version
-crankl diff a.cran b.cran
-crankl inspect a.cran --json
-crankl compare baseline.cran tuned.cran --json
-crankl pipeline --input weights.f32 -o tuned.cran --manifest run.json
-crankl finetune --input adapter.cran --target weights.f32 --steps 200 -o tuned.cran --json
+crankl diff a.crank b.crank
+crankl inspect a.crank --json
+crankl compare baseline.crank tuned.crank --json
+crankl pipeline --input weights.f32 -o tuned.crank --manifest run.json
+crankl finetune --input adapter.crank --target weights.f32 --steps 200 -o tuned.crank --json
 ```
 
 ## New in v0.4.0
@@ -79,10 +79,10 @@ crankl finetune --input adapter.cran --target weights.f32 --steps 200 -o tuned.c
 | `crankl_turn` | Symplectic BCH crank turn step |
 | `crankl_peel` | RG peel layers |
 | `crankl_bind` | Clifford product bind |
-| `crankl_cran_read/write` | `.cran` I/O |
+| `crankl_cran_read/write` | `.crank` I/O |
 | `crankl_holonomy` | Wilson holonomy forward |
 | `crankl_crank_diff_count` | Slots that differ between tensors |
 | `crankl_crank_diff_hamming` | Normalized bit Hamming distance |
 | `crankl_has_avx2` | Runtime SIMD probe |
 | `crankl_compute_archive_metrics` | Density, entropy, energy, depth, and β₁ metrics |
-| `crankl_cran_compute_metrics` | Archive metrics directly from a mapped `.cran` |
+| `crankl_cran_compute_metrics` | Archive metrics directly from a mapped `.crank` |

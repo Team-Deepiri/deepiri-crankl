@@ -4,14 +4,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CLI="$ROOT/build/crankl"
 
-INPUT="${1:?usage: post_train_crankl.sh weights.f32 output.cran [manifest.json]}"
-OUTPUT="${2:?missing output .cran path}"
+INPUT="${1:?usage: post_train_crankl.sh weights.f32 output.crank [manifest.json]}"
+OUTPUT="${2:?missing output .crank path}"
 MANIFEST="${3:-}"
 
 cmake -B "$ROOT/build" -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build "$ROOT/build" --parallel
 
-TMP="${OUTPUT%.cran}_packed.cran"
+TMP="${OUTPUT%.crank}_packed.crank"
 "$CLI" pack --input "$INPUT" -o "$TMP"
 if [[ -n "$MANIFEST" ]]; then
     "$CLI" finetune --input "$TMP" --target "$INPUT" --steps 100 --lr 0.03 -o "$OUTPUT" \

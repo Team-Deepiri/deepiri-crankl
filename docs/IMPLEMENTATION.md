@@ -14,7 +14,7 @@
 **Typical Deepiri flow:**
 
 ```
-finetune (floats)  →  crankl pack  →  .cran artifact
+finetune (floats)  →  crankl pack  →  .crank artifact
                               ↓
                     crankl turn --target (optional, reconstruction)
                               ↓
@@ -32,7 +32,7 @@ You train adapters as today. Crankl is the **compression + geometry layer** on t
 | Clifford crank | **Done** — Cl(3) product, decrank, resonance | 6 bivector blades in 64-bit word (currently 3) |
 | Sheaf | **Partial** — restriction graph, β₁ proxy | Real coboundary δ, H¹ cohomology |
 | Symplectic Turn | **Partial** — Verlet + BCH + trit surgery | Loss-guided turn (v0.3), eval harness hook (v0.4) |
-| RG peel | **Partial** — UV damp + depth decrement | Wilsonian layer stacks in `.cran` |
+| RG peel | **Partial** — UV damp + depth decrement | Wilsonian layer stacks in `.crank` |
 | Persistent pack | **Partial** — 1D PD + W₂ + anneal | Topological BO, full matrix PD |
 | Holonomy | **Partial** — path-ordered exp(iγ·M) | Full Padé exp on 8×8, batched slots |
 | Ingest | **v0.3** — raw f32, safetensors | GGUF, safetensors multi-tensor |
@@ -69,7 +69,7 @@ You train adapters as today. Crankl is the **compression + geometry layer** on t
 
 GUCT is **fully implemented** when:
 
-- Any LoRA/safetensors adapter packs to `.cran` with PD preservation within tolerance
+- Any LoRA/safetensors adapter packs to `.crank` with PD preservation within tolerance
 - `turn --target` recovers within ε of float baseline on eval set
 - `holonomy` forward matches reference matmul within γ calibration
 - `diff` + `resonance` drive CI decisions between training runs

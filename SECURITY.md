@@ -6,14 +6,14 @@ Crankl rejects oversized or malformed inputs before mmap, allocation, or parsing
 
 | Surface | Limit |
 |---------|-------|
-| `.cran` file size | 1 GiB |
+| `.crank` file size | 1 GiB |
 | `.f32` payload | 256 MiB |
 | crank slots per archive | 1M |
 | finetune layer stack depth | 64k |
 | safetensors JSON header | 16 MiB |
 | safetensors tensor slice | 512 MiB |
 
-## `.cran` validation
+## `.crank` validation
 
 - Magic, version, and xxHash checksum are verified on read.
 - Slot count and v2 layer-stack tail length are bounds-checked against payload size.

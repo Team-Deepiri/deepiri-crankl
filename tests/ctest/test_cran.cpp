@@ -11,7 +11,7 @@ int main() {
     hdr.n_slots = slots.size();
     hdr.depth_max = 1;
     hdr.gamma = 1.0f;
-    const char *path = "/tmp/test_crankl.cran";
+    const char *path = "/tmp/test_crankl.crank";
     if (crankl_cran_write(path, &hdr, slots.data(), nullptr, nullptr) != 0)
         return 1;
     crankl_cran_t cran{};

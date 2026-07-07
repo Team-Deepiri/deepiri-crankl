@@ -22,24 +22,24 @@ C_{\text{new}} = C_{\text{old}} \otimes \exp(\mathrm{d}L/\mathrm{d}C)
 
 ```bash
 # Reconstruction-only finetune toward float target blocks
-crankl finetune --input adapter.cran --target weights.f32 \
-    --steps 200 --lr 0.02 -o tuned.cran
+crankl finetune --input adapter.crank --target weights.f32 \
+    --steps 200 --lr 0.02 -o tuned.crank
 
 # Reconstruction + holonomy calibration loss
-crankl finetune --input adapter.cran --target weights.f32 \
+crankl finetune --input adapter.crank --target weights.f32 \
     --calib-x calib_in.f32 --calib-y calib_out.f32 \
     --recon-weight 1.0 --task-weight 0.1 \
-    --steps 200 -o tuned.cran --json
+    --steps 200 -o tuned.crank --json
 
 # Peel finetune history (cran v2 layer stacks)
-crankl peel --input tuned.cran --layers 1 -o rolled_back.cran
+crankl peel --input tuned.crank --layers 1 -o rolled_back.crank
 ```
 
 ## Pack / unpack alignment
 
 | Mode | Command | Output |
 |------|---------|--------|
-| Decrank (default) | `crankl unpack --input a.cran -o out.f32` | 64 floats per slot |
+| Decrank (default) | `crankl unpack --input a.crank -o out.f32` | 64 floats per slot |
 | Legacy coeffs | `crankl unpack --unpack-mode coeffs ...` | 8 multivector coeffs per slot |
 
 Pack minimizes Frobenius error on `decrank_matrix(C)` — the same operator holonomy uses.
@@ -64,7 +64,7 @@ int crankl_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_sta
 
 ```bash
 ./scripts/bench_finetune.sh
-./scripts/post_train_crankl.sh weights.f32 tuned.cran manifest.json
+./scripts/post_train_crankl.sh weights.f32 tuned.crank manifest.json
 ```
 
 See [V0.4_FINETUNE_PLAN.md](V0.4_FINETUNE_PLAN.md) for the full design rationale.

@@ -39,8 +39,8 @@ See notebooks `00`–`07` for derivations and golden references.
 Crankl is a **native toolchain primitive** for Deepiri's model and agent work:
 
 - **Training** — compress and anneal adapter weights after finetune runs
-- **Eval** — diff `.cran` checkpoints between harness iterations
+- **Eval** — diff `.crank` checkpoints between harness iterations
 - **Agents** — resonance for near-duplicate tool outputs; bind for merged behavior heads
-- **Shipping** — `.cran` as the artifact format (metadata, verify, mmap)
+- **Shipping** — `.crank` as the artifact format (metadata, verify, mmap)
 
 It aids the flow whether you invoke it from a finetuning framework, a CI job, or a shell one-liner. The math is GUCT; the job is making AI development faster and lighter.

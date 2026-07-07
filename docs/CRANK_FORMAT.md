@@ -1,12 +1,14 @@
-# CRAN format v1
+# CRANK format v1
 
-Crankl Archive (`.cran`) — mmap-friendly little-endian container.
+Crankl archive (`.crank`) — mmap-friendly little-endian container.
+
+Legacy v0.4 files used magic `CRAN\x01` (extension `.cran`); readers accept both.
 
 ## Header (128 bytes)
 
 | Offset | Size | Field |
 |--------|------|-------|
-| 0 | 6 | magic `CRAN\x01` |
+| 0 | 6 | magic `CRANK\x01` |
 | 6 | 2 | version u16 |
 | 8 | 8 | n_slots u64 |
 | 16 | 4 | depth_max u32 |

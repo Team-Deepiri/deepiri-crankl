@@ -31,7 +31,7 @@ int main() {
     hdr.depth_max = 2;
     hdr.gamma = 1.0f;
 
-    const char *path = "/tmp/crankl_peel_stack_test.cran";
+    const char *path = "/tmp/crankl_peel_stack_test.crank";
     if (crankl_cran_write(path, &hdr, layer1.data(), stacks.data(), nullptr) != 0)
         return 1;
 
