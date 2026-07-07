@@ -1,10 +1,11 @@
 {
-  "version": "0.2.1",
+  "version": "0.3.0-alpha",
   "tolerance": 0.001,
   "pack_roundtrip_max_err": 2.0,
   "files": [
     "sample.f32",
     "sample_small.f32",
+    "tiny.safetensors",
     "algebra_ref.json",
     "clifford_cases.hpp",
     "clifford_cases.json",

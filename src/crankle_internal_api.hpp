@@ -2,6 +2,7 @@
 
 #include "crankle/crankle.h"
 #include "io/cran_metadata.hpp"
+#include "io/safetensors.hpp"
 
 namespace crankle {
 namespace io {
