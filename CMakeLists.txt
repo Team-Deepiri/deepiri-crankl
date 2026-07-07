@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankle VERSION 0.2.2 LANGUAGES C CXX)
+project(deepiri-crankle VERSION 0.3.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -43,6 +43,7 @@ set(CRANKLE_CORE_SOURCES
     src/io/cran_reader.cpp
     src/io/cran_writer.cpp
     src/io/cran_metadata.cpp
+    src/io/safetensors.cpp
     src/holonomy/wilson.cpp
     ${CRANKLE_C_API_SOURCES}
 )
@@ -51,7 +52,7 @@ add_library(crankle SHARED ${CRANKLE_CORE_SOURCES})
 target_include_directories(crankle
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-set_target_properties(crankle PROPERTIES OUTPUT_NAME crankle VERSION 0.2.2 SOVERSION 0)
+set_target_properties(crankle PROPERTIES OUTPUT_NAME crankle VERSION 0.3.0 SOVERSION 0)
 crankle_set_warnings(crankle)
 
 if(CRANKLE_ENABLE_SIMD)
@@ -63,6 +64,7 @@ endif()
 
 add_executable(crankle-cli src/cli/main.cpp)
 target_link_libraries(crankle-cli PRIVATE crankle)
+target_include_directories(crankle-cli PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set_target_properties(crankle-cli PROPERTIES OUTPUT_NAME crankle)
 crankle_set_warnings(crankle-cli)
 

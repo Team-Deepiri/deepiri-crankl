@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 int crankle_turn(uint64_t *word, double lr);
+int crankle_turn_toward(uint64_t *word, double lr, const float *target, size_t target_len);
 int crankle_peel(uint64_t *word, uint32_t layers);
 uint64_t crankle_bind(uint64_t a, uint64_t b);
 

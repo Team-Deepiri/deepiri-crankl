@@ -1,11 +1,13 @@
 #include "crankle/crankle.h"
 #include "crankle/version.h"
+#include "crankle_internal_api.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -46,23 +48,38 @@ static int load_cran_slots(const char *path, std::vector<uint64_t> &slots, crank
 }
 
 static int cmd_pack(int argc, char **argv) {
-    const char *input = nullptr, *output = nullptr;
+    const char *input = nullptr, *output = nullptr, *tensor = nullptr;
     size_t n_slots = 8;
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
         else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
             output = argv[++i];
+        else if (std::strcmp(argv[i], "--tensor") == 0 && i + 1 < argc)
+            tensor = argv[++i];
         else if (std::strcmp(argv[i], "--shape") == 0 && i + 1 < argc) {
             n_slots = static_cast<size_t>(std::atoi(argv[++i]));
         }
     }
     if (!input || !output)
         return 1;
+
+    std::vector<float> data;
     size_t count = 0;
-    auto data = read_f32(input, count);
-    if (data.empty())
-        return 2;
+
+    if (tensor) {
+        if (crankle::io::read_safetensors_f32(input, tensor, data) != 0)
+            return 2;
+        count = data.size();
+    } else {
+        data = read_f32(input, count);
+        if (data.empty())
+            return 2;
+    }
+
+    if (n_slots == 8 && count > 0)
+        n_slots = (count + 7) / 8;
+
     std::vector<uint64_t> slots(n_slots);
     crankle_pack_f32(data.data(), count, slots.data(), n_slots, 0.1f, 0.01f);
     crankle_cran_header_t hdr{};
@@ -123,7 +140,7 @@ static int cmd_resonance(int argc, char **argv) {
 }
 
 static int cmd_turn(int argc, char **argv) {
-    const char *input = nullptr, *output = nullptr;
+    const char *input = nullptr, *output = nullptr, *target_path = nullptr;
     int steps = 1;
     double lr = 0.01;
     for (int i = 2; i < argc; ++i) {
@@ -131,6 +148,8 @@ static int cmd_turn(int argc, char **argv) {
             input = argv[++i];
         else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
             output = argv[++i];
+        else if (std::strcmp(argv[i], "--target") == 0 && i + 1 < argc)
+            target_path = argv[++i];
         else if (std::strcmp(argv[i], "--steps") == 0 && i + 1 < argc)
             steps = std::atoi(argv[++i]);
         else if (std::strcmp(argv[i], "--lr") == 0 && i + 1 < argc)
@@ -142,9 +161,23 @@ static int cmd_turn(int argc, char **argv) {
     std::vector<uint64_t> slots;
     if (load_cran_slots(input, slots, cran) != 0)
         return 2;
+
+    std::vector<float> target;
+    size_t target_count = 0;
+    if (target_path)
+        target = read_f32(target_path, target_count);
+
     for (int s = 0; s < steps; ++s) {
-        for (auto &w : slots)
-            crankle_turn(&w, lr);
+        for (size_t i = 0; i < slots.size(); ++i) {
+            if (target_path && !target.empty()) {
+                size_t base = i * 8;
+                if (base < target.size())
+                    crankle_turn_toward(&slots[i], lr, target.data() + base,
+                                        std::min(target.size() - base, size_t(8)));
+            } else {
+                crankle_turn(&slots[i], lr);
+            }
+        }
     }
     crankle_cran_header_t hdr = cran.header;
     crankle_cran_write(output, &hdr, slots.data(), nullptr, nullptr);

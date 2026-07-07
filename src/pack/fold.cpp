@@ -9,20 +9,33 @@
 namespace crankle {
 namespace pack {
 
+static void multivector_as_slice(const Multivector &mv, float out[8]) {
+    out[0] = static_cast<float>(mv.s);
+    for (int i = 0; i < 3; ++i)
+        out[i + 1] = static_cast<float>(mv.v[i]);
+    for (int i = 0; i < 3; ++i)
+        out[i + 4] = static_cast<float>(mv.b[i]);
+    out[7] = static_cast<float>(mv.p);
+}
+
 static double fold_objective(const Multivector &mv, const float *slice, size_t slice_len, float lambda,
                              float mu) {
+    float recon[8] = {};
+    multivector_as_slice(mv, recon);
+
     double err = 0.0;
-    double vals[8] = {mv.s, mv.v[0], mv.v[1], mv.v[2], mv.b[0], mv.b[1], mv.b[2], mv.p};
     for (size_t i = 0; i < std::min(slice_len, size_t(8)); ++i) {
-        double d = vals[i] - slice[i];
+        double d = recon[i] - slice[i];
         err += d * d;
     }
-    std::vector<float> sf(slice, slice + slice_len);
-    auto diagram = persistence_diagram_1d(sf.data(), sf.size());
-    std::vector<PersistencePair> zero;
-    float w2 = wasserstein_persistence(diagram, zero);
-    float pen = lambda * w2 + mu * spectral_range(sf.data(), sf.size());
-    return err + static_cast<double>(pen) * 0.001;
+
+    std::vector<float> source(slice, slice + slice_len);
+    std::vector<float> trial(recon, recon + std::min(slice_len, size_t(8)));
+    auto source_pd = persistence_diagram_1d(source.data(), source.size());
+    auto trial_pd = persistence_diagram_1d(trial.data(), trial.size());
+    float w2 = wasserstein_persistence(source_pd, trial_pd);
+    float pen = lambda * w2 + mu * spectral_range(source.data(), source.size());
+    return err + static_cast<double>(pen);
 }
 
 static void perturb_mv(Multivector &mv, int seed) {
