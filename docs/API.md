@@ -19,6 +19,7 @@ Modular headers live under `include/crankle/`. Include `crankle/crankle.h` for e
 | `holonomy.h` | Wilson holonomy forward |
 | `diff.h` | Crank tensor diff metrics |
 | `simd.h` | Runtime AVX2 probe |
+| `metrics.h` | Archive health metrics for AI dev-flow automation |
 
 ## Implementation layout
 
@@ -50,6 +51,9 @@ C bindings are split under `src/c_api/` — one translation unit per domain, wit
 ```bash
 crankle version
 crankle diff a.cran b.cran
+crankle inspect a.cran --json
+crankle compare baseline.cran tuned.cran --json
+crankle pipeline --input weights.f32 -o tuned.cran --manifest run.json
 ```
 
 ## Core functions
@@ -68,3 +72,5 @@ crankle diff a.cran b.cran
 | `crankle_crank_diff_count` | Slots that differ between tensors |
 | `crankle_crank_diff_hamming` | Normalized bit Hamming distance |
 | `crankle_has_avx2` | Runtime SIMD probe |
+| `crankle_compute_archive_metrics` | Density, entropy, energy, depth, and β₁ metrics |
+| `crankle_cran_compute_metrics` | Archive metrics directly from a mapped `.cran` |

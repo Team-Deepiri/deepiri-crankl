@@ -28,6 +28,9 @@ train / finetune → crankle pack → .cran artifact
 |----------|------------|
 | Shipping a LoRA / adapter | `crankle pack` |
 | Cheap finetune pass on cranks | `crankle turn` |
+| Creating a full training artifact | `crankle pipeline --manifest run.json` |
+| Auditing a `.cran` checkpoint | `crankle inspect --json` |
+| Comparing two checkpoints | `crankle compare --json` |
 | Debugging two agent runs | `crankle diff` + `resonance` |
 | Merging specialist heads | `crankle bind` |
 | Undoing a finetune layer | `crankle peel` |
@@ -67,11 +70,15 @@ crankle diff   a.cran b.cran
 crankle holonomy --input adapter.cran --vector x.bin -o y.bin
 crankle stats  adapter.cran
 crankle verify adapter.cran
+crankle inspect adapter.cran [--json]
+crankle compare baseline.cran tuned.cran [--json]
+crankle pipeline --input weights.f32 --steps 64 -o tuned.cran --manifest run.json
 ```
 
 ## Theory
 
-See [docs/GUCT.md](docs/GUCT.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
+See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), and
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 
