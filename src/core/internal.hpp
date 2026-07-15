@@ -16,10 +16,10 @@ int trit_encode(int trit);
 int trit_decode(int two_bits);
 
 struct Multivector {
-    double s = 0;
-    double v[3] = {0, 0, 0};
-    double b[3] = {0, 0, 0}; // e12, e23, e13
-    double p = 0;              // e123
+    double scalar = 0;
+    double vec[3] = {0, 0, 0};
+    double bivec[3] = {0, 0, 0}; // e12, e23, e13
+    double trivec = 0;           // e123
 };
 
 uint64_t pack_crank_word(const Multivector &mv, uint8_t depth, uint8_t flags = 0);
