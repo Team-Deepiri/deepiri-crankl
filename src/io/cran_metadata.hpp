@@ -1,11 +1,11 @@
 #pragma once
 
-#include "crankle/crankle.h"
+#include "crankl/crankl.h"
 
 #include <cstddef>
 #include <cstdint>
 
-namespace crankle {
+namespace crankl {
 namespace io {
 
 struct CranMetadata {
@@ -15,9 +15,9 @@ struct CranMetadata {
 
 static constexpr uint32_t FOOTER_MAGIC = 0x4D455441u; // META
 
-int write_cran_with_metadata(const char *path, const ::crankle_cran_header_t *hdr,
+int write_cran_with_metadata(const char *path, const ::crankl_cran_header_t *hdr,
                              const uint64_t *slots, const CranMetadata *meta);
-int read_cran_metadata(const ::crankle_cran_t *cran, CranMetadata *out);
+int read_cran_metadata(const ::crankl_cran_t *cran, CranMetadata *out);
 
 } // namespace io
-} // namespace crankle
+} // namespace crankl

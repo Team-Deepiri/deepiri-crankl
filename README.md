@@ -1,37 +1,41 @@
-# Crankle
+# Crankl
 
-**Crankle** — low-level engine for compressing, finetuning, and comparing model weights in
-Deepiri's AI development flow. GUCT math under the hood; `crankle` on the CLI.
+**Crankl** — low-level engine for compressing, finetuning, and comparing model weights in
+Deepiri's AI development flow. GUCT math under the hood; `crankl` on the CLI.
 
 Use it when you need to pack adapter deltas, anneal a finetune (`turn`), diff two checkpoints,
 or run forward on compressed weights — in training, eval, or agent pipelines.
 
 | Artifact | Name |
 |----------|------|
-| CLI | `crankle` |
-| Library | `libcrankle` |
-| Format | `.cran` |
+| CLI | `crankl` |
+| Library | `libcrankl` |
+| Format | `.crank` |
 
 ## AI dev flow
 
 ```
-train / finetune → crankle pack → .cran artifact
+train / finetune → crankl pack → .crank artifact
                       ↓
-              crankle turn (anneal)
+              crankl turn (anneal)
                       ↓
          deploy / eval / agent loop
                       ↓
-         crankle diff (what changed?)
+         crankl diff (what changed?)
 ```
 
 | You are… | Reach for… |
 |----------|------------|
-| Shipping a LoRA / adapter | `crankle pack` |
-| Cheap finetune pass on cranks | `crankle turn` |
-| Debugging two agent runs | `crankle diff` + `resonance` |
-| Merging specialist heads | `crankle bind` |
-| Undoing a finetune layer | `crankle peel` |
-| Inference on compressed weights | `crankle holonomy` |
+| Shipping a LoRA / adapter | `crankl pack` |
+| Cheap symplectic anneal on cranks | `crankl turn` |
+| Decrank-unified finetune loop | `crankl finetune` |
+| Creating a full training artifact | `crankl pipeline --manifest run.json` |
+| Auditing a `.crank` checkpoint | `crankl inspect --json` |
+| Comparing two checkpoints | `crankl compare --json` |
+| Debugging two agent runs | `crankl diff` + `resonance` |
+| Merging specialist heads | `crankl bind` |
+| Undoing a finetune layer | `crankl peel` |
+| Inference on compressed weights | `crankl holonomy` |
 
 Install once, pipe from anything. No Python wheel required — shell out from Helox, Cyrex, Tombstone, or your own scripts.
 
@@ -56,22 +60,28 @@ bash scripts/integration_test.sh # pack → turn → peel → diff → holonomy
 ## Commands
 
 ```bash
-crankle version
-crankle pack   --input weights.f32 --shape 8,8 -o adapter.cran
-crankle unpack --input adapter.cran -o reconstructed.f32
-crankle resonance a.cran b.cran [--mode clifford|sheaf|both]
-crankle turn   --input adapter.cran --steps 100 --lr 0.01 -o tuned.cran
-crankle peel   --input adapter.cran --layers 1 -o peeled.cran
-crankle bind   a.cran b.cran -o merged.cran
-crankle diff   a.cran b.cran
-crankle holonomy --input adapter.cran --vector x.bin -o y.bin
-crankle stats  adapter.cran
-crankle verify adapter.cran
+crankl version
+crankl pack   --input weights.f32 --shape 8,8 -o adapter.crank
+crankl unpack --input adapter.crank -o reconstructed.f32
+crankl resonance a.crank b.crank [--mode clifford|sheaf|both]
+crankl turn   --input adapter.crank --steps 100 --lr 0.01 -o tuned.crank
+crankl finetune --input adapter.crank --target weights.f32 --steps 200 -o tuned.crank
+crankl finetune --input adapter.crank --target weights.f32 --calib-x x.f32 --calib-y y.f32 -o tuned.crank
+crankl peel   --input adapter.crank --layers 1 -o peeled.crank
+crankl bind   a.crank b.crank -o merged.crank
+crankl diff   a.crank b.crank
+crankl holonomy --input adapter.crank --vector x.bin -o y.bin
+crankl stats  adapter.crank
+crankl verify adapter.crank
+crankl inspect adapter.crank [--json]
+crankl compare baseline.crank tuned.crank [--json]
+crankl pipeline --input weights.f32 --steps 64 -o tuned.crank --manifest run.json
 ```
 
 ## Theory
 
-See [docs/GUCT.md](docs/GUCT.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
+See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), [docs/FINETUNE.md](docs/FINETUNE.md), and
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

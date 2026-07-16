@@ -2,26 +2,26 @@
 
 ## Do we need to train anything?
 
-**No separate Crankle model.** Crankle is not a neural network you pretrain.
+**No separate Crankl model.** Crankl is not a neural network you pretrain.
 
 | Question | Answer |
 |----------|--------|
-| Train Crankle itself? | **No** — it's deterministic math + discrete search |
-| Train a model *with* Crankle? | **Yes, in your existing stack** — Helox, PyTorch, etc. produce float weights; Crankle compresses them |
+| Train Crankl itself? | **No** — it's deterministic math + discrete search |
+| Train a model *with* Crankl? | **Yes, in your existing stack** — Helox, PyTorch, etc. produce float weights; Crankl compresses them |
 | What is `turn`? | Discrete symplectic annealing on crank space — optional **post-training** refinement, not backprop |
 | When is loss needed? | Only if you want task-aware anneal (`turn --target`) or eval-driven checkpoint tuning (v0.4) |
 
 **Typical Deepiri flow:**
 
 ```
-finetune (floats)  →  crankle pack  →  .cran artifact
+finetune (floats)  →  crankl pack  →  .crank artifact
                               ↓
-                    crankle turn --target (optional, reconstruction)
+                    crankl turn --target (optional, reconstruction)
                               ↓
                     ship / eval / bind / peel
 ```
 
-You train adapters as today. Crankle is the **compression + geometry layer** on top.
+You train adapters as today. Crankl is the **compression + geometry layer** on top.
 
 ---
 
@@ -32,7 +32,7 @@ You train adapters as today. Crankle is the **compression + geometry layer** on 
 | Clifford crank | **Done** — Cl(3) product, decrank, resonance | 6 bivector blades in 64-bit word (currently 3) |
 | Sheaf | **Partial** — restriction graph, β₁ proxy | Real coboundary δ, H¹ cohomology |
 | Symplectic Turn | **Partial** — Verlet + BCH + trit surgery | Loss-guided turn (v0.3), eval harness hook (v0.4) |
-| RG peel | **Partial** — UV damp + depth decrement | Wilsonian layer stacks in `.cran` |
+| RG peel | **Partial** — UV damp + depth decrement | Wilsonian layer stacks in `.crank` |
 | Persistent pack | **Partial** — 1D PD + W₂ + anneal | Topological BO, full matrix PD |
 | Holonomy | **Partial** — path-ordered exp(iγ·M) | Full Padé exp on 8×8, batched slots |
 | Ingest | **v0.3** — raw f32, safetensors | GGUF, safetensors multi-tensor |
@@ -44,15 +44,15 @@ You train adapters as today. Crankle is the **compression + geometry layer** on 
 
 ### Phase A — v0.3 (this PR)
 
-1. **Safetensors ingest** — `crankle pack --input adapter.safetensors --tensor lora_A`
-2. **Loss-guided turn** — `crankle turn --target original.f32` minimizes reconstruction, not just H
+1. **Safetensors ingest** — `crankl pack --input adapter.safetensors --tensor lora_A`
+2. **Loss-guided turn** — `crankl turn --target original.f32` minimizes reconstruction, not just H
 3. **Topological pack v2** — Wasserstein between source vs decranked persistence diagrams
 4. **Implementation doc + tests** — golden safetensors, turn-target integration
 
 ### Phase B — v0.4 (agent / training integration)
 
-1. Wire `crankle turn` into finetune CI as post-step
-2. `crankle diff` in Tombstone / eval harness logs
+1. Wire `crankl turn` into finetune CI as post-step
+2. `crankl diff` in Tombstone / eval harness logs
 3. Optional downstream loss callback (C API) for task-aware turn
 4. Checkpoint archaeology: resonance between run N and N+1
 
@@ -69,7 +69,7 @@ You train adapters as today. Crankle is the **compression + geometry layer** on 
 
 GUCT is **fully implemented** when:
 
-- Any LoRA/safetensors adapter packs to `.cran` with PD preservation within tolerance
+- Any LoRA/safetensors adapter packs to `.crank` with PD preservation within tolerance
 - `turn --target` recovers within ε of float baseline on eval set
 - `holonomy` forward matches reference matmul within γ calibration
 - `diff` + `resonance` drive CI decisions between training runs

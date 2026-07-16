@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace crankle {
+namespace crankl {
 
 static int quantize_trit(double x) {
     if (x > 0.33)
@@ -149,4 +149,4 @@ void decrank_matrix(uint64_t word, std::array<double, 64> &out) {
     }
 }
 
-} // namespace crankle
+} // namespace crankl

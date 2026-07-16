@@ -1,11 +1,18 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 
-namespace crankle {
+namespace crankl {
 namespace io {
 
-constexpr char CRAN_MAGIC[6] = {'C', 'R', 'A', 'N', '\x01', '\0'};
+constexpr char CRANK_MAGIC[6] = {'C', 'R', 'A', 'N', 'K', '\x01'};
+constexpr char CRAN_LEGACY_MAGIC[6] = {'C', 'R', 'A', 'N', '\x01', '\0'};
+
+inline bool magic_is_valid(const char *magic) {
+    return std::memcmp(magic, CRANK_MAGIC, 6) == 0 ||
+           std::memcmp(magic, CRAN_LEGACY_MAGIC, 5) == 0;
+}
 constexpr size_t CRAN_HEADER_SIZE = 128;
 constexpr size_t CRAN_SLOT_ENTRY = 16;
 
@@ -23,4 +30,4 @@ struct CranHeaderDisk {
 #pragma pack(pop)
 
 } // namespace io
-} // namespace crankle
+} // namespace crankl

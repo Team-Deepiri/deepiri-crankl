@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 
-namespace crankle {
+namespace crankl {
 
 static double restriction_map(uint64_t a, uint64_t b) {
     Multivector ma, mb;
@@ -91,4 +91,4 @@ double sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other, s
     return chi / static_cast<double>(m);
 }
 
-} // namespace crankle
+} // namespace crankl

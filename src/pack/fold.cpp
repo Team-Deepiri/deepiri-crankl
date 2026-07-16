@@ -1,41 +1,53 @@
 #include "core/internal.hpp"
 #include "pack/persistence.hpp"
+#include "pack/tiling.hpp"
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <random>
-#include <vector>
 
-namespace crankle {
+namespace crankl {
 namespace pack {
 
-static void multivector_as_slice(const Multivector &mv, float out[8]) {
-    out[0] = static_cast<float>(mv.s);
+static void block_to_seed_mv(const float W[BLOCK_FLOATS], Multivector &mv) {
+    mv = {};
+    mv.s = W[0];
     for (int i = 0; i < 3; ++i)
-        out[i + 1] = static_cast<float>(mv.v[i]);
+        mv.v[i] = W[1 + i];
     for (int i = 0; i < 3; ++i)
-        out[i + 4] = static_cast<float>(mv.b[i]);
-    out[7] = static_cast<float>(mv.p);
+        mv.b[i] = W[8 + i];
+    mv.p = W[16];
 }
 
-static double fold_objective(const Multivector &mv, const float *slice, size_t slice_len, float lambda,
-                             float mu) {
-    float recon[8] = {};
-    multivector_as_slice(mv, recon);
-
-    double err = 0.0;
-    for (size_t i = 0; i < std::min(slice_len, size_t(8)); ++i) {
-        double d = recon[i] - slice[i];
-        err += d * d;
+static double decrank_frobenius_word(uint64_t word, const float W[BLOCK_FLOATS]) {
+    std::array<double, 64> M{};
+    decrank_matrix(word, M);
+    double frob = 0.0;
+    for (size_t i = 0; i < BLOCK_FLOATS; ++i) {
+        double d = M[i] - static_cast<double>(W[i]);
+        frob += d * d;
     }
+    return frob;
+}
 
-    std::vector<float> source(slice, slice + slice_len);
-    std::vector<float> trial(recon, recon + std::min(slice_len, size_t(8)));
+static double fold_objective_decrank(const Multivector &mv, const float W[BLOCK_FLOATS], uint8_t depth,
+                                     float lambda, float mu) {
+    uint64_t word = pack_crank_word(mv, depth, 0);
+    double frob = decrank_frobenius_word(word, W);
+
+    std::vector<float> source(W, W + BLOCK_FLOATS);
+    std::array<double, 64> M{};
+    decrank_matrix(word, M);
+    std::vector<float> trial(BLOCK_FLOATS);
+    for (size_t i = 0; i < BLOCK_FLOATS; ++i)
+        trial[i] = static_cast<float>(M[i]);
+
     auto source_pd = persistence_diagram_1d(source.data(), source.size());
     auto trial_pd = persistence_diagram_1d(trial.data(), trial.size());
     float w2 = wasserstein_persistence(source_pd, trial_pd);
     float pen = lambda * w2 + mu * spectral_range(source.data(), source.size());
-    return err + static_cast<double>(pen);
+    return frob + static_cast<double>(pen);
 }
 
 static void perturb_mv(Multivector &mv, int seed) {
@@ -50,40 +62,33 @@ int fold_f32(const float *data, size_t count, uint64_t *out_slots, size_t n_slot
         return -1;
 
     for (size_t s = 0; s < n_slots; ++s) {
-        Multivector best{};
-        size_t base = s * 8;
-        if (base < count)
-            best.s = data[base];
-        for (int i = 0; i < 3 && base + 1 + i < count; ++i)
-            best.v[i] = data[base + 1 + i];
-        for (int i = 0; i < 3 && base + 4 + i < count; ++i)
-            best.b[i] = data[base + 4 + i];
-        if (base + 7 < count)
-            best.p = data[base + 7];
+        float W[BLOCK_FLOATS];
+        copy_weight_block(data, count, s, W);
 
-        size_t slice_len = std::min<size_t>(8, count > base ? count - base : 0);
-        double best_j = fold_objective(best, data + base, slice_len, lambda, mu);
+        Multivector best{};
+        block_to_seed_mv(W, best);
+        uint8_t depth = 1;
+        double best_j = fold_objective_decrank(best, W, depth, lambda, mu);
 
         std::mt19937 rng(static_cast<uint32_t>(0xC8411E00u ^ static_cast<uint32_t>(s)));
         std::uniform_real_distribution<double> coin(0.0, 1.0);
 
-        // Simulated annealing: 64 proposals per slot (deterministic seed per slot)
         double temp = 1.0;
-        for (int step = 0; step < 64; ++step) {
+        for (int step = 0; step < 128; ++step) {
             Multivector trial = best;
-            perturb_mv(trial, static_cast<int>(s * 64 + step));
-            double j = fold_objective(trial, data + base, slice_len, lambda, mu);
+            perturb_mv(trial, static_cast<int>(s * 128 + step));
+            double j = fold_objective_decrank(trial, W, depth, lambda, mu);
             double delta = j - best_j;
             if (delta < 0.0 || std::exp(-delta / temp) > coin(rng)) {
                 best = trial;
                 best_j = j;
             }
-            temp *= 0.94;
+            temp *= 0.96;
         }
-        out_slots[s] = pack_crank_word(best, 1, 0);
+        out_slots[s] = pack_crank_word(best, depth, 0);
     }
     return 0;
 }
 
 } // namespace pack
-} // namespace crankle
+} // namespace crankl

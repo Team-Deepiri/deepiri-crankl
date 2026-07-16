@@ -1,8 +1,9 @@
 #include "core/internal.hpp"
 
+#include <algorithm>
 #include <cmath>
 
-namespace crankle {
+namespace crankl {
 
 int rg_peel(uint64_t &word, uint32_t layers) {
     Multivector mv;
@@ -43,4 +44,23 @@ uint64_t bind_cranks(uint64_t a, uint64_t b) {
     return pack_crank_word(prod, depth, 0);
 }
 
-} // namespace crankle
+int rg_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_stacks,
+                  uint32_t stack_depth, uint32_t layers_to_pop) {
+    if (!slots || n_slots == 0)
+        return -1;
+
+    if (layer_stacks && stack_depth > 0 && layers_to_pop > 0) {
+        uint32_t pop = std::min(layers_to_pop, stack_depth);
+        uint32_t layer_idx = (pop >= stack_depth) ? 0 : (stack_depth - pop - 1);
+        const uint64_t *layer = layer_stacks + static_cast<size_t>(layer_idx) * n_slots;
+        for (size_t i = 0; i < n_slots; ++i)
+            slots[i] = layer[i];
+        return 0;
+    }
+
+    for (size_t i = 0; i < n_slots; ++i)
+        rg_peel(slots[i], layers_to_pop);
+    return 0;
+}
+
+} // namespace crankl

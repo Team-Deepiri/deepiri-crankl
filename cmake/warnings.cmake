@@ -1,4 +1,4 @@
-function(crankle_set_warnings target)
+function(crankl_set_warnings target)
     if(MSVC)
         target_compile_options(${target} PRIVATE /W4)
     else()

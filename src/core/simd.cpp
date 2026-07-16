@@ -4,16 +4,16 @@
 
 #if defined(__AVX2__)
 #include <immintrin.h>
-#define CRANKLE_AVX2_COMPILE 1
+#define CRANKL_AVX2_COMPILE 1
 #else
-#define CRANKLE_AVX2_COMPILE 0
+#define CRANKL_AVX2_COMPILE 0
 #endif
 
-namespace crankle {
+namespace crankl {
 namespace simd {
 
 bool has_avx2() {
-#if CRANKLE_AVX2_COMPILE
+#if CRANKL_AVX2_COMPILE
     return true;
 #else
     return false;
@@ -42,7 +42,7 @@ void unpack_trits_batch(const uint64_t *words, size_t n, int *out_trits, size_t 
 }
 
 void mat8_mul_avx2(const double *a, const double *b, double *out) {
-#if CRANKLE_AVX2_COMPILE
+#if CRANKL_AVX2_COMPILE
     for (int r = 0; r < 8; ++r) {
         __m256d acc0 = _mm256_setzero_pd();
         __m256d acc1 = _mm256_setzero_pd();
@@ -69,4 +69,4 @@ void mat8_mul_avx2(const double *a, const double *b, double *out) {
 }
 
 } // namespace simd
-} // namespace crankle
+} // namespace crankl

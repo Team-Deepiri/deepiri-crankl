@@ -1,4 +1,4 @@
-name: deepiri-crankle-codeql-config
+name: deepiri-crankl-codeql-config
 
 # Let CodeQL scan checked-out repository files, excluding noisy artifacts.
 

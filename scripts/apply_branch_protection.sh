@@ -2,7 +2,7 @@
 # Apply branch protection matching deepiri-platform (main + dev).
 set -euo pipefail
 
-REPO="${1:-Team-Deepiri/deepiri-crankle}"
+REPO="${1:-Team-Deepiri/deepiri-crankl}"
 
 apply_main() {
   if ! gh api -X PUT "repos/${REPO}/branches/main/protection" \
@@ -22,7 +22,7 @@ apply_main() {
 EOF
   then
     echo "⚠ main branch protection requires GitHub Team/Pro for private repos."
-    echo "  deepiri-platform is public; deepiri-crankle is private."
+    echo "  deepiri-platform is public; deepiri-crankl is private."
     echo "  Apply rules manually in GitHub Settings → Branches, or make the repo public."
     return 1
   fi

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace crankle {
+namespace crankl {
 
 int trit_encode(int trit) {
     switch (trit) {
@@ -30,4 +30,4 @@ int trit_decode(int two_bits) {
     }
 }
 
-} // namespace crankle
+} // namespace crankl

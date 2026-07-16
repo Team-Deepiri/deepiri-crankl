@@ -1,4 +1,4 @@
-# Contributing to Crankle
+# Contributing to Crankl
 
 ## Build
 
@@ -24,5 +24,5 @@ bash scripts/verify_parity.sh
 ## C++ conventions
 
 - C++20, `-Wall -Wextra`
-- Public API in `include/crankle/crankle.h` (C ABI)
-- Implementation in `src/` namespaces; use `::crankle_cran_t` inside `namespace crankle`
+- Public API in `include/crankl/crankl.h` (C ABI)
+- Implementation in `src/` namespaces; use `::crankl_cran_t` inside `namespace crankl`

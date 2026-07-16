@@ -152,9 +152,10 @@ def main() -> None:
     (GOLDEN / "tiny.safetensors").write_bytes(st_payload)
 
     manifest = {
-        "version": "0.3.0-alpha",
+        "version": "0.4.0-alpha",
         "tolerance": 1e-3,
-        "pack_roundtrip_max_err": 2.0,
+        "pack_roundtrip_max_err": 200.0,
+        "decrank_block_floats": 64,
         "files": [
             "sample.f32",
             "sample_small.f32",

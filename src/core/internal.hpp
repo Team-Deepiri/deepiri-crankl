@@ -1,10 +1,12 @@
 #pragma once
 
+#include "crankl/types.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
 
-namespace crankle {
+namespace crankl {
 
 constexpr int TRIT_ZERO = 0;
 constexpr int TRIT_PLUS = 1;
@@ -40,12 +42,36 @@ void mat8_exp_i_apply(const double a[64], double gamma, const double x[8], doubl
 double sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other, size_t n_other);
 int sheaf_beta1_proxy(const uint64_t *slots, size_t n);
 
+double decrank_frobenius_loss(uint64_t word, const float W[64]);
+
 int symplectic_turn(uint64_t &word, double lr);
 int symplectic_turn_toward(uint64_t &word, double lr, const float *target, size_t target_len);
+int symplectic_turn_loss(uint64_t &word, double lr, double (*loss_fn)(uint64_t, void *), void *ctx);
+
+typedef double (*crankl_loss_fn)(const crankl_cran_t *cran, void *ctx);
+int symplectic_finetune(uint64_t *slots, size_t n_slots, crankl_cran_t *cran,
+                        const float *target_blocks, crankl_loss_fn task_loss, void *task_ctx,
+                        int steps, double lr, double recon_weight, double task_weight);
 int rg_peel(uint64_t &word, uint32_t layers);
+int rg_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_stacks,
+                  uint32_t stack_depth, uint32_t layers);
 uint64_t bind_cranks(uint64_t a, uint64_t b);
 
 size_t crank_diff_count(const uint64_t *a, const uint64_t *b, size_t n);
 double crank_diff_hamming(const uint64_t *a, const uint64_t *b, size_t n);
 
-} // namespace crankle
+struct ArchiveMetrics {
+    uint64_t n_slots = 0;
+    uint32_t depth_min = 0;
+    uint32_t depth_max = 0;
+    double scalar_mean = 0.0;
+    double scalar_abs_mean = 0.0;
+    double trit_density = 0.0;
+    double trit_entropy = 0.0;
+    double clifford_energy = 0.0;
+    double beta1_proxy = 0.0;
+};
+
+int compute_archive_metrics(const uint64_t *slots, size_t n_slots, ArchiveMetrics &out);
+
+} // namespace crankl

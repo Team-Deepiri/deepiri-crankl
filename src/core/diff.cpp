@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace crankle {
+namespace crankl {
 
 size_t crank_diff_count(const uint64_t *a, const uint64_t *b, size_t n) {
     size_t diff = 0;
@@ -28,4 +28,4 @@ double crank_diff_hamming(const uint64_t *a, const uint64_t *b, size_t n) {
     return static_cast<double>(bits) / static_cast<double>(n * 64);
 }
 
-} // namespace crankle
+} // namespace crankl
