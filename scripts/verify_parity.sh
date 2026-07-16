@@ -10,7 +10,7 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 
 CLI="$ROOT/build/crankle"
-"$CLI" version | grep -q "0.2"
+"$CLI" version | grep -q "0.3"
 "$CLI" pack --input tests/golden/sample_small.f32 --shape 4 -o /tmp/parity.cran
 "$CLI" verify /tmp/parity.cran
 "$CLI" unpack --input /tmp/parity.cran -o /tmp/parity_out.f32
