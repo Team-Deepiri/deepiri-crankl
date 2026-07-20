@@ -1,5 +1,5 @@
-#include "core/internal.hpp"
-#include "pack/tiling.hpp"
+#include "internal_headers/algebra.hpp"
+#include "internal_headers/pack.hpp"
 
 #include <algorithm>
 #include <cstring>

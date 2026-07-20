@@ -34,11 +34,18 @@ typedef struct crankl_cran {
     void *mmap_base;
     size_t mmap_size;
     crankl_cran_header_t header;
-    const uint64_t *slots;
-    const uint64_t *layers;
+    const uint64_t *slots;  /* n_slots current crank words */
+    const uint64_t *layers; /* flattened full-slot snapshots used by peel */
+    /*
+     * TODO(format-v3): append an explicit uint32_t n_stack_layers field.
+     * `layers` must be NULL when no validated stack section exists. The current
+     * API has no reliable way to distinguish "no history" from a pointer to bytes
+     * immediately after slots, which is unsafe when those bytes are metadata.
+     */
 } crankl_cran_t;
 
 typedef struct crankl_cran_metadata {
+    /* Provenance only: these strings describe origin; they are not weight history. */
     char model_name[128];
     char source_hash[64];
 } crankl_cran_metadata_t;
