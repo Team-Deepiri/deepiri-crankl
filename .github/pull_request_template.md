@@ -65,6 +65,7 @@ Additional testing details:
 - [ ] Branch is up to date with dev
 - [ ] PR is from your branch → dev (no longer directly into main)
 - [ ] PR title follows convention (feat:, fix:, refactor:, etc.)
+- [ ] Style clean (`bash scripts/format.sh` / CI auto-format)
 - [ ] Plaky feature/bug name included above
 - [ ] Tagged @Team-Deepiri/support-team
 - [ ] Plaky task moved to "Needs QA"

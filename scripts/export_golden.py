@@ -16,7 +16,7 @@ def mv(s=0.0, v=(0.0, 0.0, 0.0), b=(0.0, 0.0, 0.0), p=0.0):
 
 
 def clifford_product(a, b):
-    """Cl(3) positive signature — must match src/core/crank_word.cpp."""
+    """Cl(3) positive signature — must match src/algebra/crank_word.cpp."""
     e1, e2, e3 = a[1], a[2], a[3]
     e12, e23, e13 = a[4], a[5], a[6]
     e123 = a[7]

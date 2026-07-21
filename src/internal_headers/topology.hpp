@@ -1,0 +1,16 @@
+#pragma once
+
+#include <cstddef>
+#include <cstdint>
+
+namespace crankl {
+
+double sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other, size_t n_other);
+int sheaf_beta1_proxy(const uint64_t *slots, size_t n);
+
+int rg_peel(uint64_t &word, uint32_t layers);
+int rg_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_stacks,
+                  uint32_t stack_depth, uint32_t layers);
+uint64_t bind_cranks(uint64_t a, uint64_t b);
+
+} // namespace crankl
