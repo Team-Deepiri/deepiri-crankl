@@ -5,7 +5,8 @@
 | v0.1 | Scaffold — GUCT core, `.crank` I/O, CLI, notebook parity |
 | v0.2 | SIMD matmul, sheaf χ v2, cran metadata, diff/version CLI, anneal pack |
 | v0.3 | Topological pack v2, safetensors ingest, loss-guided turn | **done** |
-| v0.4 | Crankl Flow + decrank-unified finetune: inspect, compare, pipeline manifests, Maurer-Cartan turn | **in progress** |
+| v0.4 | Crankl Flow + decrank-unified finetune: inspect, compare, pipeline manifests, Maurer-Cartan turn | **done** |
+| v0.5 | Novel design (sheaf H¹, topological BO pack, multi-tensor provenance) → impl toward production | **next** — see [NEXT_PHASE.md](NEXT_PHASE.md) |
 | v1.0 | Production crank-turn finetune on LoRA-scale adapters at Deepiri scale |
 
 ## AI development flow (why this exists)
@@ -47,3 +48,12 @@ Works in finetuning pipelines, agent eval, vector tooling, and anywhere you move
 3. **`crankl finetune`** — reconstruction + holonomy MSE, layer stack persistence.
 4. **Peel stacks** — cran v2 layer history rollback via `peel --layers N`.
 5. **Post-train hooks** — `bench_finetune.sh`, `post_train_crankl.sh`.
+
+## Next (v0.5 → v1.0)
+
+Design-then-ship plan: [NEXT_PHASE.md](NEXT_PHASE.md).
+
+| Phase | Focus |
+|-------|--------|
+| **Novel design** | Sheaf cohomology (replace β₁ proxy), topological BO packing, multi-tensor / GGUF provenance, Helox–Tombstone integration contract |
+| **Implementation** | Multi-tensor ingest + LoRA benches, H¹ kernels, pack v3, CI/eval gates, AVX2 batched holonomy — then v1.0 bar |

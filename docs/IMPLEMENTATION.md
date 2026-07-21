@@ -49,19 +49,21 @@ You train adapters as today. Crankl is the **compression + geometry layer** on t
 3. **Topological pack v2** — Wasserstein between source vs decranked persistence diagrams
 4. **Implementation doc + tests** — golden safetensors, turn-target integration
 
-### Phase B — v0.4 (agent / training integration)
+### Phase B — v0.4 (agent / training integration) — **landed on main**
 
-1. Wire `crankl turn` into finetune CI as post-step
-2. `crankl diff` in Tombstone / eval harness logs
-3. Optional downstream loss callback (C API) for task-aware turn
-4. Checkpoint archaeology: resonance between run N and N+1
+1. Flow CLI: inspect / compare / pipeline manifests
+2. Decrank-unified pack + Maurer-Cartan `finetune` + peel stacks
+3. Remaining: wire into Helox/Tombstone CI (see next phase)
 
-### Phase C — v1.0 (production)
+### Phase C — v0.5 design → v1.0 (production)
+
+See [NEXT_PHASE.md](NEXT_PHASE.md). Summary:
 
 1. LoRA-scale adapters end-to-end with metadata provenance
 2. AVX2 batched holonomy matmul
 3. Topological BO packing (Gaussian process over trit complexes)
-4. Full sheaf cohomology resonance
+4. Full sheaf cohomology resonance (replace β₁ / χ proxies)
+
 
 ---
 
