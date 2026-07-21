@@ -1,6 +1,5 @@
-#include "core/internal.hpp"
-#include "pack/persistence.hpp"
-#include "pack/tiling.hpp"
+#include "internal_headers/algebra.hpp"
+#include "internal_headers/pack.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -12,12 +11,12 @@ namespace pack {
 
 static void block_to_seed_mv(const float W[BLOCK_FLOATS], Multivector &mv) {
     mv = {};
-    mv.s = W[0];
+    mv.scalar = W[0];
     for (int i = 0; i < 3; ++i)
-        mv.v[i] = W[1 + i];
+        mv.vec[i] = W[1 + i];
     for (int i = 0; i < 3; ++i)
-        mv.b[i] = W[8 + i];
-    mv.p = W[16];
+        mv.bivec[i] = W[8 + i];
+    mv.trivec = W[16];
 }
 
 static double decrank_frobenius_word(uint64_t word, const float W[BLOCK_FLOATS]) {
@@ -51,7 +50,7 @@ static double fold_objective_decrank(const Multivector &mv, const float W[BLOCK_
 }
 
 static void perturb_mv(Multivector &mv, int seed) {
-    double *parts[] = {&mv.s, &mv.v[0], &mv.v[1], &mv.v[2], &mv.b[0], &mv.b[1], &mv.b[2], &mv.p};
+    double *parts[] = {&mv.scalar, &mv.vec[0], &mv.vec[1], &mv.vec[2], &mv.bivec[0], &mv.bivec[1], &mv.bivec[2], &mv.trivec};
     int idx = seed % 8;
     parts[idx][0] += (seed % 2 == 0 ? 0.05 : -0.05);
 }

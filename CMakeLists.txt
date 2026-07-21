@@ -12,43 +12,42 @@ option(CRANKL_ENABLE_SIMD "Enable AVX2 dispatch" ON)
 
 include(cmake/warnings.cmake)
 
-set(CRANKL_C_API_SOURCES
-    src/c_api/errors.cpp
-    src/c_api/trit.cpp
-    src/c_api/crank.cpp
-    src/c_api/clifford.cpp
-    src/c_api/sheaf.cpp
-    src/c_api/symplectic.cpp
-    src/c_api/pack.cpp
-    src/c_api/cran.cpp
-    src/c_api/holonomy.cpp
-    src/c_api/diff.cpp
-    src/c_api/simd.cpp
-    src/c_api/metrics.cpp
+set(CRANKL_C_BINDINGS_SOURCES
+    src/c_bindings/bind_errors.cpp
+    src/c_bindings/bind_trit.cpp
+    src/c_bindings/bind_crank.cpp
+    src/c_bindings/bind_clifford.cpp
+    src/c_bindings/bind_sheaf.cpp
+    src/c_bindings/bind_symplectic.cpp
+    src/c_bindings/bind_pack.cpp
+    src/c_bindings/bind_cran.cpp
+    src/c_bindings/bind_holonomy.cpp
+    src/c_bindings/bind_diff.cpp
+    src/c_bindings/bind_simd.cpp
+    src/c_bindings/bind_metrics.cpp
 )
 
 set(CRANKL_CORE_SOURCES
-    src/core/trit.cpp
-    src/core/crank_word.cpp
-    src/core/clifford.cpp
-    src/core/linalg.cpp
-    src/core/sheaf.cpp
-    src/core/resonance.cpp
-    src/core/symplectic.cpp
-    src/core/rg.cpp
-    src/core/simd.cpp
-    src/core/diff.cpp
-    src/core/metrics.cpp
+    src/algebra/trit.cpp
+    src/algebra/crank_word.cpp
+    src/algebra/clifford.cpp
+    src/algebra/linalg.cpp
+    src/topology/sheaf.cpp
+    src/topology/rg.cpp
+    src/dynamics/symplectic.cpp
+    src/simd/simd.cpp
+    src/metrics/diff.cpp
+    src/metrics/metrics.cpp
     src/pack/fold.cpp
     src/pack/unfold.cpp
     src/pack/persistence.cpp
     src/pack/tiling.cpp
-    src/io/cran_reader.cpp
-    src/io/cran_writer.cpp
-    src/io/cran_metadata.cpp
-    src/io/safetensors.cpp
+    src/archive/cran_reader.cpp
+    src/archive/cran_writer.cpp
+    src/archive/cran_metadata.cpp
+    src/ingest/safetensors.cpp
     src/holonomy/wilson.cpp
-    ${CRANKL_C_API_SOURCES}
+    ${CRANKL_C_BINDINGS_SOURCES}
 )
 
 add_library(crankl SHARED ${CRANKL_CORE_SOURCES})

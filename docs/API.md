@@ -23,7 +23,40 @@ Modular headers live under `include/crankl/`. Include `crankl/crankl.h` for ever
 
 ## Implementation layout
 
-C bindings are split under `src/c_api/` — one translation unit per domain, with `internal.hpp` handling multivector marshalling.
+Sources are grouped by utility under `src/`. **Public** C headers live in `include/crankl/`
+(installed). **Private** C++ headers live in `src/internal_headers/` (build-only, never installed).
+
+### Source directories
+
+| Directory | Responsibility |
+|-----------|----------------|
+| `src/algebra/` | Trits, crank words, Clifford product, resonance, 8×8 linalg / decrank |
+| `src/topology/` | Sheaf resonance / β₁, RG peel / bind |
+| `src/dynamics/` | Symplectic turn / finetune |
+| `src/holonomy/` | Wilson holonomy forward |
+| `src/pack/` | Float fold/unfold, persistence, block tiling |
+| `src/archive/` | `.crank` reader/writer/metadata implementations |
+| `src/ingest/` | Safetensors ingest |
+| `src/metrics/` | Archive health metrics and crank diff |
+| `src/simd/` | AVX2 dispatch |
+| `src/c_bindings/` | Thin C ABI bindings (`bind_*.cpp`) — one file per public header domain |
+| `src/cli/` | `crankl` CLI |
+
+### Private headers (`src/internal_headers/`)
+
+| Header | Contents |
+|--------|----------|
+| `algebra.hpp` | `Multivector`, trit encode, Clifford, decrank, 8×8 mats |
+| `topology.hpp` | Sheaf resonance / β₁, RG peel / bind |
+| `dynamics.hpp` | Symplectic turn / finetune |
+| `metrics.hpp` | Archive metrics, crank diff |
+| `holonomy.hpp` | Wilson forward |
+| `pack.hpp` | Fold/unfold, tiling, persistence |
+| `archive.hpp` | On-disk format, metadata, security limits, I/O decls |
+| `ingest.hpp` | Safetensors |
+| `simd.hpp` | AVX2 probe / kernels |
+| `c_bindings.hpp` | C↔C++ multivector marshalling for `bind_*.cpp` |
+| `api.hpp` | Convenience umbrella (archive + pack + holonomy + ingest) |
 
 ## New in v0.2.2
 

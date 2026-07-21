@@ -1,7 +1,6 @@
 #include "crankl/crankl.h"
 #include "crankl/version.h"
-#include "crankl_internal_api.hpp"
-#include "io/security_limits.hpp"
+#include "internal_headers/api.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -418,6 +417,13 @@ static int cmd_peel(int argc, char **argv) {
     if (load_cran_slots(input, slots, cran) != 0)
         return 2;
     uint32_t stack_depth = cran.header.depth_max;
+    // BUG(format-v2): cran.layers currently falls back to the address immediately
+    // after slots when no stack was validated. For a metadata archive that address
+    // is the META footer, so this pointer test can pass and feed JSON bytes to peel.
+    //
+    // TODO(format-v3): require both cran.layers != nullptr and an explicit,
+    // validated cran.n_stack_layers > 0. Pass that count to crankl_peel_stack,
+    // retain only the unpeeled history in the output, and preserve input metadata.
     if (cran.layers && cran.layers != cran.slots)
         crankl_peel_stack(slots.data(), slots.size(), cran.layers, stack_depth, layers);
     else

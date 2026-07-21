@@ -1,5 +1,5 @@
-#include "core/internal.hpp"
-#include "pack/tiling.hpp"
+#include "internal_headers/algebra.hpp"
+#include "internal_headers/pack.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -20,13 +20,13 @@ static int unfold_coeffs(const uint64_t *slots, size_t n_slots, float *out, size
         (void)depth;
         size_t base = s * 8;
         if (base < n)
-            out[base] = static_cast<float>(mv.s);
+            out[base] = static_cast<float>(mv.scalar);
         for (int i = 0; i < 3 && base + 1 + i < n; ++i)
-            out[base + 1 + i] = static_cast<float>(mv.v[i]);
+            out[base + 1 + i] = static_cast<float>(mv.vec[i]);
         for (int i = 0; i < 3 && base + 4 + i < n; ++i)
-            out[base + 4 + i] = static_cast<float>(mv.b[i]);
+            out[base + 4 + i] = static_cast<float>(mv.bivec[i]);
         if (base + 7 < n)
-            out[base + 7] = static_cast<float>(mv.p);
+            out[base + 7] = static_cast<float>(mv.trivec);
     }
     return 0;
 }

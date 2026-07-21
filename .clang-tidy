@@ -1,5 +1,14 @@
 ---
-Checks: '-*readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers'
+# Keep this set focused so CI stays actionable. Expand gradually.
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-use-after-move,
+  bugprone-dangling-handle,
+  bugprone-undefined-memory-manipulation,
+  misc-unused-using-decls,
+  modernize-use-nullptr,
+  readability-misleading-indentation
 WarningsAsErrors: ''
 HeaderFilterRegex: 'include/crankl/.*|src/.*'
-Exclude: 'build/'
+FormatStyle: file

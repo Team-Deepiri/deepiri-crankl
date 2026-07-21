@@ -1,6 +1,7 @@
 #include "crankl/crankl.h"
-#include "core/internal.hpp"
-#include "pack/tiling.hpp"
+#include "internal_headers/algebra.hpp"
+#include "internal_headers/pack.hpp"
+#include "internal_headers/holonomy.hpp"
 
 #include <algorithm>
 #include <cmath>
