@@ -80,8 +80,9 @@ crankl pipeline --input weights.f32 --steps 64 -o tuned.crank --manifest run.jso
 
 ## Theory
 
-See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), [docs/FINETUNE.md](docs/FINETUNE.md), and
-[docs/ROADMAP.md](docs/ROADMAP.md).
+See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), [docs/FINETUNE.md](docs/FINETUNE.md),
+[docs/ROADMAP.md](docs/ROADMAP.md), and [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) (v0.5 design + impl).
+
 
 ## License
 
