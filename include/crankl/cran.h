@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-int crankl_cran_write(const char *path, const crankl_cran_header_t *hdr,
-                       const uint64_t *slots, const uint64_t *layer_stacks, const uint32_t *depths);
+int crankl_cran_write(const char *path, const crankl_cran_header_t *hdr, const uint64_t *slots,
+                      const uint64_t *layer_stacks, const uint32_t *depths);
 int crankl_cran_write_with_metadata(const char *path, const crankl_cran_header_t *hdr,
-                                     const uint64_t *slots, const crankl_cran_metadata_t *meta);
+                                    const uint64_t *slots, const crankl_cran_metadata_t *meta);
 /*
  * TODO(format-v3): add a full writer that accepts both optional history and
  * optional provenance, for example:

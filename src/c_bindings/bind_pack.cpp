@@ -1,5 +1,5 @@
-#include "internal_headers/c_bindings.hpp"
 #include "crankl/pack.h"
+#include "internal_headers/c_bindings.hpp"
 #include "internal_headers/dynamics.hpp"
 #include "internal_headers/pack.hpp"
 
@@ -10,7 +10,7 @@ size_t crankl_pack_n_slots(size_t float_count) {
 }
 
 int crankl_pack_f32(const float *data, size_t count, uint64_t *out_slots, size_t n_slots,
-                     float lambda, float mu) {
+                    float lambda, float mu) {
     if (!data || !out_slots || n_slots == 0)
         return CRANKL_ERR_NULL;
     return crankl::pack::fold_f32(data, count, out_slots, n_slots, lambda, mu);
@@ -23,7 +23,7 @@ int crankl_unpack_f32(const uint64_t *slots, size_t n_slots, float *out, size_t 
 }
 
 int crankl_unpack_f32_mode(const uint64_t *slots, size_t n_slots, float *out, size_t count,
-                            int mode) {
+                           int mode) {
     if (!slots || !out)
         return CRANKL_ERR_NULL;
     return crankl::pack::unfold_f32_mode(slots, n_slots, out, count, mode);

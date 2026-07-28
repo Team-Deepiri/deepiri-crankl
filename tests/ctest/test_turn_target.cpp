@@ -20,8 +20,8 @@ int main() {
     double loss_after = crankl_decrank_frobenius_loss(w, target);
 
     if (!(loss_after < loss_before * 0.99)) {
-        std::fprintf(stderr, "FAIL: decrank loss did not decrease before=%g after=%g\n", loss_before,
-                     loss_after);
+        std::fprintf(stderr, "FAIL: decrank loss did not decrease before=%g after=%g\n",
+                     loss_before, loss_after);
         return 2;
     }
     std::printf("test_turn_target ok before=%g after=%g\n", loss_before, loss_after);
