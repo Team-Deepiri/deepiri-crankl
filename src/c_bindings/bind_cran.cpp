@@ -1,13 +1,13 @@
-#include "internal_headers/c_bindings.hpp"
 #include "crankl/cran.h"
 #include "internal_headers/archive.hpp"
+#include "internal_headers/c_bindings.hpp"
 
 #include <cstring>
 
 extern "C" {
 
 int crankl_cran_write(const char *path, const crankl_cran_header_t *hdr, const uint64_t *slots,
-                       const uint64_t *layer_stacks, const uint32_t *depths) {
+                      const uint64_t *layer_stacks, const uint32_t *depths) {
     if (!path || !hdr || !slots)
         return CRANKL_ERR_NULL;
     int rc = crankl::io::write_cran(path, hdr, slots, layer_stacks, depths);
@@ -15,7 +15,7 @@ int crankl_cran_write(const char *path, const crankl_cran_header_t *hdr, const u
 }
 
 int crankl_cran_write_with_metadata(const char *path, const crankl_cran_header_t *hdr,
-                                     const uint64_t *slots, const crankl_cran_metadata_t *meta) {
+                                    const uint64_t *slots, const crankl_cran_metadata_t *meta) {
     if (!path || !hdr || !slots)
         return CRANKL_ERR_NULL;
     crankl::io::CranMetadata m{};
@@ -34,7 +34,9 @@ int crankl_cran_read(const char *path, crankl_cran_t *out) {
     return rc == 0 ? CRANKL_OK : CRANKL_ERR_IO;
 }
 
-void crankl_cran_close(crankl_cran_t *cran) { crankl::io::close_cran(cran); }
+void crankl_cran_close(crankl_cran_t *cran) {
+    crankl::io::close_cran(cran);
+}
 
 int crankl_cran_verify(const crankl_cran_t *cran) {
     if (!cran)

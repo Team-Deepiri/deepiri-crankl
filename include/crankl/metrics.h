@@ -20,7 +20,7 @@ typedef struct crankl_archive_metrics {
 } crankl_archive_metrics_t;
 
 int crankl_compute_archive_metrics(const uint64_t *slots, size_t n_slots,
-                                    crankl_archive_metrics_t *out);
+                                   crankl_archive_metrics_t *out);
 int crankl_cran_compute_metrics(const crankl_cran_t *cran, crankl_archive_metrics_t *out);
 
 #ifdef __cplusplus

@@ -30,13 +30,11 @@ inline void mv_to_c(const crankl::Multivector &m, crankl_multivector_t *out) {
     out->p = m.trivec;
 }
 
-template <typename T>
-inline int require_ptr(T *p) {
+template <typename T> inline int require_ptr(T *p) {
     return p ? CRANKL_OK : CRANKL_ERR_NULL;
 }
 
-template <typename T>
-inline int require_ptr(const T *p) {
+template <typename T> inline int require_ptr(const T *p) {
     return p ? CRANKL_OK : CRANKL_ERR_NULL;
 }
 

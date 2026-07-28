@@ -4,7 +4,9 @@
 
 extern "C" {
 
-const char *crankl_version_string(void) { return CRANKL_VERSION_STRING; }
+const char *crankl_version_string(void) {
+    return CRANKL_VERSION_STRING;
+}
 
 void crankl_version(int *major, int *minor, int *patch) {
     if (major)

@@ -1,5 +1,5 @@
-#include "internal_headers/c_bindings.hpp"
 #include "crankl/trit.h"
+#include "internal_headers/c_bindings.hpp"
 
 extern "C" {
 
@@ -10,6 +10,8 @@ int crankl_trit_encode(int trit, uint8_t *out2bits) {
     return CRANKL_OK;
 }
 
-int crankl_trit_decode(uint8_t two_bits) { return crankl::trit_decode(two_bits); }
+int crankl_trit_decode(uint8_t two_bits) {
+    return crankl::trit_decode(two_bits);
+}
 
 } // extern "C"
