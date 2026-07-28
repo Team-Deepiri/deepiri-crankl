@@ -144,7 +144,8 @@ int symplectic_turn_toward(uint64_t &word, double lr, const float *target, size_
     return symplectic_turn_loss(word, lr, decrank_toward_loss, &ctx);
 }
 
-int symplectic_turn_loss(uint64_t &word, double lr, double (*loss_fn)(uint64_t, void *), void *ctx) {
+int symplectic_turn_loss(uint64_t &word, double lr, double (*loss_fn)(uint64_t, void *),
+                         void *ctx) {
     if (!loss_fn)
         return symplectic_turn(word, lr);
 

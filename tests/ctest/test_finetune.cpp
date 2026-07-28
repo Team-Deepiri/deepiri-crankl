@@ -25,18 +25,21 @@ int main() {
 
     double recon_before = 0.0;
     for (size_t s = 0; s < n_slots; ++s)
-        recon_before += crankl_decrank_frobenius_loss(slots[s], target.data() + s * CRANKL_BLOCK_FLOATS);
+        recon_before +=
+            crankl_decrank_frobenius_loss(slots[s], target.data() + s * CRANKL_BLOCK_FLOATS);
 
     if (crankl_finetune(slots.data(), n_slots, &view, target.data(), nullptr, nullptr, 80, 0.1, 1.0,
-                         0.0) != 0)
+                        0.0) != 0)
         return 2;
 
     double recon_after = 0.0;
     for (size_t s = 0; s < n_slots; ++s)
-        recon_after += crankl_decrank_frobenius_loss(slots[s], target.data() + s * CRANKL_BLOCK_FLOATS);
+        recon_after +=
+            crankl_decrank_frobenius_loss(slots[s], target.data() + s * CRANKL_BLOCK_FLOATS);
 
     if (!(recon_after < recon_before * 0.99)) {
-        std::fprintf(stderr, "FAIL: finetune recon before=%g after=%g\n", recon_before, recon_after);
+        std::fprintf(stderr, "FAIL: finetune recon before=%g after=%g\n", recon_before,
+                     recon_after);
         return 3;
     }
 
