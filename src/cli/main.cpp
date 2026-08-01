@@ -65,7 +65,9 @@ static int load_cran_slots(const char *path, std::vector<uint64_t> &slots, crank
     return 0;
 }
 
-static const char *bool_text(bool v) { return v ? "true" : "false"; }
+static const char *bool_text(bool v) {
+    return v ? "true" : "false";
+}
 
 static void print_metrics_text(const crankl_archive_metrics_t &m) {
     std::cout << "n_slots=" << m.n_slots << "\n"
@@ -80,12 +82,9 @@ static void print_metrics_text(const crankl_archive_metrics_t &m) {
 }
 
 static void print_metrics_json(const crankl_archive_metrics_t &m) {
-    std::cout << "{"
-              << "\"n_slots\":" << m.n_slots << ","
-              << "\"depth_min\":" << m.depth_min << ","
-              << "\"depth_max\":" << m.depth_max << ","
-              << "\"scalar_mean\":" << m.scalar_mean << ","
-              << "\"scalar_abs_mean\":" << m.scalar_abs_mean << ","
+    std::cout << "{" << "\"n_slots\":" << m.n_slots << "," << "\"depth_min\":" << m.depth_min << ","
+              << "\"depth_max\":" << m.depth_max << "," << "\"scalar_mean\":" << m.scalar_mean
+              << "," << "\"scalar_abs_mean\":" << m.scalar_abs_mean << ","
               << "\"trit_density\":" << m.trit_density << ","
               << "\"trit_entropy\":" << m.trit_entropy << ","
               << "\"clifford_energy\":" << m.clifford_energy << ","
@@ -186,7 +185,8 @@ static int cmd_unpack(int argc, char **argv) {
     std::vector<uint64_t> slots;
     if (load_cran_slots(input, slots, cran) != 0)
         return 2;
-  size_t out_count = mode == CRANKL_UNPACK_COEFFS ? slots.size() * 8 : slots.size() * CRANKL_BLOCK_FLOATS;
+    size_t out_count =
+        mode == CRANKL_UNPACK_COEFFS ? slots.size() * 8 : slots.size() * CRANKL_BLOCK_FLOATS;
     std::vector<float> out(out_count);
     crankl_unpack_f32_mode(slots.data(), slots.size(), out.data(), out.size(), mode);
     crankl_cran_close(&cran);
@@ -258,7 +258,7 @@ static int cmd_turn(int argc, char **argv) {
                 size_t base = i * CRANKL_BLOCK_FLOATS;
                 if (base < target.size())
                     crankl_turn_toward(&slots[i], lr, target.data() + base,
-                                        std::min(target.size() - base, size_t(CRANKL_BLOCK_FLOATS)));
+                                       std::min(target.size() - base, size_t(CRANKL_BLOCK_FLOATS)));
             } else {
                 crankl_turn(&slots[i], lr);
             }
@@ -356,14 +356,15 @@ static int cmd_finetune(int argc, char **argv) {
                 recon_before += crankl_decrank_frobenius_loss(slots[s], target.data() + base);
         }
     }
-    double task_before = task_loss ? crankl_holonomy_mse(&view, holo_ctx.calib_x, holo_ctx.calib_y,
-                                                           holo_ctx.dim)
-                                   : 0.0;
+    double task_before =
+        task_loss ? crankl_holonomy_mse(&view, holo_ctx.calib_x, holo_ctx.calib_y, holo_ctx.dim)
+                  : 0.0;
 
     std::vector<uint64_t> layer_stack;
     for (int step = 0; step < steps; ++step) {
-        if (crankl_finetune(slots.data(), slots.size(), &view, target.empty() ? nullptr : target.data(),
-                             task_loss, &holo_ctx, 1, lr, recon_weight, task_weight) != 0)
+        if (crankl_finetune(slots.data(), slots.size(), &view,
+                            target.empty() ? nullptr : target.data(), task_loss, &holo_ctx, 1, lr,
+                            recon_weight, task_weight) != 0)
             return 4;
         layer_stack.insert(layer_stack.end(), slots.begin(), slots.end());
     }
@@ -378,7 +379,8 @@ static int cmd_finetune(int argc, char **argv) {
         }
     }
     double task_after =
-        task_loss ? crankl_holonomy_mse(&view, holo_ctx.calib_x, holo_ctx.calib_y, holo_ctx.dim) : 0.0;
+        task_loss ? crankl_holonomy_mse(&view, holo_ctx.calib_x, holo_ctx.calib_y, holo_ctx.dim)
+                  : 0.0;
 
     crankl_cran_header_t hdr = cran.header;
     hdr.depth_max = static_cast<uint32_t>(steps);
@@ -560,11 +562,9 @@ static int cmd_inspect(int argc, char **argv) {
     }
 
     if (json) {
-        std::cout << "{\"path\":\"" << argv[2] << "\","
-                  << "\"mmap_size\":" << cran.mmap_size << ","
-                  << "\"gamma\":" << cran.header.gamma << ","
-                  << "\"flags\":" << cran.header.flags << ","
-                  << "\"has_metadata\":" << bool_text(meta_rc == 0) << ",";
+        std::cout << "{\"path\":\"" << argv[2] << "\"," << "\"mmap_size\":" << cran.mmap_size << ","
+                  << "\"gamma\":" << cran.header.gamma << "," << "\"flags\":" << cran.header.flags
+                  << "," << "\"has_metadata\":" << bool_text(meta_rc == 0) << ",";
         if (meta_rc == 0) {
             std::cout << "\"metadata\":{\"model\":\"" << meta.model_name << "\",\"hash\":\""
                       << meta.source_hash << "\"},";
@@ -619,10 +619,8 @@ static int cmd_compare(int argc, char **argv) {
 
     if (json) {
         std::cout << "{\"a\":\"" << argv[2] << "\",\"b\":\"" << argv[3] << "\","
-                  << "\"slots_changed\":" << changed << ","
-                  << "\"slots_compared\":" << n << ","
-                  << "\"hamming\":" << ham << ","
-                  << "\"clifford_resonance\":" << clifford << ","
+                  << "\"slots_changed\":" << changed << "," << "\"slots_compared\":" << n << ","
+                  << "\"hamming\":" << ham << "," << "\"clifford_resonance\":" << clifford << ","
                   << "\"sheaf_resonance\":" << sheaf << ","
                   << "\"delta_trit_density\":" << (mb.trit_density - ma.trit_density) << ","
                   << "\"delta_energy\":" << (mb.clifford_energy - ma.clifford_energy) << "}\n";
@@ -696,7 +694,7 @@ static int cmd_pipeline(int argc, char **argv) {
                 size_t base = i * CRANKL_BLOCK_FLOATS;
                 if (base < target.size())
                     crankl_turn_toward(&slots[i], lr, target.data() + base,
-                                        std::min(target.size() - base, size_t(CRANKL_BLOCK_FLOATS)));
+                                       std::min(target.size() - base, size_t(CRANKL_BLOCK_FLOATS)));
             } else {
                 crankl_turn(&slots[i], lr);
             }

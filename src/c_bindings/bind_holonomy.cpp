@@ -1,6 +1,6 @@
-#include "internal_headers/c_bindings.hpp"
 #include "crankl/holonomy.h"
 #include "internal_headers/api.hpp"
+#include "internal_headers/c_bindings.hpp"
 
 extern "C" {
 

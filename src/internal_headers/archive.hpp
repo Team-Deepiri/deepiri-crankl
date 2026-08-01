@@ -13,8 +13,7 @@ constexpr char CRANK_MAGIC[6] = {'C', 'R', 'A', 'N', 'K', '\x01'};
 constexpr char CRAN_LEGACY_MAGIC[6] = {'C', 'R', 'A', 'N', '\x01', '\0'};
 
 inline bool magic_is_valid(const char *magic) {
-    return std::memcmp(magic, CRANK_MAGIC, 6) == 0 ||
-           std::memcmp(magic, CRAN_LEGACY_MAGIC, 5) == 0;
+    return std::memcmp(magic, CRANK_MAGIC, 6) == 0 || std::memcmp(magic, CRAN_LEGACY_MAGIC, 5) == 0;
 }
 
 // FORMAT REDESIGN NOTES
@@ -59,11 +58,11 @@ static constexpr uint32_t FOOTER_MAGIC = 0x4D455441u; // META
 
 // Hard caps to reject malformed or hostile inputs before mmap / large allocations.
 constexpr size_t CRANKL_MAX_FILE_BYTES = 1u << 30;         // 1 GiB
-constexpr size_t CRANKL_MAX_FLOAT_BYTES = 256u << 20;       // 256 MiB of f32 payload
-constexpr uint64_t CRANKL_MAX_SLOTS = 1u << 20;              // 1M crank slots
-constexpr uint32_t CRANKL_MAX_STACK_LAYERS = 1u << 16;       // 64k finetune snapshots
+constexpr size_t CRANKL_MAX_FLOAT_BYTES = 256u << 20;      // 256 MiB of f32 payload
+constexpr uint64_t CRANKL_MAX_SLOTS = 1u << 20;            // 1M crank slots
+constexpr uint32_t CRANKL_MAX_STACK_LAYERS = 1u << 16;     // 64k finetune snapshots
 constexpr size_t CRANKL_MAX_SAFETENSORS_HEADER = 1u << 24; // 16 MiB JSON header
-constexpr size_t CRANKL_MAX_TENSOR_BYTES = 512u << 20;      // 512 MiB per tensor slice
+constexpr size_t CRANKL_MAX_TENSOR_BYTES = 512u << 20;     // 512 MiB per tensor slice
 
 inline bool size_mul_overflow(uint64_t a, uint64_t b, uint64_t &out) {
     if (a == 0 || b == 0) {
