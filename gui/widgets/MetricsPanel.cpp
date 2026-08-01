@@ -17,15 +17,13 @@ struct RowSpec {
 
 // Fixed order matching crankl_archive_metrics_t field order.
 const RowSpec kRows[] = {
-    {"n_slots", QT_TRANSLATE_NOOP("MetricsPanel",
-                                   "Number of crank words in the archive. One slot holds one "
-                                   "64-bit word, decoding to an 8×8 block.")},
-    {"depth_min", QT_TRANSLATE_NOOP("MetricsPanel",
-                                     "Lowest encoding depth across all slots.")},
-    {"depth_max", QT_TRANSLATE_NOOP("MetricsPanel",
-                                     "Highest encoding depth across all slots.")},
-    {"scalar_mean", QT_TRANSLATE_NOOP("MetricsPanel",
-                                       "Mean of all decoded scalar values across the archive.")},
+    {"n_slots",
+     QT_TRANSLATE_NOOP("MetricsPanel", "Number of crank words in the archive. One slot holds one "
+                                       "64-bit word, decoding to an 8×8 block.")},
+    {"depth_min", QT_TRANSLATE_NOOP("MetricsPanel", "Lowest encoding depth across all slots.")},
+    {"depth_max", QT_TRANSLATE_NOOP("MetricsPanel", "Highest encoding depth across all slots.")},
+    {"scalar_mean",
+     QT_TRANSLATE_NOOP("MetricsPanel", "Mean of all decoded scalar values across the archive.")},
     {"scalar_abs_mean",
      QT_TRANSLATE_NOOP("MetricsPanel",
                        "Mean absolute magnitude — insensitive to sign cancellation.")},
@@ -37,7 +35,7 @@ const RowSpec kRows[] = {
      QT_TRANSLATE_NOOP("MetricsPanel", "Summed squared multivector norm over every slot.")},
     {"beta1_proxy",
      QT_TRANSLATE_NOOP("MetricsPanel", "A proxy for first-order cycle structure — not a computed "
-                                        "Betti number. Do not read as beta1.")},
+                                       "Betti number. Do not read as beta1.")},
 };
 
 } // namespace
@@ -75,8 +73,7 @@ MetricsPanel::MetricsPanel(QWidget *parent) : QFrame(parent) {
         m_rows.push_back({key, value});
     }
 
-    m_proxyCallout =
-        new QLabel(tr("beta1_proxy is a proxy, not a computed Betti number."), this);
+    m_proxyCallout = new QLabel(tr("beta1_proxy is a proxy, not a computed Betti number."), this);
     m_proxyCallout->setObjectName(QStringLiteral("ProxyCallout"));
     m_proxyCallout->setWordWrap(true);
     layout->addSpacing(10);
@@ -124,8 +121,8 @@ void MetricsPanel::clear() {
 
 void MetricsPanel::applyState(State state) {
     const QString stateName = state == State::Loaded    ? QStringLiteral("loaded")
-                               : state == State::Pending ? QStringLiteral("pending")
-                                                          : QStringLiteral("empty");
+                              : state == State::Pending ? QStringLiteral("pending")
+                                                        : QStringLiteral("empty");
     for (int i = 0; i < m_rows.size(); ++i) {
         setStyleProperty(m_rows[i].key, "state", stateName);
         setStyleProperty(m_rows[i].value, "state", stateName);

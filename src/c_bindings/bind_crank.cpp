@@ -1,5 +1,5 @@
-#include "internal_headers/c_bindings.hpp"
 #include "crankl/crank.h"
+#include "internal_headers/c_bindings.hpp"
 
 #include <cstring>
 

@@ -1,7 +1,7 @@
 #include "widgets/HeatmapWidget.h"
 
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 
 #include <algorithm>
 #include <cmath>
@@ -24,7 +24,7 @@ QColor heatColor(double normalized) {
     static const QColor kNeutral(36, 42, 46);
     static const QColor kPositive(94, 203, 224);
     return normalized < 0.0 ? lerp(kNeutral, kNegative, -normalized)
-                             : lerp(kNeutral, kPositive, normalized);
+                            : lerp(kNeutral, kPositive, normalized);
 }
 
 } // namespace
@@ -69,7 +69,7 @@ void HeatmapWidget::paintEvent(QPaintEvent * /*event*/) {
 
             if (m_showValues && cell >= 24.0) {
                 painter.setPen(normalized > -0.15 && normalized < 0.15 ? Qt::white
-                                                                        : QColor(20, 20, 20));
+                                                                       : QColor(20, 20, 20));
                 QFont font = painter.font();
                 font.setPointSizeF(std::max(6.0, cell / 6.0));
                 painter.setFont(font);
@@ -79,6 +79,8 @@ void HeatmapWidget::paintEvent(QPaintEvent * /*event*/) {
     }
 }
 
-QSize HeatmapWidget::sizeHint() const { return QSize(212, 212); }
+QSize HeatmapWidget::sizeHint() const {
+    return QSize(212, 212);
+}
 
 } // namespace crankl_gui

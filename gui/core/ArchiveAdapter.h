@@ -10,7 +10,7 @@ namespace crankl_gui {
 
 // Result of one open attempt. `ok` is false only when the file could not be
 // opened as a .crank archive at all (crankl_cran_read itself failed -- bad
-// magic, missing file, truncated header). 
+// magic, missing file, truncated header).
 struct ArchiveOpenResult {
     bool ok = false;
     ArchiveSnapshot snapshot;
@@ -18,7 +18,7 @@ struct ArchiveOpenResult {
 };
 
 class ArchiveAdapter {
-public:
+  public:
     static ArchiveOpenResult openArchive(const QString &path);
 };
 

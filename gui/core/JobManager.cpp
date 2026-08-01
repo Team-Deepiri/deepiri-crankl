@@ -15,7 +15,7 @@ namespace {
 // back via a queued signal -- it never touches m_jobs or any widget.
 class ArchiveOpenWorker : public QObject {
     Q_OBJECT
-public:
+  public:
     using QObject::QObject;
 
     void doOpen(const QUuid &jobId, const QString &path) {
@@ -23,7 +23,7 @@ public:
         Q_EMIT resultReady(jobId, result);
     }
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void resultReady(QUuid jobId, ArchiveOpenResult result);
 };
 
@@ -83,16 +83,18 @@ void JobManager::cancelRunning() {
 
 void JobManager::clearFinished() {
     m_jobs.erase(std::remove_if(m_jobs.begin(), m_jobs.end(),
-                                 [](const CranklJob &job) {
-                                     return job.state == JobState::Done ||
-                                            job.state == JobState::Failed ||
-                                            job.state == JobState::Cancelled;
-                                 }),
+                                [](const CranklJob &job) {
+                                    return job.state == JobState::Done ||
+                                           job.state == JobState::Failed ||
+                                           job.state == JobState::Cancelled;
+                                }),
                  m_jobs.end());
     Q_EMIT jobsChanged();
 }
 
-QVector<CranklJob> JobManager::jobs() const { return m_jobs; }
+QVector<CranklJob> JobManager::jobs() const {
+    return m_jobs;
+}
 
 void JobManager::handleWorkerResult(QUuid jobId, ArchiveOpenResult result) {
     updateJob(jobId, [&result](CranklJob &job) {

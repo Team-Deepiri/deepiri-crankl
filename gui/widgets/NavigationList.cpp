@@ -76,9 +76,9 @@ NavigationList::NavigationList(QWidget *parent) : QWidget(parent) {
 
     addGroupLabel(tr("DEVELOPER"));
     addDestinationRow(NavDestination::AdvancedMathLab,
-                       destinationLabel(NavDestination::AdvancedMathLab), false);
-    addDestinationRow(NavDestination::Jobs, destinationLabel(NavDestination::Jobs) + QStringLiteral(" · 0"),
-                       true);
+                      destinationLabel(NavDestination::AdvancedMathLab), false);
+    addDestinationRow(NavDestination::Jobs,
+                      destinationLabel(NavDestination::Jobs) + QStringLiteral(" · 0"), true);
     m_jobsItem = m_list->item(m_list->count() - 1);
     addDestinationRow(NavDestination::Settings, destinationLabel(NavDestination::Settings), true);
     addDestinationRow(NavDestination::Help, destinationLabel(NavDestination::Help), true);
@@ -113,7 +113,8 @@ void NavigationList::addGroupLabel(const QString &text) {
     m_list->addItem(item);
 }
 
-void NavigationList::addDestinationRow(NavDestination destination, const QString &label, bool enabled) {
+void NavigationList::addDestinationRow(NavDestination destination, const QString &label,
+                                       bool enabled) {
     auto *item = new QListWidgetItem(label);
     item->setData(DestinationRole, static_cast<int>(destination));
     item->setFlags(enabled ? (Qt::ItemIsSelectable | Qt::ItemIsEnabled) : Qt::NoItemFlags);
@@ -125,7 +126,7 @@ void NavigationList::addDestinationRow(NavDestination destination, const QString
 void NavigationList::setJobsCount(int count) {
     if (m_jobsItem)
         m_jobsItem->setText(destinationLabel(NavDestination::Jobs) +
-                             QStringLiteral(" · %1").arg(count));
+                            QStringLiteral(" · %1").arg(count));
 }
 
 NavDestination NavigationList::currentDestination() const {

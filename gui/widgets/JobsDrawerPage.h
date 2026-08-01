@@ -17,17 +17,17 @@ namespace crankl_gui {
 // error message of the most recently failed job
 class JobsDrawerPage : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit JobsDrawerPage(QWidget *parent = nullptr);
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void setJobs(const QVector<CranklJob> &jobs);
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void cancelRunningRequested();
     void clearFinishedRequested();
 
-private:
+  private:
     void refreshTable();
 
     QTableWidget *m_table = nullptr;

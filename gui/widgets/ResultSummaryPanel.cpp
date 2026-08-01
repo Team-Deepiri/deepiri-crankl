@@ -35,8 +35,8 @@ ResultSummaryPanel::ResultSummaryPanel(QWidget *parent) : QFrame(parent) {
     layout->addWidget(m_metrics);
     layout->addSpacing(10);
 
-    m_rollbackNote = new QLabel(
-        tr("Rollback unavailable: archive history cannot be validated safely."), this);
+    m_rollbackNote =
+        new QLabel(tr("Rollback unavailable: archive history cannot be validated safely."), this);
     m_rollbackNote->setObjectName(QStringLiteral("RollbackBanner"));
     m_rollbackNote->setWordWrap(true);
     layout->addWidget(m_rollbackNote);

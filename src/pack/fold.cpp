@@ -30,8 +30,8 @@ static double decrank_frobenius_word(uint64_t word, const float W[BLOCK_FLOATS])
     return frob;
 }
 
-static double fold_objective_decrank(const Multivector &mv, const float W[BLOCK_FLOATS], uint8_t depth,
-                                     float lambda, float mu) {
+static double fold_objective_decrank(const Multivector &mv, const float W[BLOCK_FLOATS],
+                                     uint8_t depth, float lambda, float mu) {
     uint64_t word = pack_crank_word(mv, depth, 0);
     double frob = decrank_frobenius_word(word, W);
 
@@ -50,7 +50,8 @@ static double fold_objective_decrank(const Multivector &mv, const float W[BLOCK_
 }
 
 static void perturb_mv(Multivector &mv, int seed) {
-    double *parts[] = {&mv.scalar, &mv.vec[0], &mv.vec[1], &mv.vec[2], &mv.bivec[0], &mv.bivec[1], &mv.bivec[2], &mv.trivec};
+    double *parts[] = {&mv.scalar,   &mv.vec[0],   &mv.vec[1],   &mv.vec[2],
+                       &mv.bivec[0], &mv.bivec[1], &mv.bivec[2], &mv.trivec};
     int idx = seed % 8;
     parts[idx][0] += (seed % 2 == 0 ? 0.05 : -0.05);
 }

@@ -16,21 +16,23 @@ namespace crankl_gui {
 // gradient legend shown alongside it in the design.
 class HeatmapWidget : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit HeatmapWidget(QWidget *parent = nullptr);
 
     void setValues(const std::array<double, 64> &values);
-    double maxAbsValue() const { return m_maxAbs; }
+    double maxAbsValue() const {
+        return m_maxAbs;
+    }
 
     // Overlays each cell's numeric value as text -- backs the design's
     // Heatmap/Numeric toggle without a second, bespoke table widget.
     void setShowValues(bool show);
 
-protected:
+  protected:
     void paintEvent(QPaintEvent *event) override;
     QSize sizeHint() const override;
 
-private:
+  private:
     std::array<double, 64> m_values{};
     double m_maxAbs = 1.0;
     bool m_showValues = false;

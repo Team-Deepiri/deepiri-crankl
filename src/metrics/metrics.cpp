@@ -1,5 +1,5 @@
-#include "internal_headers/algebra.hpp"
 #include "internal_headers/metrics.hpp"
+#include "internal_headers/algebra.hpp"
 #include "internal_headers/topology.hpp"
 
 #include <algorithm>
@@ -51,7 +51,8 @@ int compute_archive_metrics(const uint64_t *slots, size_t n_slots, ArchiveMetric
         out.scalar_abs_mean += std::fabs(mv.scalar);
         out.clifford_energy += blade_energy(mv);
 
-        double fields[7] = {mv.vec[0], mv.vec[1], mv.vec[2], mv.bivec[0], mv.bivec[1], mv.bivec[2], mv.trivec};
+        double fields[7] = {mv.vec[0],   mv.vec[1],   mv.vec[2], mv.bivec[0],
+                            mv.bivec[1], mv.bivec[2], mv.trivec};
         for (double f : fields) {
             int t = trit_value(f);
             ++trit_total;

@@ -7,11 +7,11 @@
 #include "widgets/ThreeColumnPage.h"
 
 #include <QApplication>
-#include <QDebug>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QComboBox>
+#include <QDebug>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFile>
@@ -366,7 +366,7 @@ void InspectPage::exportStatsReport() {
         return;
     const QString suggested = m_snapshot.path + QStringLiteral(".stats.json");
     const QString path = QFileDialog::getSaveFileName(this, tr("Export stats report"), suggested,
-                                                        tr("JSON (*.json)"));
+                                                      tr("JSON (*.json)"));
     if (path.isEmpty())
         return;
 

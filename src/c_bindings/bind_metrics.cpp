@@ -17,7 +17,7 @@ static void metrics_to_c(const crankl::ArchiveMetrics &m, crankl_archive_metrics
 extern "C" {
 
 int crankl_compute_archive_metrics(const uint64_t *slots, size_t n_slots,
-                                    crankl_archive_metrics_t *out) {
+                                   crankl_archive_metrics_t *out) {
     if (!slots || !out)
         return CRANKL_ERR_NULL;
     crankl::ArchiveMetrics m{};

@@ -28,26 +28,26 @@ class ThreeColumnPage;
 // canonical three-column frame
 class InspectPage : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit InspectPage(QWidget *parent = nullptr);
 
     void setSnapshot(const ArchiveSnapshot &snapshot);
     void clearSnapshot();
     void debugDump();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void verifyRequested();
     void closeRequested();
     void changeArchiveRequested(); // Open archive… / Change — same file dialog
     void recentRequested();
     void pathDropped(QString path);
 
-protected:
+  protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-private:
+  private:
     QWidget *buildLeftColumn();
     QJsonObject buildReportJson() const;
     void applyEmptyState(bool empty);

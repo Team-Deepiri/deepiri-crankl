@@ -25,7 +25,7 @@ namespace crankl_gui {
 // archive context.
 class ArchiveHealthHeader : public QFrame {
     Q_OBJECT
-public:
+  public:
     explicit ArchiveHealthHeader(QWidget *parent = nullptr);
 
     void setSnapshot(const ArchiveSnapshot &snapshot);
@@ -34,12 +34,12 @@ public:
     // Compact is driven by the host page's width
     void setCompact(bool compact);
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void verifyRequested();
     void jsonCopyRequested();
     void closeRequested();
 
-private:
+  private:
     void buildUi();
     void applyState();
     void applyCompact();

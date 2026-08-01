@@ -29,9 +29,9 @@ namespace {
 // the imported design renders it dimmed alongside Pack/Optimize/etc.,
 // because ArchiveAdapter only ever holds one open archive at a time.
 const QVector<NavDestination> kPlaceholderDestinations = {
-    NavDestination::Compare,   NavDestination::Pack,     NavDestination::Optimize,
-    NavDestination::History,   NavDestination::Bind,     NavDestination::Forward,
-    NavDestination::Unpack,    NavDestination::Pipeline, NavDestination::AdvancedMathLab,
+    NavDestination::Compare, NavDestination::Pack,     NavDestination::Optimize,
+    NavDestination::History, NavDestination::Bind,     NavDestination::Forward,
+    NavDestination::Unpack,  NavDestination::Pipeline, NavDestination::AdvancedMathLab,
 };
 
 QString placeholderTitle(NavDestination d) {
@@ -101,14 +101,14 @@ void MainWindow::buildToolBar() {
     auto *openMenu = new QMenu(openButton);
     openMenu->addAction(tr("Open archive…"), this, [this] {
         const QString path = QFileDialog::getOpenFileName(this, tr("Open crank archive"), QString(),
-                                                            tr("Crank archives (*.crank)"));
+                                                          tr("Crank archives (*.crank)"));
         if (!path.isEmpty())
             openPath(path);
     });
     openMenu->addAction(tr("Open weights…"), this, [this] {
-        const QString path = QFileDialog::getOpenFileName(
-            this, tr("Open weight file"), QString(),
-            tr("Weight files (*.f32 *.bin *.safetensors)"));
+        const QString path =
+            QFileDialog::getOpenFileName(this, tr("Open weight file"), QString(),
+                                         tr("Weight files (*.f32 *.bin *.safetensors)"));
         if (!path.isEmpty())
             openPath(path);
     });
@@ -160,14 +160,14 @@ void MainWindow::buildCentralArea() {
     m_homePage = new HomePage(m_stack);
     connect(m_homePage, &HomePage::openArchiveRequested, this, [this] {
         const QString path = QFileDialog::getOpenFileName(this, tr("Open crank archive"), QString(),
-                                                            tr("Crank archives (*.crank)"));
+                                                          tr("Crank archives (*.crank)"));
         if (!path.isEmpty())
             openPath(path);
     });
     connect(m_homePage, &HomePage::openWeightsRequested, this, [this] {
-        const QString path = QFileDialog::getOpenFileName(
-            this, tr("Open weight file"), QString(),
-            tr("Weight files (*.f32 *.bin *.safetensors)"));
+        const QString path =
+            QFileDialog::getOpenFileName(this, tr("Open weight file"), QString(),
+                                         tr("Weight files (*.f32 *.bin *.safetensors)"));
         if (!path.isEmpty())
             openPath(path);
     });
@@ -182,7 +182,7 @@ void MainWindow::buildCentralArea() {
     connect(m_inspectPage, &InspectPage::closeRequested, this, &MainWindow::handleCloseRequested);
     connect(m_inspectPage, &InspectPage::changeArchiveRequested, this, [this] {
         const QString path = QFileDialog::getOpenFileName(this, tr("Open crank archive"), QString(),
-                                                            tr("Crank archives (*.crank)"));
+                                                          tr("Crank archives (*.crank)"));
         if (!path.isEmpty())
             openPath(path);
     });
@@ -208,9 +208,9 @@ void MainWindow::buildCentralArea() {
     // placeholders above rather than reusing the same "Not available yet."
     // wording, which would misrepresent them as disabled.
     m_pages.insert(NavDestination::Settings,
-                    new PlaceholderPage(placeholderTitle(NavDestination::Settings), m_stack));
+                   new PlaceholderPage(placeholderTitle(NavDestination::Settings), m_stack));
     m_pages.insert(NavDestination::Help,
-                    new PlaceholderPage(placeholderTitle(NavDestination::Help), m_stack));
+                   new PlaceholderPage(placeholderTitle(NavDestination::Help), m_stack));
 
     for (auto *page : std::as_const(m_pages))
         m_stack->addWidget(page);
@@ -266,8 +266,7 @@ void MainWindow::handleArchiveOpened(QUuid /*jobId*/, ArchiveOpenResult result) 
 
 void MainWindow::debugDumpWidths() {
     qDebug() << "window" << width() << "stack" << m_stack->width() << "inspect"
-             << m_inspectPage->width() << "inspectMin"
-             << m_inspectPage->minimumSizeHint().width();
+             << m_inspectPage->width() << "inspectMin" << m_inspectPage->minimumSizeHint().width();
     m_inspectPage->debugDump();
 }
 
@@ -282,8 +281,7 @@ void MainWindow::rememberRecent(const QString &path) {
 }
 
 void MainWindow::showRecentMenu() {
-    const QStringList recents =
-        QSettings().value(QStringLiteral("recent/archives")).toStringList();
+    const QStringList recents = QSettings().value(QStringLiteral("recent/archives")).toStringList();
     QMenu menu(this);
     if (recents.isEmpty()) {
         menu.addAction(tr("No recent archives"))->setEnabled(false);

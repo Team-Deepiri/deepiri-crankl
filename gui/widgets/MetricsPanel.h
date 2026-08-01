@@ -16,14 +16,14 @@ namespace crankl_gui {
 // and the beta1_proxy callout.
 class MetricsPanel : public QFrame {
     Q_OBJECT
-public:
+  public:
     explicit MetricsPanel(QWidget *parent = nullptr);
 
     void setMetrics(const ArchiveMetrics &metrics);
     void setPending();
     void clear();
 
-private:
+  private:
     enum class State { Loaded, Empty, Pending };
     void applyState(State state);
 

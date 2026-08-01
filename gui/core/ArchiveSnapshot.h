@@ -56,7 +56,9 @@ struct ArchiveSnapshot {
 
     std::vector<uint64_t> crankWords;
 
-    bool isEmpty() const { return path.isEmpty(); }
+    bool isEmpty() const {
+        return path.isEmpty();
+    }
 };
 
 } // namespace crankl_gui

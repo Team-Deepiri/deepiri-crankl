@@ -26,7 +26,7 @@ class MetricsPanel;
 // in a Run button there without moving anything else.
 class ResultSummaryPanel : public QFrame {
     Q_OBJECT
-public:
+  public:
     explicit ResultSummaryPanel(QWidget *parent = nullptr);
     ~ResultSummaryPanel() override;
 
@@ -34,13 +34,15 @@ public:
     void setPending();
     void clear();
 
-    QWidget *bottomActionsWidget() const { return m_bottomActions; }
+    QWidget *bottomActionsWidget() const {
+        return m_bottomActions;
+    }
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void copyAsJsonRequested();
     void exportStatsReportRequested();
 
-private:
+  private:
     QWidget *buildBottomActions();
 
     MetricsPanel *m_metrics = nullptr;

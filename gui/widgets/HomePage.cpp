@@ -5,13 +5,13 @@
 
 #include <QDragEnterEvent>
 #include <QDropEvent>
-#include <QResizeEvent>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMimeData>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -22,8 +22,8 @@ namespace {
 
 QLabel *makeRollbackBanner(QWidget *parent) {
     auto *banner = new QLabel(QObject::tr("Rollback unavailable: archive history cannot be "
-                                           "validated safely."),
-                               parent);
+                                          "validated safely."),
+                              parent);
     banner->setObjectName(QStringLiteral("RollbackBanner"));
     banner->setWordWrap(true);
     return banner;
@@ -75,7 +75,7 @@ QWidget *HomePage::buildEmptyStatePanel() {
 
     auto *subtitle =
         new QLabel(tr("This build reads archives. Weight files are accepted at the drop "
-                       "target but route to an explanation, not an import."),
+                      "target but route to an explanation, not an import."),
                    dropZone);
     subtitle->setObjectName(QStringLiteral("DropZoneSubtitle"));
     subtitle->setWordWrap(true);
@@ -162,7 +162,7 @@ QWidget *HomePage::buildSelectedStatePanel() {
     actionsGroupLayout->addWidget(buildActionButtonsGrid());
     auto *actionsNote =
         new QLabel(tr("Dimmed controls keep their position and label so the shell doesn't "
-                       "rearrange later."),
+                      "rearrange later."),
                    actionsGroup);
     actionsNote->setWordWrap(true);
     actionsNote->setObjectName(QStringLiteral("MutedNote"));
@@ -183,7 +183,7 @@ QWidget *HomePage::buildSelectedStatePanel() {
     m_identityHash = new QLabel(right);
     auto *identityNote =
         new QLabel(tr("No provenance footer is normal, not a failure — "
-                       "crankl_cran_read_metadata() returned CRANKL_ERR_NO_METADATA."),
+                      "crankl_cran_read_metadata() returned CRANKL_ERR_NO_METADATA."),
                    identityGroup);
     identityNote->setWordWrap(true);
     identityNote->setObjectName(QStringLiteral("MutedNote"));
@@ -202,7 +202,7 @@ QWidget *HomePage::buildSelectedStatePanel() {
     m_lifecycleLog->setObjectName(QStringLiteral("LifecycleLog"));
     auto *lifecycleNote =
         new QLabel(tr("Everything on screen is a copy. No live pointers into the mapping, "
-                       "and only one archive is ever open at a time."),
+                      "and only one archive is ever open at a time."),
                    lifecycleGroup);
     lifecycleNote->setWordWrap(true);
     lifecycleNote->setObjectName(QStringLiteral("MutedNote"));
@@ -252,8 +252,8 @@ QWidget *HomePage::buildUnsupportedPanel() {
 
     auto *explanation =
         new QLabel(tr("That file was accepted at the drop target but this build cannot read "
-                       "weight files — only .crank archives. Nothing was opened and nothing "
-                       "was written."),
+                      "weight files — only .crank archives. Nothing was opened and nothing "
+                      "was written."),
                    panel);
     explanation->setWordWrap(true);
     explanation->setAlignment(Qt::AlignCenter);
@@ -270,7 +270,9 @@ QWidget *HomePage::buildUnsupportedPanel() {
     return panel;
 }
 
-void HomePage::showEmptyState() { m_stack->setCurrentWidget(m_emptyPanel); }
+void HomePage::showEmptyState() {
+    m_stack->setCurrentWidget(m_emptyPanel);
+}
 
 void HomePage::showArchive(const ArchiveSnapshot &snapshot) {
     m_overviewHeader->setSnapshot(snapshot);
@@ -284,13 +286,13 @@ void HomePage::showArchive(const ArchiveSnapshot &snapshot) {
     }
 
     const QString completedAt = snapshot.verifiedAt.isValid()
-                                     ? snapshot.verifiedAt.toString(QStringLiteral("HH:mm:ss.zzz"))
-                                     : QString();
+                                    ? snapshot.verifiedAt.toString(QStringLiteral("HH:mm:ss.zzz"))
+                                    : QString();
     m_lifecycleLog->setText(tr("crankl_cran_read()\n"
-                                "metrics · metadata · slots copied into owned structures\n"
-                                "crankl_cran_close()\n"
-                                "completed %1 (read → copy → close, one call)")
-                                 .arg(completedAt));
+                               "metrics · metadata · slots copied into owned structures\n"
+                               "crankl_cran_close()\n"
+                               "completed %1 (read → copy → close, one call)")
+                                .arg(completedAt));
 
     m_stack->setCurrentWidget(m_selectedPanel);
 }

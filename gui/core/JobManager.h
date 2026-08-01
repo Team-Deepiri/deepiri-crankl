@@ -14,7 +14,7 @@ namespace crankl_gui {
 
 class JobManager : public QObject {
     Q_OBJECT
-public:
+  public:
     explicit JobManager(QObject *parent = nullptr);
     ~JobManager() override;
 
@@ -31,14 +31,14 @@ public:
 
     QVector<CranklJob> jobs() const;
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void jobsChanged();
     void archiveOpened(QUuid jobId, ArchiveOpenResult result);
 
-private Q_SLOTS:
+  private Q_SLOTS:
     void handleWorkerResult(QUuid jobId, ArchiveOpenResult result);
 
-private:
+  private:
     void updateJob(const QUuid &jobId, const std::function<void(CranklJob &)> &mutator);
 
     QThread m_workerThread;

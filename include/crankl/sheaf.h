@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 double crankl_sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other,
-                               size_t n_other);
+                              size_t n_other);
 int crankl_sheaf_beta1_proxy(const uint64_t *slots, size_t n);
 
 #ifdef __cplusplus
