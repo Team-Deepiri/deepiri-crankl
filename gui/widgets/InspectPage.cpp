@@ -7,11 +7,12 @@
 #include "widgets/ThreeColumnPage.h"
 
 #include <QApplication>
-#include <QDebug>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QComboBox>
+#include <QDebug>
+#include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFile>
@@ -19,6 +20,7 @@
 #include <QHBoxLayout>
 #include <QJsonDocument>
 #include <QLabel>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
 #include <QResizeEvent>
@@ -366,14 +368,31 @@ void InspectPage::exportStatsReport() {
         return;
     const QString suggested = m_snapshot.path + QStringLiteral(".stats.json");
     const QString path = QFileDialog::getSaveFileName(this, tr("Export stats report"), suggested,
-                                                        tr("JSON (*.json)"));
+                                                      tr("JSON (*.json)"));
     if (path.isEmpty())
         return;
 
+    // A user-initiated export must never fail silently: the user picked a
+    // destination and expects a file there. Both the open and the write are
+    // reported, and a partial write is treated as a failure rather than left
+    // on disk unannounced.
     QFile file(path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::critical(this, tr("Export failed"),
+                              tr("Could not open %1 for writing:\n%2")
+                                  .arg(QDir::toNativeSeparators(path), file.errorString()));
         return;
-    file.write(QJsonDocument(buildReportJson()).toJson(QJsonDocument::Indented));
+    }
+
+    const QByteArray payload = QJsonDocument(buildReportJson()).toJson(QJsonDocument::Indented);
+    if (file.write(payload) != payload.size() || !file.flush()) {
+        QMessageBox::critical(
+            this, tr("Export failed"),
+            tr("Could not write %1:\n%2").arg(QDir::toNativeSeparators(path), file.errorString()));
+        file.close();
+        return;
+    }
+    file.close();
 }
 
 } // namespace crankl_gui
