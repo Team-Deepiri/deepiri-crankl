@@ -35,8 +35,8 @@ ResultSummaryPanel::ResultSummaryPanel(QWidget *parent) : QFrame(parent) {
     layout->addWidget(m_metrics);
     layout->addSpacing(10);
 
-    m_rollbackNote = new QLabel(
-        tr("Rollback unavailable: archive history cannot be validated safely."), this);
+    m_rollbackNote =
+        new QLabel(tr("Rollback unavailable: archive history cannot be validated safely."), this);
     m_rollbackNote->setObjectName(QStringLiteral("RollbackBanner"));
     m_rollbackNote->setWordWrap(true);
     layout->addWidget(m_rollbackNote);
@@ -85,7 +85,10 @@ QWidget *ResultSummaryPanel::buildBottomActions() {
 }
 
 void ResultSummaryPanel::setSnapshot(const ArchiveSnapshot &snapshot) {
-    m_metrics->setMetrics(snapshot.metrics);
+    if (snapshot.metricsValid)
+        m_metrics->setMetrics(snapshot.metrics);
+    else
+        m_metrics->setUnavailable();
     m_rollbackNote->setVisible(true);
     m_copyJsonButton->setEnabled(true);
     m_exportButton->setEnabled(true);
