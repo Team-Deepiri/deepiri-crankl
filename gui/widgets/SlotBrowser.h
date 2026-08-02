@@ -22,20 +22,20 @@ class HeatmapWidget;
 // already copied into the ArchiveSnapshot it was given.
 class SlotBrowser : public QFrame {
     Q_OBJECT
-public:
+  public:
     explicit SlotBrowser(QWidget *parent = nullptr);
 
     void setSnapshot(const ArchiveSnapshot &snapshot); // switches to loaded state
     void setSlotIndex(int index);
     void setNumericMode(bool numeric); // Heatmap/Numeric toggle (design 5d)
     void setCondensed(bool condensed); // narrow pages: coefficients 2-up, tags hidden
-    void clear();                       // switches to the 4a empty state
+    void clear();                      // switches to the 4a empty state
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void openArchiveRequested();
     void recentRequested();
 
-private:
+  private:
     QWidget *buildEmptyPage();
     QWidget *buildLoadedPage();
     void refreshSlot();

@@ -220,9 +220,9 @@ QWidget *SlotBrowser::buildLoadedPage() {
     coeffGridLayout->setContentsMargins(0, 0, 0, 0);
     coeffGridLayout->setSpacing(6);
     static const QStringList kCoeffNames = {QStringLiteral("e0"),  QStringLiteral("e1"),
-                                             QStringLiteral("e2"),  QStringLiteral("e3"),
-                                             QStringLiteral("e01"), QStringLiteral("e02"),
-                                             QStringLiteral("e03"), QStringLiteral("e0123")};
+                                            QStringLiteral("e2"),  QStringLiteral("e3"),
+                                            QStringLiteral("e01"), QStringLiteral("e02"),
+                                            QStringLiteral("e03"), QStringLiteral("e0123")};
     for (int i = 0; i < kCoeffNames.size(); ++i) {
         auto *cell = makeCard(QStringLiteral("CoeffCell"), coeffGrid);
         auto *cellLayout = new QVBoxLayout(cell);
@@ -389,27 +389,26 @@ void SlotBrowser::refreshSlot() {
             const double value = block[static_cast<size_t>(row * 8 + col)];
             auto *item = new QTableWidgetItem(QString::number(value, 'f', 4));
             item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-            item->setForeground(value > 0 ? kPositiveColor
-                                 : value < 0 ? kNegativeColor
-                                              : kZeroColor);
+            item->setForeground(value > 0   ? kPositiveColor
+                                : value < 0 ? kNegativeColor
+                                            : kZeroColor);
             m_numericTable->setItem(row, col, item);
         }
     }
 
     m_wordHex->setText(QStringLiteral("0x") +
-                        QString::number(word, 16).toUpper().rightJustified(16, QLatin1Char('0')));
+                       QString::number(word, 16).toUpper().rightJustified(16, QLatin1Char('0')));
     rebuildBitGrid(word);
 
     crankl_multivector_t mv{};
     uint8_t depth = 0;
     crankl_crank_to_multivector(word, &mv, &depth);
     const std::array<double, 8> coeffs = {mv.s,    mv.v[0], mv.v[1], mv.v[2],
-                                           mv.b[0], mv.b[1], mv.b[2], mv.p};
+                                          mv.b[0], mv.b[1], mv.b[2], mv.p};
     for (int i = 0; i < static_cast<int>(coeffs.size()) && i < m_coefficientValues.size(); ++i) {
         const double v = coeffs[static_cast<size_t>(i)];
-        m_coefficientValues[i]->setText(
-            QStringLiteral("%1%2").arg(v >= 0 ? QStringLiteral("+") : QString(),
-                                        QString::number(v, 'f', 4)));
+        m_coefficientValues[i]->setText(QStringLiteral("%1%2").arg(
+            v >= 0 ? QStringLiteral("+") : QString(), QString::number(v, 'f', 4)));
     }
 }
 

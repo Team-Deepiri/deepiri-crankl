@@ -27,20 +27,20 @@ enum class NavDestination {
 
 // Left-hand nav: only Home, Inspect, Jobs, Settings, and Help are
 // enabled in Phase 1 -- every other destination is disabled and routes to a
-// PlaceholderPage. 
+// PlaceholderPage.
 class NavigationList : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit NavigationList(QWidget *parent = nullptr);
 
     void setJobsCount(int count);
     NavDestination currentDestination() const;
     void setCurrentDestination(NavDestination destination);
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void destinationActivated(NavDestination destination);
 
-private:
+  private:
     void addGroupLabel(const QString &text);
     void addDestinationRow(NavDestination destination, const QString &label, bool enabled);
     void restorePersistedDestination();

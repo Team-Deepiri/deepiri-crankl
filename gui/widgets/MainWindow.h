@@ -24,23 +24,27 @@ class JobsDrawerPage;
 // QStackedWidget (right)
 class MainWindow : public QMainWindow {
     Q_OBJECT
-public:
+  public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
     // Dev hooks used by main.cpp's CRANKL_GUI_SCREENSHOT harness only.
-    void debugOpenPath(const QString &path) { openPath(path); }
-    void debugShowInspect() { m_nav->setCurrentDestination(NavDestination::Inspect); }
+    void debugOpenPath(const QString &path) {
+        openPath(path);
+    }
+    void debugShowInspect() {
+        m_nav->setCurrentDestination(NavDestination::Inspect);
+    }
     void debugDumpWidths();
 
-private Q_SLOTS:
+  private Q_SLOTS:
     void handleDestinationActivated(NavDestination destination);
     void handleArchiveOpened(QUuid jobId, ArchiveOpenResult result);
     void handleJobsChanged();
     void handleVerifyRequested();
     void handleCloseRequested();
 
-private:
+  private:
     void buildToolBar();
     void buildCentralArea();
     void openPath(const QString &path); // shared by the Open button and any drop target

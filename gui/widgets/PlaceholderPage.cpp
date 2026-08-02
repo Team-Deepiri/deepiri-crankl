@@ -5,7 +5,8 @@
 
 namespace crankl_gui {
 
-PlaceholderPage::PlaceholderPage(const QString &destinationName, QWidget *parent) : QWidget(parent) {
+PlaceholderPage::PlaceholderPage(const QString &destinationName, QWidget *parent)
+    : QWidget(parent) {
     setObjectName(QStringLiteral("PlaceholderPage"));
 
     auto *layout = new QVBoxLayout(this);

@@ -149,8 +149,8 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     // cmd_peel currently treats it as valid history because it is non-null and
     // differs from out->slots. The v3 implementation must use nullptr here and
     // expose an explicit validated n_stack_layers field.
-    out->layers = layers_ptr ? reinterpret_cast<const uint64_t *>(layers_ptr)
-                             : out->slots + hd->n_slots;
+    out->layers =
+        layers_ptr ? reinterpret_cast<const uint64_t *>(layers_ptr) : out->slots + hd->n_slots;
     return 0;
 }
 

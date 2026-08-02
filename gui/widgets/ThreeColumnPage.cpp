@@ -117,7 +117,8 @@ void ThreeColumnPage::rebuild() {
     if (m_centerContent)
         rowLayout->addWidget(m_centerContent, 1);
 
-    QWidget *rightColumnParent = m_narrow ? static_cast<QWidget *>(this) : static_cast<QWidget *>(m_row);
+    QWidget *rightColumnParent =
+        m_narrow ? static_cast<QWidget *>(this) : static_cast<QWidget *>(m_row);
     m_rightColumn = new QWidget(rightColumnParent);
     m_rightColumn->setObjectName(QStringLiteral("ThreeColumnRightColumn"));
     auto *rightLayout = new QVBoxLayout(m_rightColumn);

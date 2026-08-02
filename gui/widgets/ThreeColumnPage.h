@@ -15,7 +15,7 @@ namespace crankl_gui {
 // Later phases (Pack, Optimize, ...) reuse this exact frame
 class ThreeColumnPage : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit ThreeColumnPage(QWidget *parent = nullptr);
 
     void setLeftContent(QWidget *widget);
@@ -25,10 +25,10 @@ public:
 
     void setAvailableWidth(int width);
 
-protected:
+  protected:
     void resizeEvent(QResizeEvent *event) override;
 
-private:
+  private:
     void rebuild();
     void updateNarrowForWidth(int width);
 

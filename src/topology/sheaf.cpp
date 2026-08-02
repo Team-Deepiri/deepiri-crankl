@@ -16,7 +16,8 @@ static double restriction_map(uint64_t a, uint64_t b) {
     (void)db;
 
     // Coboundary weight: alignment of bivector stalks + pseudoscalar orientation.
-    double align = ma.bivec[0] * mb.bivec[0] + ma.bivec[1] * mb.bivec[1] + ma.bivec[2] * mb.bivec[2];
+    double align =
+        ma.bivec[0] * mb.bivec[0] + ma.bivec[1] * mb.bivec[1] + ma.bivec[2] * mb.bivec[2];
     double orient = ma.trivec * mb.trivec;
     double vec = ma.vec[0] * mb.vec[0] + ma.vec[1] * mb.vec[1] + ma.vec[2] * mb.vec[2];
     return align + 0.5 * orient + 0.25 * vec;

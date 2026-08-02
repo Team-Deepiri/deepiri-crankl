@@ -7,7 +7,7 @@ namespace crankl_gui {
 
 class PlaceholderPage : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit PlaceholderPage(const QString &destinationName, QWidget *parent = nullptr);
 };
 

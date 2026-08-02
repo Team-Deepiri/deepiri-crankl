@@ -17,14 +17,14 @@ class ArchiveHealthHeader;
 
 class HomePage : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit HomePage(QWidget *parent = nullptr);
 
     void showEmptyState();
     void showArchive(const ArchiveSnapshot &snapshot);
     void showUnsupportedFile(const QString &fileName);
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void openArchiveRequested();
     void openWeightsRequested();
     void pathDropped(QString path);
@@ -32,12 +32,12 @@ Q_SIGNALS:
     void reVerifyRequested();
     void closeArchiveRequested();
 
-protected:
+  protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-private:
+  private:
     QWidget *buildEmptyStatePanel();
     QWidget *buildSelectedStatePanel();
     QWidget *buildUnsupportedPanel();

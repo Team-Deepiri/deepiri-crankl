@@ -116,11 +116,10 @@ void JobsDrawerPage::refreshTable() {
         m_table->setItem(row, 1, new QTableWidgetItem(job.operationLabel));
         m_table->setItem(row, 2, new QTableWidgetItem(stateText(job.state)));
 
-        const QString progress = job.progressDenominator > 0
-                                      ? QStringLiteral("%1/%2")
-                                            .arg(job.progressNumerator)
-                                            .arg(job.progressDenominator)
-                                      : QString();
+        const QString progress =
+            job.progressDenominator > 0
+                ? QStringLiteral("%1/%2").arg(job.progressNumerator).arg(job.progressDenominator)
+                : QString();
         m_table->setItem(row, 3, new QTableWidgetItem(progress));
         m_table->setItem(row, 4, new QTableWidgetItem(elapsedText(job)));
 
