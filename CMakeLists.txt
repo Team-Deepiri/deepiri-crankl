@@ -59,7 +59,9 @@ crankl_set_warnings(crankl)
 
 if(CRANKL_ENABLE_SIMD)
     target_compile_definitions(crankl PRIVATE CRANKL_HAVE_SIMD=1)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # -mavx2/-mfma are x86-only; other architectures use the scalar fallback in src/simd/simd.cpp
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang"
+       AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64|i[3-6]86)$")
         target_compile_options(crankl PRIVATE -mavx2 -mfma)
     endif()
 endif()
