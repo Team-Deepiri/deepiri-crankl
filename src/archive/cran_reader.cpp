@@ -81,7 +81,7 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     int fd = open(path, O_RDONLY);
     if (fd < 0)
         return -2;
-    struct stat st {};
+    struct stat st{};
     if (fstat(fd, &st) != 0) {
         close(fd);
         return -3;
