@@ -34,9 +34,13 @@ typedef struct crankl_cran {
     /*
      * NULL means "not open": either never read, or already closed. It is never
      * MAP_FAILED -- that sentinel belongs to the reader's internal mapping owner
-     * and is not part of this ABI. crankl_cran_verify and crankl_cran_metadata
+     * and is not part of this ABI. crankl_cran_verify and crankl_cran_read_metadata
      * both reject a handle on !mmap_base, so crankl_cran_close clears it to NULL
      * to make a closed handle fail those checks rather than pass them.
+     *
+     * The reader keeps no shared mutable state, so distinct handles are independent:
+     * any number may be open at once, and reads into separate handles do not
+     * interfere. No claim is made about concurrent use of the SAME handle.
      */
     void *mmap_base;
     size_t mmap_size;

@@ -132,6 +132,42 @@ int main() {
         return 19;
     }
 
+    // Reload across a large size difference, in both directions. munmap needs the length
+    // the mapping was created with, so releasing the outgoing mapping must use the size
+    // captured before the handle's fields are overwritten. Pairing the old base with the
+    // new size unmaps past the end of the old mapping when growing -- taking out whatever
+    // is mapped next -- and releases only part of it when shrinking. The archives above sit
+    // within one page of each other, so they cannot expose either failure; these differ by
+    // hundreds of KB.
+    const char *path_big = "/tmp/crankl_multi_big.crank";
+    const char *path_tiny = "/tmp/crankl_multi_tiny.crank";
+    if (write_filled(path_big, FILL_A, 60000, nullptr) != CRANKL_OK)
+        return 20;
+    if (write_filled(path_tiny, FILL_B, 8, nullptr) != CRANKL_OK)
+        return 21;
+
+    crankl_cran_t sized{};
+    if (crankl_cran_read(path_big, &sized) != CRANKL_OK)
+        return 22;
+    for (int i = 0; i < 256; ++i) {
+        const int want_big = (i % 2 == 1);
+        if (crankl_cran_read(want_big ? path_big : path_tiny, &sized) != CRANKL_OK) {
+            std::fprintf(stderr, "FAIL: size-changing reload %d rejected\n", i);
+            return 23;
+        }
+        if (first_slot(&sized) != (want_big ? FILL_A : FILL_B)) {
+            std::fprintf(stderr, "FAIL: size-changing reload %d read stale or freed data\n", i);
+            return 24;
+        }
+        if (sized.header.n_slots != (want_big ? 60000u : 8u)) {
+            std::fprintf(stderr, "FAIL: size-changing reload %d has the wrong slot count\n", i);
+            return 25;
+        }
+    }
+    crankl_cran_close(&sized);
+    std::remove(path_big);
+    std::remove(path_tiny);
+
     std::printf("test_cran_multi_open ok a=%016llx b=%016llx\n",
                 static_cast<unsigned long long>(FILL_A), static_cast<unsigned long long>(FILL_B));
     return 0;

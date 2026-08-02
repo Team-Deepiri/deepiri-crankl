@@ -158,7 +158,7 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     UniqueFd fd(open(path, O_RDONLY));
     if (!fd.valid())
         return -2;
-    struct stat st {};
+    struct stat st{};
     if (fstat(fd.get(), &st) != 0)
         return -3;
     if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKL_MAX_FILE_BYTES)
@@ -189,6 +189,14 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     if (chk != hd->checksum)
         return -7;
 
+    // Capture the outgoing mapping before any field is overwritten. munmap needs the
+    // base paired with the length that mapping was created with, and out->mmap_size is
+    // about to become the new archive's size. Pairing the old base with the new size
+    // unmaps the wrong range: past the end of the old mapping when the new archive is
+    // larger, and only part of it when smaller.
+    void *old_base = out->mmap_base;
+    size_t old_size = out->mmap_size;
+
     out->mmap_size = sz;
     out->header.n_slots = hd->n_slots;
     out->header.depth_max = hd->depth_max;
@@ -211,8 +219,8 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     // mapping, which is the one lifetime pattern the old global happened to get right.
     // Only reached on a handle that already went through read_cran, since the contract
     // requires a zero-initialised or closed handle.
-    if (out->mmap_base)
-        munmap(out->mmap_base, out->mmap_size);
+    if (old_base)
+        munmap(old_base, old_size);
     out->mmap_base = map.release();
     return 0;
 }
