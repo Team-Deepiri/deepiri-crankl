@@ -16,15 +16,16 @@ namespace crankl_gui {
 // and the beta1_proxy callout.
 class MetricsPanel : public QFrame {
     Q_OBJECT
-public:
+  public:
     explicit MetricsPanel(QWidget *parent = nullptr);
 
     void setMetrics(const ArchiveMetrics &metrics);
     void setPending();
+    void setUnavailable();
     void clear();
 
-private:
-    enum class State { Loaded, Empty, Pending };
+  private:
+    enum class State { Loaded, Empty, Pending, Unavailable };
     void applyState(State state);
 
     struct Row {
@@ -34,6 +35,7 @@ private:
     QVector<Row> m_rows; // fixed order: n_slots .. beta1_proxy
     QLabel *m_proxyCallout = nullptr;
     QLabel *m_emptyNote = nullptr;
+    QLabel *m_unavailableNote = nullptr;
 };
 
 } // namespace crankl_gui
