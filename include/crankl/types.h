@@ -31,6 +31,13 @@ typedef struct crankl_cran_header {
 } crankl_cran_header_t;
 
 typedef struct crankl_cran {
+    /*
+     * NULL means "not open": either never read, or already closed. It is never
+     * MAP_FAILED -- that sentinel belongs to the reader's internal mapping owner
+     * and is not part of this ABI. crankl_cran_verify and crankl_cran_metadata
+     * both reject a handle on !mmap_base, so crankl_cran_close clears it to NULL
+     * to make a closed handle fail those checks rather than pass them.
+     */
     void *mmap_base;
     size_t mmap_size;
     crankl_cran_header_t header;
