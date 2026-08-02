@@ -68,7 +68,11 @@ ArchiveOpenResult ArchiveAdapter::openArchive(const QString &path) {
             snapshot.metrics.tritEntropy = metrics.trit_entropy;
             snapshot.metrics.cliffordEnergy = metrics.clifford_energy;
             snapshot.metrics.beta1Proxy = metrics.beta1_proxy;
+            snapshot.metricsValid = true;
         }
+        // On failure metricsValid stays false and `metrics` stays zeroed. The
+        // UI must render "unavailable" from that flag rather than nine zeros,
+        // which would be indistinguishable from a real all-zero archive.
 
         crankl_cran_metadata_t meta{};
         const int metaRc = crankl_cran_read_metadata(&cran, &meta);
@@ -77,10 +81,18 @@ ArchiveOpenResult ArchiveAdapter::openArchive(const QString &path) {
             m.modelName = fixedCharsToString(meta.model_name, sizeof(meta.model_name));
             m.sourceHash = fixedCharsToString(meta.source_hash, sizeof(meta.source_hash));
             snapshot.metadata = m;
+            snapshot.metadataState = MetadataState::Present;
+        } else if (metaRc == CRANKL_ERR_NO_METADATA) {
+            // No provenance footer. Normal and expected -- rendered as
+            // "none"/"no metadata", never as an error.
+            snapshot.metadataState = MetadataState::Absent;
+        } else {
+            // NULL/INVALID/IO/FORMAT: the footer could not be read, 
+            // surfacing it as "none" would report a damaged
+            // archive as a clean one.
+            snapshot.metadataState = MetadataState::Error;
+            snapshot.metadataError = QString::fromUtf8(crankl_strerror(metaRc));
         }
-        // metaRc == CRANKL_ERR_NO_METADATA is a normal, expected state --
-        // snapshot.metadata stays std::nullopt, rendered as "no metadata",
-        // never as an error (see ResultSummaryPanel / HomePage Identity panel).
 
         if (cran.slots && cran.header.n_slots > 0) {
             snapshot.crankWords.assign(cran.slots, cran.slots + cran.header.n_slots);
