@@ -25,11 +25,15 @@ static int write_filled(const char *path, uint64_t fill, uint64_t n_slots, const
     return crankl_cran_write(path, &hdr, slots.data(), nullptr, nullptr);
 }
 
-// Slots start at the 124-byte packed header, so they are not 8-byte aligned; copy the
-// word out rather than dereferencing, as test_integration and test_peel_stack do.
+// Slots start at the 124-byte packed header, so they are only 4-byte aligned. memcpy alone
+// is not enough: -fsanitize=alignment inspects the source *type*, so passing the
+// `const uint64_t *` still reports "load of misaligned address ... requires 8 byte
+// alignment" (it recovers, so it does not fail the build -- run with
+// -fno-sanitize-recover=alignment to see it). Go through unsigned char, which has
+// alignment 1, so no over-aligned pointer is ever formed.
 static uint64_t first_slot(const crankl_cran_t *cran) {
     uint64_t w = 0;
-    std::memcpy(&w, cran->slots, sizeof(w));
+    std::memcpy(&w, reinterpret_cast<const unsigned char *>(cran->slots), sizeof(w));
     return w;
 }
 
