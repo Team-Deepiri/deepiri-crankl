@@ -338,20 +338,42 @@ QJsonObject InspectPage::buildReportJson() const {
     QJsonObject obj;
     obj.insert(QStringLiteral("path"), m_snapshot.path);
     obj.insert(QStringLiteral("verify"), verifyStateJsonValue(m_snapshot.verifyState));
-    obj.insert(QStringLiteral("n_slots"), static_cast<qint64>(m_snapshot.metrics.nSlots));
-    obj.insert(QStringLiteral("depth_min"), static_cast<int>(m_snapshot.metrics.depthMin));
-    obj.insert(QStringLiteral("depth_max"), static_cast<int>(m_snapshot.metrics.depthMax));
-    obj.insert(QStringLiteral("scalar_mean"), m_snapshot.metrics.scalarMean);
-    obj.insert(QStringLiteral("scalar_abs_mean"), m_snapshot.metrics.scalarAbsMean);
-    obj.insert(QStringLiteral("trit_density"), m_snapshot.metrics.tritDensity);
-    obj.insert(QStringLiteral("trit_entropy"), m_snapshot.metrics.tritEntropy);
-    obj.insert(QStringLiteral("clifford_energy"), m_snapshot.metrics.cliffordEnergy);
-    obj.insert(QStringLiteral("beta1_proxy"), m_snapshot.metrics.beta1Proxy);
-    if (m_snapshot.metadata) {
+
+    if (m_snapshot.metricsValid) {
+        obj.insert(QStringLiteral("n_slots"), static_cast<qint64>(m_snapshot.metrics.nSlots));
+        obj.insert(QStringLiteral("depth_min"), static_cast<int>(m_snapshot.metrics.depthMin));
+        obj.insert(QStringLiteral("depth_max"), static_cast<int>(m_snapshot.metrics.depthMax));
+        obj.insert(QStringLiteral("scalar_mean"), m_snapshot.metrics.scalarMean);
+        obj.insert(QStringLiteral("scalar_abs_mean"), m_snapshot.metrics.scalarAbsMean);
+        obj.insert(QStringLiteral("trit_density"), m_snapshot.metrics.tritDensity);
+        obj.insert(QStringLiteral("trit_entropy"), m_snapshot.metrics.tritEntropy);
+        obj.insert(QStringLiteral("clifford_energy"), m_snapshot.metrics.cliffordEnergy);
+        obj.insert(QStringLiteral("beta1_proxy"), m_snapshot.metrics.beta1Proxy);
+    } else {
+        for (const char *key :
+             {"n_slots", "depth_min", "depth_max", "scalar_mean", "scalar_abs_mean", "trit_density",
+              "trit_entropy", "clifford_energy", "beta1_proxy"})
+            obj.insert(QLatin1String(key), QJsonValue::Null);
+    }
+    obj.insert(QStringLiteral("metrics_available"), m_snapshot.metricsValid);
+
+    switch (m_snapshot.metadataState) {
+    case MetadataState::Present: {
         QJsonObject metadata;
         metadata.insert(QStringLiteral("model"), m_snapshot.metadata->modelName);
         metadata.insert(QStringLiteral("hash"), m_snapshot.metadata->sourceHash);
         obj.insert(QStringLiteral("metadata"), metadata);
+        break;
+    }
+    case MetadataState::Absent:
+        // Key stays omitted, as before -- absence is normal.
+        break;
+    case MetadataState::Error: {
+        QJsonObject metadata;
+        metadata.insert(QStringLiteral("error"), m_snapshot.metadataError);
+        obj.insert(QStringLiteral("metadata"), metadata);
+        break;
+    }
     }
     return obj;
 }
