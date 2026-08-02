@@ -18,7 +18,7 @@ namespace {
 // without a hand-written unwind. Both are local to this translation unit and appear in
 // no installed header, so they add nothing to the public ABI.
 class UniqueFd {
-public:
+  public:
     UniqueFd() = default;
     explicit UniqueFd(int fd) : fd_(fd) {}
     UniqueFd(const UniqueFd &) = delete;
@@ -31,22 +31,28 @@ public:
         }
         return *this;
     }
-    ~UniqueFd() { reset(); }
+    ~UniqueFd() {
+        reset();
+    }
 
     void reset() {
         if (fd_ >= 0)
             close(fd_);
         fd_ = -1;
     }
-    bool valid() const { return fd_ >= 0; }
-    int get() const { return fd_; }
+    bool valid() const {
+        return fd_ >= 0;
+    }
+    int get() const {
+        return fd_;
+    }
 
-private:
+  private:
     int fd_ = -1;
 };
 
 class MappedRegion {
-public:
+  public:
     MappedRegion() = default;
     MappedRegion(void *base, size_t size) : base_(base), size_(size) {}
     MappedRegion(const MappedRegion &) = delete;
@@ -61,7 +67,9 @@ public:
         }
         return *this;
     }
-    ~MappedRegion() { reset(); }
+    ~MappedRegion() {
+        reset();
+    }
 
     void reset() {
         if (base_ != MAP_FAILED)
@@ -77,7 +85,7 @@ public:
         return base;
     }
 
-private:
+  private:
     void *base_ = MAP_FAILED;
     size_t size_ = 0;
 };
