@@ -116,15 +116,15 @@ void ArchiveHealthHeader::buildUi() {
                  tr("Number of crank words in the archive. One slot holds one 64-bit word, "
                     "decoding to an 8×8 block."));
     m_countDepth = addCount(tr("depth"), 88,
-                             tr("Lowest and highest encoding depth across all slots — depth_min "
-                                "and depth_max."));
+                            tr("Lowest and highest encoding depth across all slots — depth_min "
+                               "and depth_max."));
     m_countMetadata =
         addCount(tr("metadata"), 96,
                  tr("Optional provenance footer: model name and source hash. Absence is normal "
                     "and is not a defect."));
     m_countHistory = addCount(tr("history"), 110,
-                               tr("Rollback unavailable: archive history cannot be validated "
-                                  "safely."));
+                              tr("Rollback unavailable: archive history cannot be validated "
+                                 "safely."));
 
     // Zone 4: actions -- read-only, forever.
     auto *actionsZone = makeCard(QStringLiteral("HealthActionsZone"), this);
@@ -176,8 +176,8 @@ void ArchiveHealthHeader::applyState() {
     setStyleProperty(m_stateBadge, "state", stateProp);
 
     m_stateTimestamp->setText(!empty && m_snapshot.verifiedAt.isValid()
-                                   ? m_snapshot.verifiedAt.toString(QStringLiteral("HH:mm:ss"))
-                                   : QStringLiteral("—"));
+                                  ? m_snapshot.verifiedAt.toString(QStringLiteral("HH:mm:ss"))
+                                  : QStringLiteral("—"));
 
     if (empty) {
         m_identityName->setText(tr("no archive open"));
@@ -186,37 +186,47 @@ void ArchiveHealthHeader::applyState() {
         m_identityName->setText(m_snapshot.fileName);
         const double kb = m_snapshot.byteSize / 1024.0;
         const QString sizeText = kb < 1024.0
-                                      ? tr("%1 KB").arg(QString::number(kb, 'f', 1))
-                                      : tr("%1 MB").arg(QString::number(kb / 1024.0, 'f', 2));
+                                     ? tr("%1 KB").arg(QString::number(kb, 'f', 1))
+                                     : tr("%1 MB").arg(QString::number(kb / 1024.0, 'f', 2));
         m_identityPath->setText(tr("%1 · %2").arg(m_snapshot.path, sizeText));
     }
     setStyleProperty(m_identityName, "empty", empty);
     setStyleProperty(m_identityPath, "empty", empty);
 
     const bool haveData = !empty && m_verifyState == VerifyState::Pass;
+    // Slot and depth come from the metrics struct, so they are only real when
+    // the computation succeeded -- otherwise the em dash, never a zeroed 0/0–0
+    // that would read as a measured empty archive.
+    const bool haveMetrics = haveData && m_snapshot.metricsValid;
     const QString dash = QStringLiteral("—");
-    m_countNSlots->setText(haveData ? QString::number(m_snapshot.metrics.nSlots) : dash);
-    m_countDepth->setText(haveData ? tr("%1–%2")
-                                          .arg(m_snapshot.metrics.depthMin)
-                                          .arg(m_snapshot.metrics.depthMax)
-                                    : dash);
-    m_countMetadata->setText(!haveData            ? dash
-                              : m_snapshot.metadata ? tr("present")
-                                                    : tr("none"));
+    m_countNSlots->setText(haveMetrics ? QString::number(m_snapshot.metrics.nSlots) : dash);
+    m_countDepth->setText(
+        haveMetrics ? tr("%1–%2").arg(m_snapshot.metrics.depthMin).arg(m_snapshot.metrics.depthMax)
+                    : dash);
+    // "error" is a third value here, not a variant of "none": a footer that
+    // could not be read must never be reported as a footer that is not there.
+    m_countMetadata->setText(!haveData                                            ? dash
+                             : m_snapshot.metadataState == MetadataState::Present ? tr("present")
+                             : m_snapshot.metadataState == MetadataState::Absent  ? tr("none")
+                                                                                  : tr("error"));
+    if (haveData && m_snapshot.metadataState == MetadataState::Error)
+        m_countMetadata->setToolTip(tr("The provenance footer exists but could not be read: %1")
+                                        .arg(m_snapshot.metadataError));
     m_countHistory->setText(!haveData                     ? dash
-                             : m_snapshot.historyAvailable ? tr("available")
-                                                           : tr("unavailable"));
-    // "none" is a value in muted grey; "unavailable" is the amber warning.
+                            : m_snapshot.historyAvailable ? tr("available")
+                                                          : tr("unavailable"));
+    // "none" is a value in muted grey; a read failure is amber, like history.
     setStyleProperty(m_countMetadata, "tone",
-                     haveData && !m_snapshot.metadata ? QStringLiteral("muted")
-                     : haveData                        ? QStringLiteral("value")
-                                                       : QStringLiteral("dim"));
+                     !haveData                                           ? QStringLiteral("dim")
+                     : m_snapshot.metadataState == MetadataState::Error  ? QStringLiteral("amber")
+                     : m_snapshot.metadataState == MetadataState::Absent ? QStringLiteral("muted")
+                                                                         : QStringLiteral("value"));
     setStyleProperty(m_countHistory, "tone",
                      haveData ? QStringLiteral("amber") : QStringLiteral("dim"));
     setStyleProperty(m_countNSlots, "tone",
-                     haveData ? QStringLiteral("value") : QStringLiteral("dim"));
+                     haveMetrics ? QStringLiteral("value") : QStringLiteral("dim"));
     setStyleProperty(m_countDepth, "tone",
-                     haveData ? QStringLiteral("value") : QStringLiteral("dim"));
+                     haveMetrics ? QStringLiteral("value") : QStringLiteral("dim"));
 
     m_reVerifyButton->setEnabled(!empty);
     m_copyJsonButton->setEnabled(haveData);
