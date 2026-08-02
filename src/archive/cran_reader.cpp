@@ -158,7 +158,7 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     UniqueFd fd(open(path, O_RDONLY));
     if (!fd.valid())
         return -2;
-    struct stat st {};
+    struct stat st{};
     if (fstat(fd.get(), &st) != 0)
         return -3;
     if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKL_MAX_FILE_BYTES)

@@ -109,8 +109,13 @@ int main() {
     crankl_cran_close(&b2);
 
     // Reload in place: reading into a live handle must release the old mapping and install
-    // the new one, not strand the old one or free the new one. Repeat enough times that a
-    // stranded mapping per call would be obvious under the sanitizer job.
+    // the new one, not strand the old one or free the new one.
+    //
+    // What this loop does NOT prove: that the old mapping was released. LeakSanitizer
+    // accounts for allocator calls, not mmap regions, so deleting the release from
+    // read_cran entirely leaves this green under the CI sanitizer job. It checks that the
+    // handle still reads the right archive after each swap. The size-changing loop below
+    // is what fails on a wrong release, because that one corrupts rather than leaks.
     crankl_cran_t reload{};
     if (crankl_cran_read(path_a, &reload) != CRANKL_OK)
         return 16;
