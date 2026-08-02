@@ -87,7 +87,7 @@ ArchiveOpenResult ArchiveAdapter::openArchive(const QString &path) {
             // "none"/"no metadata", never as an error.
             snapshot.metadataState = MetadataState::Absent;
         } else {
-            // NULL/INVALID/IO/FORMAT: the footer could not be read, 
+            // NULL/INVALID/IO/FORMAT: the footer could not be read,
             // surfacing it as "none" would report a damaged
             // archive as a clean one.
             snapshot.metadataState = MetadataState::Error;
