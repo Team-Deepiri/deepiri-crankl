@@ -158,7 +158,7 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     UniqueFd fd(open(path, O_RDONLY));
     if (!fd.valid())
         return -2;
-    struct stat st {};
+    struct stat st{};
     if (fstat(fd.get(), &st) != 0)
         return -3;
     if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKL_MAX_FILE_BYTES)
@@ -205,6 +205,14 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     // Each handle owns its own mapping, so any number of archives may be open at once.
     // Ownership moves to the caller last, once every other field is valid; close_cran
     // keys off mmap_base.
+    //
+    // Release a mapping the handle was already holding first. Without this, reloading in
+    // place -- read into the same handle without closing it -- would strand the previous
+    // mapping, which is the one lifetime pattern the old global happened to get right.
+    // Only reached on a handle that already went through read_cran, since the contract
+    // requires a zero-initialised or closed handle.
+    if (out->mmap_base)
+        munmap(out->mmap_base, out->mmap_size);
     out->mmap_base = map.release();
     return 0;
 }

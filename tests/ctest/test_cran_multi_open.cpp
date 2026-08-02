@@ -104,6 +104,30 @@ int main() {
     }
     crankl_cran_close(&b2);
 
+    // Reload in place: reading into a live handle must release the old mapping and install
+    // the new one, not strand the old one or free the new one. Repeat enough times that a
+    // stranded mapping per call would be obvious under the sanitizer job.
+    crankl_cran_t reload{};
+    if (crankl_cran_read(path_a, &reload) != CRANKL_OK)
+        return 16;
+    for (int i = 0; i < 64; ++i) {
+        const char *next = (i % 2 == 0) ? path_b : path_a;
+        if (crankl_cran_read(next, &reload) != CRANKL_OK) {
+            std::fprintf(stderr, "FAIL: reload %d rejected\n", i);
+            return 17;
+        }
+        const uint64_t want = (i % 2 == 0) ? FILL_B : FILL_A;
+        if (first_slot(&reload) != want) {
+            std::fprintf(stderr, "FAIL: reload %d read stale or freed data\n", i);
+            return 18;
+        }
+    }
+    crankl_cran_close(&reload);
+    if (reload.mmap_base != nullptr || crankl_cran_verify(&reload) == CRANKL_OK) {
+        std::fprintf(stderr, "FAIL: reloaded handle survived close\n");
+        return 19;
+    }
+
     std::printf("test_cran_multi_open ok a=%016llx b=%016llx\n",
                 static_cast<unsigned long long>(FILL_A), static_cast<unsigned long long>(FILL_B));
     return 0;
