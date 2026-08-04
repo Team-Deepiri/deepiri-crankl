@@ -34,6 +34,9 @@ endforeach()
 target_compile_definitions(test_safetensors PRIVATE GOLDEN_DIR="${CMAKE_SOURCE_DIR}/tests/golden")
 target_include_directories(test_safetensors PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
+# test_simd calls crankl::simd::mat8_mul_avx2 directly, which is only declared internally
+target_include_directories(test_simd PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
 # Parity header must exist before build
 add_custom_target(golden_headers ALL
     COMMAND ${CMAKE_COMMAND} -E echo "Ensure scripts/export_golden.py has been run"
