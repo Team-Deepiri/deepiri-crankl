@@ -16,7 +16,7 @@ while IFS= read -r f; do
     clang-format -i "$f"
     count=$((count + 1))
 done < <(
-    find include src tests -type f \
+    find include src tests gui -type f \
         \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) \
         ! -path '*/build/*' | LC_ALL=C sort
 )

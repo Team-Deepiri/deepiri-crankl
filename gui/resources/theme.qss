@@ -1,0 +1,892 @@
+/*
+ * Crankl GUI theme -- converted from the design doc's oklch() palette to
+ * hex (Qt Style Sheets don't support oklch()). Mapping used throughout:
+ *
+ *   backgrounds : #0e1113 page · #101315 nav/deep · #121618 card · #15191c raised
+ *   text        : #f2f5f7 bright · #e8ebed primary · #aeb6bb secondary
+ *                 · #8d959b muted · #6d757b dim · #5d666c dimmer
+ *                 · #474f55 disabled · #3f464b disabled-value
+ *   accent cyan : #4fc3da (oklch .72 .11 200) · hover #66cfe3 · heading #6fbdd1
+ *   pass green  : rail #43ab84 · fg #b9e6d2 · bg #1c3b2f · border #2f6350
+ *   fail red    : rail #cd5a3d · fg #f0c5b8 · bg #43201a · border #713526
+ *   amber       : #d9a95c · banner bg #272014 · banner border #5c4a26
+ *   negative    : #dd8a5e (oklch .68 .13 35)
+ *
+ * Type: IBM Plex Sans/Mono first (used when installed on the system),
+ * plain system fallbacks otherwise -- no bundled fonts by request.
+ */
+
+* {
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 12px;
+    color: #e8ebed;
+}
+
+QMainWindow, QWidget {
+    background-color: #0e1113;
+}
+
+QToolTip {
+    background-color: #2a3034;
+    color: #dfe4e7;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    padding: 8px 10px;
+    font-size: 11px;
+}
+
+/* ================= Toolbar ================= */
+
+QToolBar {
+    background-color: #121618;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    spacing: 8px;
+    padding: 6px 12px;
+}
+
+QToolButton {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    padding: 6px 11px;
+    font-weight: 500;
+}
+
+QToolButton:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+QToolButton:disabled {
+    color: #474f55;
+    border-color: rgba(255, 255, 255, 0.09);
+}
+
+#Breadcrumb {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+#JobsIndicator {
+    color: #8d959b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+/* ================= Buttons ================= */
+
+QPushButton {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    padding: 6px 11px;
+    font-weight: 500;
+    font-size: 11.5px;
+}
+
+QPushButton:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+QPushButton:disabled {
+    color: #3f464b;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+QPushButton#PrimaryButton {
+    background-color: #4fc3da;
+    color: #0b1214;
+    font-weight: 600;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 14px;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: #66cfe3;
+}
+
+QPushButton#PrimaryButton:disabled {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #3f464b;
+}
+
+QPushButton#SecondaryButton {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 5px;
+    padding: 8px 12px;
+}
+
+QPushButton#SecondaryButton:disabled {
+    color: #3f464b;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+QPushButton#LinkButton {
+    border: none;
+    background: transparent;
+    color: #4fc3da;
+    font-size: 10.5px;
+    padding: 0;
+}
+
+QPushButton#LinkButton:hover {
+    color: #66cfe3;
+}
+
+QPushButton#HeaderActionButton {
+    font-size: 11px;
+    padding: 6px 10px;
+}
+
+QToolButton#HeaderCloseButton {
+    color: #8d959b;
+    font-size: 12px;
+    padding: 0;
+}
+
+/* Segmented Heatmap/Numeric control */
+#SegmentedControl {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    background: transparent;
+}
+
+QPushButton#SegmentButton {
+    border: none;
+    border-radius: 0;
+    padding: 6px 0;
+    font-size: 11px;
+    color: #8d959b;
+    background: transparent;
+}
+
+QPushButton#SegmentButton:checked {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f2f5f7;
+}
+
+QPushButton#SegmentButton:hover:!checked {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+QPushButton#SegmentButton:disabled {
+    color: #3f464b;
+}
+
+/* ================= Inputs ================= */
+
+QSpinBox {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color: #f2f5f7;
+}
+
+QSpinBox:disabled {
+    color: #3f464b;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+QComboBox {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    padding: 6px 9px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11.5px;
+    color: #f2f5f7;
+}
+
+QComboBox:disabled {
+    color: #3f464b;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+QSlider::groove:horizontal {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+QSlider::handle:horizontal {
+    width: 13px;
+    height: 13px;
+    margin: -5px 0;
+    border-radius: 7px;
+    background: #4fc3da;
+}
+
+QSlider::groove:horizontal:disabled {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+QSlider::handle:horizontal:disabled {
+    background: #2a3034;
+}
+
+QCheckBox {
+    color: #e8ebed;
+    font-size: 11px;
+    spacing: 8px;
+}
+
+QCheckBox:disabled {
+    color: #474f55;
+}
+
+QCheckBox::indicator {
+    width: 30px;
+    height: 17px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+QCheckBox::indicator:checked {
+    background: #4fc3da;
+}
+
+QCheckBox::indicator:disabled {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* ================= Navigation ================= */
+
+#NavigationList {
+    background-color: #101315;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#NavigationListView {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-size: 12.5px;
+}
+
+#NavigationListView::item {
+    color: #aeb6bb;
+    padding: 6px 10px;
+    border-radius: 4px;
+}
+
+#NavigationListView::item:disabled {
+    color: #474f55;
+}
+
+#NavigationListView::item:selected {
+    background-color: rgba(255, 255, 255, 0.09);
+    color: #f2f5f7;
+}
+
+#NavigationListView::item:hover:!disabled {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+/* ================= Shared text roles ================= */
+
+#SectionHeading {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 600;
+    font-size: 9.5px;
+    letter-spacing: 1.2px;
+}
+
+#SectionHeading[required="true"] {
+    color: #6fbdd1;
+}
+
+#ColumnTag, #SlotTag, #LegendLabel {
+    background: transparent;
+    color: #474f55;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 9.5px;
+}
+
+#SlotTag {
+    color: #6d757b;
+    font-size: 10.5px;
+}
+
+#LegendLabel {
+    color: #8d959b;
+    font-size: 10.5px;
+}
+
+#MutedNote {
+    background: transparent;
+    color: #8d959b;
+    font-size: 11px;
+}
+
+#MutedMono {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10.5px;
+}
+
+#NoteText {
+    background: transparent;
+    color: #8d959b;
+    font-size: 11px;
+}
+
+#CardTitle {
+    background: transparent;
+    color: #f2f5f7;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+#CardTitle[empty="true"] {
+    color: #474f55;
+}
+
+#PageHeading {
+    background: transparent;
+    color: #f2f5f7;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+/* ================= Cards ================= */
+
+#GroupCard, #ParamsCard, #InputCard, #ResultSummaryPanel, #SlotBrowser,
+#MetricsPanel, #ResultBottomActions {
+    background-color: #121618;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 7px;
+}
+
+#MetricsPanel, #ResultBottomActions {
+    background: transparent;
+    border: none;
+}
+
+#InputCard[required="true"] {
+    border-color: #1d5560;
+}
+
+#ParamsCard[disabled="true"] {
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+#ParamLabel {
+    background: transparent;
+    color: #8d959b;
+    font-size: 11px;
+}
+
+#ParamsCard[disabled="true"] #ParamLabel {
+    color: #474f55;
+}
+
+#PathBox {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+}
+
+#PathBox[empty="true"] {
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+#PathLabel {
+    background: transparent;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: #f2f5f7;
+}
+
+#PathLabel[empty="true"] {
+    color: #5d666c;
+}
+
+/* ================= Archive health header ================= */
+
+#ArchiveHealthHeader {
+    background-color: #121618;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 7px;
+}
+
+#ArchiveHealthHeader[state="fail"] {
+    border-color: #713526;
+}
+
+#ArchiveHealthHeader[state="empty"] {
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+#HealthStateZone, #HealthIdentityZone, #HealthCountCell {
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#HealthActionsZone {
+    background: transparent;
+    border: none;
+}
+
+#HealthStateRail {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#HealthStateRail[state="pass"] { background-color: #43ab84; }
+#HealthStateRail[state="fail"] { background-color: #cd5a3d; }
+#HealthStateRail[state="unverified"] { background-color: #4fc3da; }
+#HealthStateRail[state="empty"] { background-color: rgba(255, 255, 255, 0.1); }
+
+#HealthStateBadge {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 600;
+    font-size: 9.5px;
+    letter-spacing: 0.5px;
+    border-radius: 3px;
+    padding: 4px 6px;
+    color: #5d666c;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#HealthStateBadge[state="pass"] {
+    color: #b9e6d2;
+    background-color: #1c3b2f;
+    border: 1px solid #2f6350;
+}
+
+#HealthStateBadge[state="fail"] {
+    color: #f0c5b8;
+    background-color: #43201a;
+    border: 1px solid #713526;
+}
+
+#HealthStateBadge[state="unverified"] {
+    color: #b5e2ef;
+    background-color: #14333c;
+    border: 1px solid #275d6b;
+}
+
+#HealthStateTimestamp {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10px;
+}
+
+#HealthIdentityName {
+    background: transparent;
+    color: #f2f5f7;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+#HealthIdentityName[empty="true"] {
+    color: #474f55;
+}
+
+#HealthIdentityPath {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10.5px;
+}
+
+#HealthIdentityPath[empty="true"] {
+    color: #3f464b;
+}
+
+#HealthCountLabel {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 9.5px;
+}
+
+#HealthCountValue {
+    background: transparent;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 500;
+    font-size: 14px;
+    color: #f2f5f7;
+}
+
+#HealthCountValue[tone="dim"] { color: #3f464b; }
+#HealthCountValue[tone="muted"] { color: #8d959b; }
+#HealthCountValue[tone="amber"] { color: #d9a95c; }
+
+/* ================= Metrics ================= */
+
+#MetricRow {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#MetricKey {
+    background: transparent;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: #8d959b;
+}
+
+#MetricKey[state="empty"] { color: #5d666c; }
+#MetricKey[amber="true"] { color: #d9a95c; }
+
+#MetricValue {
+    background: transparent;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 500;
+    font-size: 12px;
+    color: #f2f5f7;
+}
+
+#MetricValue[state="empty"] { color: #3f464b; }
+#MetricValue[state="pending"] {
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 3px;
+    min-width: 52px;
+}
+
+#ProxyCallout {
+    background-color: #231e15;
+    border: 1px solid #55452a;
+    border-radius: 5px;
+    color: #dfe4e7;
+    padding: 9px 11px;
+    font-size: 10.5px;
+}
+
+#MetricsEmptyNote {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 5px;
+    color: #8d959b;
+    padding: 10px 11px;
+    font-size: 10.5px;
+}
+
+#RollbackBanner {
+    background-color: #272014;
+    border: 1px solid #5c4a26;
+    border-radius: 6px;
+    color: #dfe4e7;
+    padding: 10px 12px;
+    font-size: 11.5px;
+}
+
+#ActionsCaption {
+    background: transparent;
+    color: #474f55;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10px;
+}
+
+/* ================= Slot browser ================= */
+
+#InspectDropFrame {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 7px;
+}
+
+#DecoBitCell {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 1px;
+}
+
+#DecoBitCell[lit="true"] {
+    background: rgba(79, 195, 218, 0.35);
+}
+
+#DropTitle {
+    background: transparent;
+    color: #dfe4e7;
+    font-weight: 600;
+    font-size: 17px;
+}
+
+#DropExplainer {
+    background: transparent;
+    color: #8d959b;
+    font-size: 12.5px;
+}
+
+#DropCaption {
+    background: transparent;
+    color: #5d666c;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10.5px;
+}
+
+#WeightFileNote {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+}
+
+#NoteRail {
+    background-color: rgba(255, 255, 255, 0.14);
+    border-radius: 2px;
+}
+
+#WordHex {
+    background: transparent;
+    color: #f2f5f7;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+#CoeffCell {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+}
+
+#CoeffName {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 9.5px;
+}
+
+#CoeffValue {
+    background: transparent;
+    color: #f2f5f7;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 500;
+    font-size: 11px;
+}
+
+#BitCell {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 1px;
+}
+
+#BitCell[bitSet="true"] {
+    background-color: #4fc3da;
+}
+
+#HeatmapLegendBar {
+    border: none;
+    border-radius: 4px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #ea9469, stop:0.45 #242a2e, stop:0.55 #242a2e, stop:1 #5ecbe0);
+}
+
+#DepthBar {
+    background-color: #35839a;
+    border-radius: 1px;
+}
+
+#PositiveChip { background: #4fc3da; border-radius: 2px; }
+#NegativeChip { background: #dd8a5e; border-radius: 2px; }
+
+QTableWidget#NumericTable {
+    background-color: #121618;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+    gridline-color: rgba(255, 255, 255, 0.07);
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10.5px;
+}
+
+QTableWidget#NumericTable::item {
+    padding: 4px 6px;
+}
+
+QTableWidget#NumericTable::item:selected {
+    background: rgba(79, 195, 218, 0.2);
+}
+
+/* ================= Home page ================= */
+
+#DropZone {
+    background-color: #121618;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+}
+
+#DropZoneTitle {
+    background: transparent;
+    color: #f2f5f7;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#DropZoneSubtitle {
+    background: transparent;
+    color: #8d959b;
+    font-size: 13px;
+}
+
+#DropZoneHint {
+    background: transparent;
+    color: #5d666c;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10.5px;
+}
+
+#QuickActionCard {
+    background-color: #121618;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 7px;
+}
+
+#QuickActionCard[enabled_card="false"] {
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+#QuickActionTitle {
+    background: transparent;
+    color: #f2f5f7;
+    font-weight: 600;
+    font-size: 13.5px;
+}
+
+#QuickActionCard[enabled_card="false"] #QuickActionTitle {
+    color: #aeb6bb;
+}
+
+#QuickActionSubtitle {
+    background: transparent;
+    color: #8d959b;
+    font-size: 12px;
+}
+
+#QuickActionCard[enabled_card="false"] #QuickActionSubtitle {
+    color: #6d757b;
+}
+
+#ReadOnlyBanner {
+    background-color: #121618;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 7px;
+}
+
+#ReadOnlyBannerLabel {
+    background: transparent;
+    color: #6d757b;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 600;
+    font-size: 9.5px;
+    letter-spacing: 1.2px;
+}
+
+#LifecycleLog {
+    background: transparent;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color: #e8ebed;
+    font-size: 11px;
+}
+
+#UnsupportedBadge {
+    background-color: rgba(217, 169, 92, 0.2);
+    color: #d9a95c;
+    border: 1px solid rgba(217, 169, 92, 0.4);
+    border-radius: 3px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-weight: 600;
+    font-size: 9.5px;
+    padding: 4px 6px;
+}
+
+#UnsupportedFileName {
+    background: transparent;
+    color: #f2f5f7;
+    font-weight: 500;
+    font-size: 12.5px;
+}
+
+/* ================= Placeholder pages ================= */
+
+#PlaceholderTitle {
+    background: transparent;
+    color: #f2f5f7;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#PlaceholderSubtitle {
+    background: transparent;
+    color: #6d757b;
+}
+
+/* ================= Jobs ================= */
+
+#JobErrorDetail {
+    color: #f0c5b8;
+    background-color: rgba(205, 90, 61, 0.1);
+    border: 1px solid rgba(205, 90, 61, 0.3);
+    border-radius: 5px;
+    padding: 8px;
+}
+
+QTableWidget {
+    background-color: #121618;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    gridline-color: rgba(255, 255, 255, 0.06);
+    color: #aeb6bb;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+}
+
+QHeaderView::section {
+    background-color: #101315;
+    color: #6d757b;
+    border: none;
+    padding: 5px 8px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 10px;
+}
+
+/* ================= Page scroll areas ================= */
+
+QScrollArea#PageScroll {
+    background: transparent;
+    border: none;
+}
+
+QScrollArea#PageScroll > QWidget > QWidget {
+    background: transparent;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    min-height: 32px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: transparent;
+}

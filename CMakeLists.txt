@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(CRANKL_BUILD_TESTS "Build tests" ON)
 option(CRANKL_ENABLE_SIMD "Enable AVX2 dispatch" ON)
+option(CRANKL_BUILD_GUI "Build the Qt desktop GUI" OFF)
 
 include(cmake/warnings.cmake)
 
@@ -105,4 +106,8 @@ install(FILES ${CMAKE_BINARY_DIR}/crankl.pc DESTINATION lib/pkgconfig)
 if(CRANKL_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(CRANKL_BUILD_GUI)
+    add_subdirectory(gui)
 endif()
