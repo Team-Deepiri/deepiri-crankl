@@ -25,6 +25,19 @@ int crankl_cran_write_with_metadata(const char *path, const crankl_cran_header_t
  * Keep the two functions above as convenience/compatibility wrappers. Do not use
  * hdr->depth_max as an implicit stack count unless a stack pointer is supplied.
  */
+/*
+ * Ownership contract:
+ *   - Each successful crankl_cran_read gives its handle an independent mapping, so any
+ *     number of archives may be open at the same time.
+ *   - crankl_cran_close is idempotent and is a no-op on a zero-initialised handle. It
+ *     clears the handle's view, so a closed handle fails crankl_cran_verify.
+ *   - Reading into a handle that already holds a mapping releases that mapping first, so
+ *     reloading in place does not leak. *out must therefore be either zero-initialised or
+ *     a handle previously returned by crankl_cran_read -- never uninitialised memory.
+ *     Any copies of the handle made before the reload become dangling views.
+ *   - crankl_cran_t is a copyable POD and a copy is a NON-OWNING view. Close exactly the
+ *     handle that was passed to crankl_cran_read, never a copy of it.
+ */
 int crankl_cran_read(const char *path, crankl_cran_t *out);
 void crankl_cran_close(crankl_cran_t *cran);
 int crankl_cran_verify(const crankl_cran_t *cran);

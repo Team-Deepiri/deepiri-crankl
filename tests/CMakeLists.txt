@@ -18,13 +18,14 @@ add_executable(test_pack_decrank_roundtrip ctest/test_pack_decrank_roundtrip.cpp
 add_executable(test_finetune ctest/test_finetune.cpp)
 add_executable(test_holonomy_blocked ctest/test_holonomy_blocked.cpp)
 add_executable(test_peel_stack ctest/test_peel_stack.cpp)
+add_executable(test_cran_multi_open ctest/test_cran_multi_open.cpp)
 
 set(CRANKL_TEST_INCLUDE ${CMAKE_SOURCE_DIR}/tests/golden)
 
 foreach(t test_trit test_clifford test_cran test_pack test_guct test_diff test_simd test_sheaf
         test_clifford_parity test_pack_roundtrip test_integration test_c_api test_safetensors
         test_turn_target test_metrics test_flow_pipeline test_pack_decrank_roundtrip test_finetune
-        test_holonomy_blocked test_peel_stack)
+        test_holonomy_blocked test_peel_stack test_cran_multi_open)
     target_link_libraries(${t} PRIVATE crankl)
     target_include_directories(${t} PRIVATE ${CRANKL_TEST_INCLUDE})
     crankl_set_warnings(${t})
