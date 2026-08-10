@@ -7,13 +7,90 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utility>
 
 namespace crankl {
 namespace io {
 
-static void *g_mmap_base = MAP_FAILED;
-static size_t g_mmap_size = 0;
-static int g_mmap_fd = -1;
+namespace {
+
+// Move-only owners so that every early return in read_cran releases what it acquired
+// without a hand-written unwind. Both are local to this translation unit and appear in
+// no installed header, so they add nothing to the public ABI.
+class UniqueFd {
+  public:
+    UniqueFd() = default;
+    explicit UniqueFd(int fd) : fd_(fd) {}
+    UniqueFd(const UniqueFd &) = delete;
+    UniqueFd &operator=(const UniqueFd &) = delete;
+    UniqueFd(UniqueFd &&other) noexcept : fd_(std::exchange(other.fd_, -1)) {}
+    UniqueFd &operator=(UniqueFd &&other) noexcept {
+        if (this != &other) {
+            reset();
+            fd_ = std::exchange(other.fd_, -1);
+        }
+        return *this;
+    }
+    ~UniqueFd() {
+        reset();
+    }
+
+    void reset() {
+        if (fd_ >= 0)
+            close(fd_);
+        fd_ = -1;
+    }
+    bool valid() const {
+        return fd_ >= 0;
+    }
+    int get() const {
+        return fd_;
+    }
+
+  private:
+    int fd_ = -1;
+};
+
+class MappedRegion {
+  public:
+    MappedRegion() = default;
+    MappedRegion(void *base, size_t size) : base_(base), size_(size) {}
+    MappedRegion(const MappedRegion &) = delete;
+    MappedRegion &operator=(const MappedRegion &) = delete;
+    MappedRegion(MappedRegion &&other) noexcept
+        : base_(std::exchange(other.base_, MAP_FAILED)), size_(std::exchange(other.size_, 0)) {}
+    MappedRegion &operator=(MappedRegion &&other) noexcept {
+        if (this != &other) {
+            reset();
+            base_ = std::exchange(other.base_, MAP_FAILED);
+            size_ = std::exchange(other.size_, 0);
+        }
+        return *this;
+    }
+    ~MappedRegion() {
+        reset();
+    }
+
+    void reset() {
+        if (base_ != MAP_FAILED)
+            munmap(base_, size_);
+        base_ = MAP_FAILED;
+        size_ = 0;
+    }
+    // Hands the mapping to a crankl_cran_t, which owns it until close_cran.
+    void *release() {
+        void *base = base_;
+        base_ = MAP_FAILED;
+        size_ = 0;
+        return base;
+    }
+
+  private:
+    void *base_ = MAP_FAILED;
+    size_t size_ = 0;
+};
+
+} // namespace
 
 // LEGACY v1/v2 LAYOUT VALIDATION
 // ------------------------------
@@ -78,66 +155,48 @@ static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
 int read_cran(const char *path, ::crankl_cran_t *out) {
     if (!path || !out)
         return -1;
-    int fd = open(path, O_RDONLY);
-    if (fd < 0)
+    UniqueFd fd(open(path, O_RDONLY));
+    if (!fd.valid())
         return -2;
     struct stat st {};
-    if (fstat(fd, &st) != 0) {
-        close(fd);
+    if (fstat(fd.get(), &st) != 0)
         return -3;
-    }
-    if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKL_MAX_FILE_BYTES) {
-        close(fd);
+    if (st.st_size < 0 || static_cast<uint64_t>(st.st_size) > CRANKL_MAX_FILE_BYTES)
         return -14;
-    }
     size_t sz = static_cast<size_t>(st.st_size);
-    void *base = mmap(nullptr, sz, PROT_READ, MAP_PRIVATE, fd, 0);
-    if (base == MAP_FAILED) {
-        close(fd);
+    void *base = mmap(nullptr, sz, PROT_READ, MAP_PRIVATE, fd.get(), 0);
+    if (base == MAP_FAILED)
         return -4;
-    }
-    if (sz < sizeof(CranHeaderDisk)) {
-        munmap(base, sz);
-        close(fd);
+    MappedRegion map(base, sz);
+    // mmap(2) gives the mapping its own reference to the file, so the descriptor is no
+    // longer needed once the mapping exists. Releasing it here is what allows a handle to
+    // own its mapping using only the mmap_base/mmap_size fields it already publishes.
+    fd.reset();
+    if (sz < sizeof(CranHeaderDisk))
         return -5;
-    }
     auto *hd = static_cast<CranHeaderDisk *>(base);
-    if (!magic_is_valid(hd->magic)) {
-        munmap(base, sz);
-        close(fd);
+    if (!magic_is_valid(hd->magic))
         return -6;
-    }
     const uint8_t *payload = reinterpret_cast<const uint8_t *>(base) + sizeof(CranHeaderDisk);
     size_t payload_len = sz - sizeof(CranHeaderDisk);
 
     const uint8_t *layers_ptr = nullptr;
     int layout_rc = validate_cran_layout(hd, payload_len, layers_ptr);
-    if (layout_rc != 0) {
-        munmap(base, sz);
-        close(fd);
+    if (layout_rc != 0)
         return layout_rc;
-    }
 
     uint64_t chk = crankl_xxhash64(payload, payload_len, 0);
-    if (chk != hd->checksum) {
-        munmap(base, sz);
-        close(fd);
+    if (chk != hd->checksum)
         return -7;
-    }
 
-    // TODO(mmap-lifetime): this global ownership model permits only one open
-    // archive. Reading archive B unmaps archive A while A's public view still holds
-    // dangling pointers. Make each crankl_cran_t own its mapping independently and
-    // add a test that keeps two archives open at once.
-    if (g_mmap_base != MAP_FAILED) {
-        munmap(g_mmap_base, g_mmap_size);
-        close(g_mmap_fd);
-    }
-    g_mmap_base = base;
-    g_mmap_size = sz;
-    g_mmap_fd = fd;
+    // Capture the outgoing mapping before any field is overwritten. munmap needs the
+    // base paired with the length that mapping was created with, and out->mmap_size is
+    // about to become the new archive's size. Pairing the old base with the new size
+    // unmaps the wrong range: past the end of the old mapping when the new archive is
+    // larger, and only part of it when smaller.
+    void *old_base = out->mmap_base;
+    size_t old_size = out->mmap_size;
 
-    out->mmap_base = base;
     out->mmap_size = sz;
     out->header.n_slots = hd->n_slots;
     out->header.depth_max = hd->depth_max;
@@ -151,19 +210,32 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     // expose an explicit validated n_stack_layers field.
     out->layers =
         layers_ptr ? reinterpret_cast<const uint64_t *>(layers_ptr) : out->slots + hd->n_slots;
+    // Each handle owns its own mapping, so any number of archives may be open at once.
+    // Ownership moves to the caller last, once every other field is valid; close_cran
+    // keys off mmap_base.
+    //
+    // Release a mapping the handle was already holding first. Without this, reloading in
+    // place -- read into the same handle without closing it -- would strand the previous
+    // mapping, which is the one lifetime pattern the old global happened to get right.
+    // Only reached on a handle that already went through read_cran, since the contract
+    // requires a zero-initialised or closed handle.
+    if (old_base)
+        munmap(old_base, old_size);
+    out->mmap_base = map.release();
     return 0;
 }
 
 void close_cran(::crankl_cran_t *cran) {
-    (void)cran;
-    if (g_mmap_base != MAP_FAILED) {
-        munmap(g_mmap_base, g_mmap_size);
-        g_mmap_base = MAP_FAILED;
-    }
-    if (g_mmap_fd >= 0) {
-        close(g_mmap_fd);
-        g_mmap_fd = -1;
-    }
+    if (!cran)
+        return;
+    if (cran->mmap_base)
+        munmap(cran->mmap_base, cran->mmap_size);
+    // Clearing the view makes a second close a no-op and turns any later use of a closed
+    // handle into a null dereference instead of a read through a dangling pointer.
+    cran->mmap_base = nullptr;
+    cran->mmap_size = 0;
+    cran->slots = nullptr;
+    cran->layers = nullptr;
 }
 
 int verify_cran(const ::crankl_cran_t *cran) {
