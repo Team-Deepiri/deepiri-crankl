@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(CRANKL_BUILD_TESTS "Build tests" ON)
 option(CRANKL_ENABLE_SIMD "Enable AVX2 dispatch" ON)
+option(CRANKL_BUILD_GUI "Build the Qt desktop GUI" OFF)
 
 include(cmake/warnings.cmake)
 
@@ -59,7 +60,13 @@ crankl_set_warnings(crankl)
 
 if(CRANKL_ENABLE_SIMD)
     target_compile_definitions(crankl PRIVATE CRANKL_HAVE_SIMD=1)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # -mavx2/-mfma are x86-only; other architectures use the scalar fallback in
+    # src/simd/simd.cpp. Ask the compiler instead of matching CMAKE_SYSTEM_PROCESSOR:
+    # the probe also gets cross builds and universal (multi-arch) builds right, where
+    # the host processor does not describe every target being compiled for.
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag("-mavx2 -mfma" CRANKL_CXX_ACCEPTS_AVX2)
+    if(CRANKL_CXX_ACCEPTS_AVX2)
         target_compile_options(crankl PRIVATE -mavx2 -mfma)
     endif()
 endif()
@@ -99,4 +106,8 @@ install(FILES ${CMAKE_BINARY_DIR}/crankl.pc DESTINATION lib/pkgconfig)
 if(CRANKL_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(CRANKL_BUILD_GUI)
+    add_subdirectory(gui)
 endif()

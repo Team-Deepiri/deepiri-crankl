@@ -1,4 +1,5 @@
 build/
+build-gui/
 .cache/
 *.o
 *.a

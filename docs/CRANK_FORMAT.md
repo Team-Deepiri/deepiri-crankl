@@ -322,16 +322,25 @@ Add tests for:
 12. `turn -> save -> reopen -> peel` end to end.
 13. `finetune -> save -> reopen -> peel` while preserving metadata.
 
-## Separate mmap lifetime problem
+## Separate mmap lifetime problem (resolved)
 
-The current reader stores one process-global mapping. Opening a second archive unmaps the first,
-even though its `crankl_cran_t` still contains pointers. This is separate from the format redesign
-but should be fixed in the same I/O hardening work:
+The reader used to store one process-global mapping, so opening a second archive unmapped the
+first while its `crankl_cran_t` still held pointers into the freed range. Each handle now owns
+its mapping through the `mmap_base` and `mmap_size` fields it already published:
 
-- Store and close each mapping through the supplied `crankl_cran_t`.
-- Do not use `g_mmap_base`, `g_mmap_size`, or `g_mmap_fd`.
-- Add a per-handle file descriptor internally, or close the descriptor immediately after a
-  successful `mmap` where the operating system permits it.
+- `crankl_cran_read` maps into an internal move-only owner and transfers it to the handle only
+  once every other field is valid.
+- No process-global mapping state remains; `g_mmap_base`, `g_mmap_size` and `g_mmap_fd` are gone.
+- The descriptor is closed as soon as `mmap` succeeds, since the mapping keeps its own reference
+  to the file. That is what lets a handle own its mapping without a new ABI field.
+- `crankl_cran_close` releases exactly the handle it is given, is idempotent, and is a no-op on a
+  zero-initialised handle.
+- Reading into a handle that already holds a mapping releases that mapping first, so reloading in
+  place does not leak. `*out` must therefore be zero-initialised or a handle `crankl_cran_read`
+  produced -- never uninitialised memory.
+
+Any number of archives may be open at once, and reads into distinct handles do not interfere. No
+guarantee is made about concurrent use of the *same* handle.
 - Test two simultaneously open archives and close them in both orders.
 
 ## Definition of done

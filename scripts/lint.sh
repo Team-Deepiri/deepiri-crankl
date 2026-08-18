@@ -18,6 +18,14 @@ if [[ ! -f "${COMPILE_DB}" ]]; then
     exit 1
 fi
 
+# gui/ needs Qt6, so it is only in the compile database when CMake was
+# configured with CRANKL_BUILD_GUI=ON. Lint it when it is there and skip it
+# when it is not -- clang-tidy hard-errors on any file the database lacks.
+LINT_DIRS=(src)
+if grep -q '/gui/' "${COMPILE_DB}"; then
+    LINT_DIRS+=(gui)
+fi
+
 failed=0
 count=0
 while IFS= read -r f; do
@@ -26,7 +34,7 @@ while IFS= read -r f; do
     if ! clang-tidy -p "${BUILD_DIR}" --quiet "$f"; then
         failed=1
     fi
-done < <(find src -type f \( -name '*.cpp' -o -name '*.c' \) ! -path '*/build/*' | LC_ALL=C sort)
+done < <(find "${LINT_DIRS[@]}" -type f \( -name '*.cpp' -o -name '*.c' \) ! -path '*/build*' | LC_ALL=C sort)
 
 if [[ "${count}" -eq 0 ]]; then
     echo "no source files found"
