@@ -228,7 +228,8 @@ static void test_random_archive_sanity() {
                          trial, h0, h1);
             ++failures;
         }
-        if (crankl_sheaf_h0_dim(slots.data(), n) != h0 || crankl_sheaf_h1_dim(slots.data(), n) != h1) {
+        if (crankl_sheaf_h0_dim(slots.data(), n) != h0 ||
+            crankl_sheaf_h1_dim(slots.data(), n) != h1) {
             std::fprintf(stderr, "FAIL: h0_dim/h1_dim disagree with cohomology on trial %d\n",
                          trial);
             ++failures;
