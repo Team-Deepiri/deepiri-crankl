@@ -2,6 +2,7 @@
 #define CRANKL_GUI_WIDGETS_MAIN_WINDOW_H
 
 #include "core/ArchiveAdapter.h"
+#include "core/CompareResult.h"
 #include "widgets/NavigationList.h"
 
 #include <QHash>
@@ -18,7 +19,9 @@ namespace crankl_gui {
 class JobManager;
 class HomePage;
 class InspectPage;
+class ComparePage;
 class JobsDrawerPage;
+class NewJobDialog;
 
 // The application shell: QMainWindow + QToolBar + NavigationList (left) +
 // QStackedWidget (right)
@@ -40,6 +43,7 @@ class MainWindow : public QMainWindow {
   private Q_SLOTS:
     void handleDestinationActivated(NavDestination destination);
     void handleArchiveOpened(QUuid jobId, ArchiveOpenResult result);
+    void handleCompareDone(QUuid jobId, CompareResult result);
     void handleJobsChanged();
     void handleVerifyRequested();
     void handleCloseRequested();
@@ -60,6 +64,7 @@ class MainWindow : public QMainWindow {
 
     HomePage *m_homePage = nullptr;
     InspectPage *m_inspectPage = nullptr;
+    ComparePage *m_comparePage = nullptr;
     JobsDrawerPage *m_jobsPage = nullptr;
     QHash<NavDestination, QWidget *> m_pages;
 

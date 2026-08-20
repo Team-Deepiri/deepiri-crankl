@@ -167,22 +167,35 @@ CompareResult ArchiveAdapter::compareArchives(const QString &pathA, const QStrin
         cliffordSum += crankl_clifford_resonance(slotsA[i], slotsB[i]);
     result.cliffordResonance = n > 0 ? cliffordSum / static_cast<double>(n) : 0.0;
 
+    result.changedSlots.reserve(
+        std::min<size_t>(CompareResult::kMaxChangedSlotsShown, n));
     for (size_t i = 0; i < n; ++i) {
-        if (slotsA[i] != slotsB[i])
-            result.changedIndices.push_back(static_cast<uint32_t>(i));
+        if (slotsA[i] != slotsB[i]) {
+            if (result.changedSlots.size() < CompareResult::kMaxChangedSlotsShown) {
+                result.changedSlots.push_back(
+                    {static_cast<uint32_t>(i), slotsA[i], slotsB[i]});
+            } else {
+                break; // total count already known from crankl_crank_diff_count
+            }
+        }
     }
 
     crankl_archive_metrics_t ma{}, mb{};
     crankl_compute_archive_metrics(slotsA.data(), slotsA.size(), &ma);
     crankl_compute_archive_metrics(slotsB.data(), slotsB.size(), &mb);
-    result.deltaDepthMin = static_cast<double>(mb.depth_min) - static_cast<double>(ma.depth_min);
-    result.deltaDepthMax = static_cast<double>(mb.depth_max) - static_cast<double>(ma.depth_max);
-    result.deltaScalarMean = mb.scalar_mean - ma.scalar_mean;
-    result.deltaScalarAbsMean = mb.scalar_abs_mean - ma.scalar_abs_mean;
-    result.deltaTritDensity = mb.trit_density - ma.trit_density;
-    result.deltaTritEntropy = mb.trit_entropy - ma.trit_entropy;
-    result.deltaEnergy = mb.clifford_energy - ma.clifford_energy;
-    result.deltaBeta1Proxy = mb.beta1_proxy - ma.beta1_proxy;
+    auto copyMetrics = [](const crankl_archive_metrics_t &src, ArchiveMetrics &dst) {
+        dst.nSlots = src.n_slots;
+        dst.depthMin = src.depth_min;
+        dst.depthMax = src.depth_max;
+        dst.scalarMean = src.scalar_mean;
+        dst.scalarAbsMean = src.scalar_abs_mean;
+        dst.tritDensity = src.trit_density;
+        dst.tritEntropy = src.trit_entropy;
+        dst.cliffordEnergy = src.clifford_energy;
+        dst.beta1Proxy = src.beta1_proxy;
+    };
+    copyMetrics(ma, result.metricsA);
+    copyMetrics(mb, result.metricsB);
 
     result.ok = true;
     return result;

@@ -1,6 +1,8 @@
 #ifndef CRANKL_GUI_CORE_COMPARE_RESULT_H
 #define CRANKL_GUI_CORE_COMPARE_RESULT_H
 
+#include "core/ArchiveSnapshot.h"
+
 #include <QString>
 
 #include <cstdint>
@@ -27,18 +29,20 @@ struct CompareResult {
     double cliffordResonance = 0.0; // mean per-slot Clifford resonance
     double sheafResonance = 0.0;
 
-    double deltaDepthMin = 0.0;
-    double deltaDepthMax = 0.0;
-    double deltaScalarMean = 0.0;
-    double deltaScalarAbsMean = 0.0;
-    double deltaTritDensity = 0.0;
-    double deltaTritEntropy = 0.0;
-    double deltaEnergy = 0.0;
-    double deltaBeta1Proxy = 0.0;
+    // Per-archive metrics (B - A deltas are derived by the UI).
+    ArchiveMetrics metricsA;
+    ArchiveMetrics metricsB;
 
-    // Indices (into the compared prefix) where the two words differ, in
-    // ascending order. Kept so the Compare page can render a per-slot list.
-    std::vector<uint32_t> changedIndices;
+    // The first `changedSlots` differences, each with the two raw words so the
+    // UI can show real hex without re-opening the archives. Bounded: a million
+    // changed slots must not balloon the result into megabytes.
+    static constexpr uint32_t kMaxChangedSlotsShown = 200;
+    struct ChangedSlot {
+        uint32_t index;
+        uint64_t wordA;
+        uint64_t wordB;
+    };
+    std::vector<ChangedSlot> changedSlots;
 };
 
 } // namespace crankl_gui

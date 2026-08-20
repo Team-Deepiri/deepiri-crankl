@@ -19,6 +19,7 @@ set(CRANKL_GUI_SOURCES
     widgets/ResultSummaryPanel.cpp
     widgets/HomePage.cpp
     widgets/InspectPage.cpp
+    widgets/ComparePage.cpp
     widgets/JobsDrawerPage.cpp
     resources/gui.qrc
 )
