@@ -16,6 +16,34 @@ int crankl_pack_f32(const float *data, size_t count, uint64_t *out_slots, size_t
     return crankl::pack::fold_f32(data, count, out_slots, n_slots, lambda, mu);
 }
 
+int crankl_pack_f32_anneal(const float *data, size_t count, uint64_t *out_slots, size_t n_slots,
+                           float alpha, float beta, int mode, unsigned seed) {
+    if (!data || !out_slots || n_slots == 0)
+        return CRANKL_ERR_NULL;
+    return crankl::pack::fold_f32_anneal(data, count, out_slots, n_slots, alpha, beta, mode, seed);
+}
+
+int crankl_pack_objective(const float *data, size_t count, const uint64_t *slots, size_t n_slots,
+                          double lambda, double *w2_out, double *frobenius_out,
+                          double *objective_out) {
+    if (!data || !slots || n_slots == 0)
+        return CRANKL_ERR_NULL;
+    double w2 = 0.0;
+    double frob = 0.0;
+    double obj = crankl::pack::pack_objective(data, count, slots, n_slots, lambda, &w2, &frob);
+    if (w2_out)
+        *w2_out = w2;
+    if (frobenius_out)
+        *frobenius_out = frob;
+    if (objective_out)
+        *objective_out = obj;
+    return CRANKL_OK;
+}
+
+int crankl_pack_default_mode(void) {
+    return CRANKL_PACK_MODE_LEGACY;
+}
+
 int crankl_unpack_f32(const uint64_t *slots, size_t n_slots, float *out, size_t count) {
     if (!slots || !out)
         return CRANKL_ERR_NULL;
