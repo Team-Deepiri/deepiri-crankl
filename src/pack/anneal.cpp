@@ -41,8 +41,7 @@ static double dequantize(int t) {
     }
 }
 
-static void tile_joint(uint64_t word, const TileState &t, float alpha, float beta, double *w2_out,
-                       double *frob_out) {
+static void tile_joint(uint64_t word, const TileState &t, double *w2_out, double *frob_out) {
     std::array<double, BLOCK_FLOATS> M{};
     decrank_matrix(word, M);
     double frob = 0.0;
@@ -103,7 +102,7 @@ static int staged_anneal(const std::vector<TileState> &tiles, uint64_t *slots, f
         std::vector<double> frob(order.size());
         for (size_t s = 0; s < order.size(); ++s) {
             double w2, f;
-            tile_joint(slots[s], tiles[s], alpha, beta, &w2, &f);
+            tile_joint(slots[s], tiles[s], &w2, &f);
             frob[s] = f;
         }
         std::sort(order.begin(), order.end(), [&](size_t a, size_t b) {
@@ -116,7 +115,7 @@ static int staged_anneal(const std::vector<TileState> &tiles, uint64_t *slots, f
                 break;
             ++proposals;
             double cur_w2, cur_frob;
-            tile_joint(slots[s], tiles[s], alpha, beta, &cur_w2, &cur_frob);
+            tile_joint(slots[s], tiles[s], &cur_w2, &cur_frob);
             double cur_joint = alpha * cur_w2 + beta * cur_frob;
             uint64_t candidates[kMaxEdits];
             size_t n_edits = collect_edits(slots[s], candidates);
@@ -124,7 +123,7 @@ static int staged_anneal(const std::vector<TileState> &tiles, uint64_t *slots, f
             double best_joint = cur_joint;
             for (size_t i = 0; i < n_edits; ++i) {
                 double w2, f;
-                tile_joint(candidates[i], tiles[s], alpha, beta, &w2, &f);
+                tile_joint(candidates[i], tiles[s], &w2, &f);
                 double joint = alpha * w2 + beta * f;
                 if (joint < best_joint) {
                     best_joint = joint;
@@ -146,7 +145,7 @@ static int bo_anneal(const std::vector<TileState> &tiles, uint64_t *slots, float
     std::vector<size_t> visits(tiles.size(), 0);
     for (size_t s = 0; s < tiles.size(); ++s) {
         double w2, frob;
-        tile_joint(slots[s], tiles[s], alpha, beta, &w2, &frob);
+        tile_joint(slots[s], tiles[s], &w2, &frob);
         mu[s] = alpha * w2 + beta * frob;
     }
 
@@ -167,7 +166,7 @@ static int bo_anneal(const std::vector<TileState> &tiles, uint64_t *slots, float
         ++visits[pick];
 
         double cur_w2, cur_frob;
-        tile_joint(slots[pick], tiles[pick], alpha, beta, &cur_w2, &cur_frob);
+        tile_joint(slots[pick], tiles[pick], &cur_w2, &cur_frob);
         double cur_joint = alpha * cur_w2 + beta * cur_frob;
         uint64_t candidates[kMaxEdits];
         size_t n_edits = collect_edits(slots[pick], candidates);
@@ -177,7 +176,7 @@ static int bo_anneal(const std::vector<TileState> &tiles, uint64_t *slots, float
         size_t obs_n = 1;
         for (size_t i = 0; i < n_edits; ++i) {
             double w2, f;
-            tile_joint(candidates[i], tiles[pick], alpha, beta, &w2, &f);
+            tile_joint(candidates[i], tiles[pick], &w2, &f);
             double joint = alpha * w2 + beta * f;
             obs_sum += joint;
             ++obs_n;
