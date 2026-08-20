@@ -8,13 +8,16 @@
 
 class QTableWidget;
 class QLabel;
+class QPlainTextEdit;
+class QTabWidget;
 
 namespace crankl_gui {
 
 // §16: the Jobs drawer. A table of every CranklJob -- status dot,
-// operation·target, state, progress, elapsed -- fed by JobManager, plus
-// Cancel running / Clear finished actions and a detail strip showing the
-// error message of the most recently failed job
+// operation·target, state, exit code, progress, elapsed -- fed by JobManager,
+// plus Cancel running / Clear finished actions. Selecting a row opens a
+// stdout / stderr / error detail view beneath it, fed by the bounded capture
+// tails stored on the job.
 class JobsDrawerPage : public QWidget {
     Q_OBJECT
   public:
@@ -29,9 +32,13 @@ class JobsDrawerPage : public QWidget {
 
   private:
     void refreshTable();
+    void updateDetail(int row);
 
     QTableWidget *m_table = nullptr;
     QLabel *m_detail = nullptr;
+    QPlainTextEdit *m_stdoutView = nullptr;
+    QPlainTextEdit *m_stderrView = nullptr;
+    QTabWidget *m_outputTabs = nullptr;
     QVector<CranklJob> m_jobs;
 };
 
