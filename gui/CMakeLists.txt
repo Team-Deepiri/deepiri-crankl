@@ -6,6 +6,7 @@ set(CMAKE_AUTORCC ON)
 set(CRANKL_GUI_SOURCES
     app/main.cpp
     core/ArchiveAdapter.cpp
+    core/CliCommands.cpp
     core/JobManager.cpp
     widgets/MainWindow.cpp
     widgets/NavigationList.cpp
