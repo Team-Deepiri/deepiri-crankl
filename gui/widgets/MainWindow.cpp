@@ -21,6 +21,8 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include <crankl/version_api.h>
+
 #include <utility>
 
 namespace crankl_gui {
@@ -68,7 +70,8 @@ QString placeholderTitle(NavDestination d) {
 } // namespace
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    setWindowTitle(tr("crankl"));
+    const QString version = QString::fromUtf8(crankl_version_string());
+    setWindowTitle(tr("crankl %1").arg(version));
     resize(1360, 860);
     // Freely resizable, with a floor that fits the smallest common desktop
     // displays (1280x720 / 1366x768 / 1024x768, minus OS chrome). Below
