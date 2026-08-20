@@ -171,6 +171,14 @@ static void test_hand_built_graphs() {
     uint64_t span3[4] = {word_from_mv(1, 0, 0, 0, 0, 0), word_from_mv(0, 0, 0, 1, 0, 0),
                          word_from_mv(0, 0, 0, 0, 1, 0), word_from_mv(0, 0, 0, 0, 0, 1)};
     check_coh(span3, 4, 32, 0, "four mutually orthogonal slots");
+
+    // A degenerate (all-zero) slot must not break the sheaf: h0 >= 1, h1 >= 0.
+    uint64_t with_zero[3] = {word_from_mv(1, 0, 0, 0, 0, 0), 0,
+                             word_from_mv(1, 0, 0, 0, 0, 0)};
+    int h0 = 0;
+    int h1 = -1;
+    check(crankl_sheaf_cohomology(with_zero, 3, &h0, &h1) == 0, "degenerate slot rc");
+    check(h0 >= 1 && h1 >= 0, "degenerate slot keeps h0>=1, h1>=0");
 }
 
 static void test_golden_parity() {
@@ -350,6 +358,16 @@ static void test_resonance_h1() {
           "resonance_h1 deterministic on 1 slot");
 }
 
+static void test_backward_compat() {
+    // beta1_proxy and legacy resonance are frozen deprecated aliases: for the
+    // original smoke inputs their outputs must not change.
+    uint64_t a[4] = {1, 2, 3, 4};
+    uint64_t b[4] = {4, 3, 2, 1};
+    check(crankl_sheaf_beta1_proxy(a, 4) == 0, "beta1_proxy({1,2,3,4}) stays 0");
+    check(crankl_sheaf_resonance(a, 4, b, 4) == 0.0, "legacy resonance stays 0");
+    check(std::isfinite(crankl_sheaf_resonance_h1(a, 4, b, 4)), "resonance_h1 finite");
+}
+
 int main() {
     test_trivial_cases();
     test_hand_built_graphs();
@@ -359,6 +377,7 @@ int main() {
     test_stability_bind();
     test_stability_trit_surgery();
     test_resonance_h1();
+    test_backward_compat();
 
     if (failures == 0)
         std::printf("test_sheaf ok (cohomology: %d golden cases, %d hand-built graphs)\n",
