@@ -20,6 +20,7 @@ set(CRANKL_GUI_SOURCES
     widgets/HomePage.cpp
     widgets/InspectPage.cpp
     widgets/ComparePage.cpp
+    widgets/NewJobDialog.cpp
     widgets/JobsDrawerPage.cpp
     resources/gui.qrc
 )

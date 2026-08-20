@@ -47,6 +47,7 @@ class MainWindow : public QMainWindow {
     void handleJobsChanged();
     void handleVerifyRequested();
     void handleCloseRequested();
+    void showNewJobDialog();
 
   private:
     void buildToolBar();

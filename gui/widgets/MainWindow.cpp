@@ -5,6 +5,7 @@
 #include "widgets/HomePage.h"
 #include "widgets/InspectPage.h"
 #include "widgets/JobsDrawerPage.h"
+#include "widgets/NewJobDialog.h"
 #include "widgets/PlaceholderPage.h"
 
 #include <QCursor>
@@ -118,8 +119,7 @@ void MainWindow::buildToolBar() {
 
     auto *newOperationButton = new QToolButton(this);
     newOperationButton->setText(tr("New operation"));
-    newOperationButton->setEnabled(false);
-    newOperationButton->setToolTip(tr("Not available yet."));
+    connect(newOperationButton, &QToolButton::clicked, this, [this] { showNewJobDialog(); });
     toolBar->addWidget(newOperationButton);
 
     toolBar->addSeparator();
@@ -180,6 +180,7 @@ void MainWindow::buildCentralArea() {
             m_comparePage->setArchiveA(m_currentArchive->path);
         m_nav->setCurrentDestination(NavDestination::Compare);
     });
+    connect(m_homePage, &HomePage::newJobRequested, this, &MainWindow::showNewJobDialog);
     connect(m_homePage, &HomePage::reVerifyRequested, this, &MainWindow::handleVerifyRequested);
     connect(m_homePage, &HomePage::closeArchiveRequested, this, &MainWindow::handleCloseRequested);
 
@@ -278,6 +279,15 @@ void MainWindow::handleArchiveOpened(QUuid /*jobId*/, ArchiveOpenResult result) 
 
 void MainWindow::handleCompareDone(QUuid /*jobId*/, CompareResult result) {
     m_comparePage->showResult(result);
+}
+
+void MainWindow::showNewJobDialog() {
+    auto *dialog = new NewJobDialog(this);
+    if (m_currentArchive)
+        dialog->setInputPath(m_currentArchive->path);
+    connect(dialog, &NewJobDialog::jobRequested, m_jobManager, &JobManager::runCliJob);
+    connect(dialog, &NewJobDialog::finished, dialog, &QObject::deleteLater);
+    dialog->open();
 }
 
 void MainWindow::debugDumpWidths() {
