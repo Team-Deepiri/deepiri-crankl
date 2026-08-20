@@ -185,6 +185,24 @@ class CranklAPI:
             ct.c_size_t,
         ]
         lib.crankl_sheaf_resonance.restype = ct.c_double
+        lib.crankl_sheaf_h0_dim.argtypes = [ct.POINTER(ct.c_uint64), ct.c_size_t]
+        lib.crankl_sheaf_h0_dim.restype = ct.c_int
+        lib.crankl_sheaf_h1_dim.argtypes = [ct.POINTER(ct.c_uint64), ct.c_size_t]
+        lib.crankl_sheaf_h1_dim.restype = ct.c_int
+        lib.crankl_sheaf_cohomology.argtypes = [
+            ct.POINTER(ct.c_uint64),
+            ct.c_size_t,
+            ct.POINTER(ct.c_int),
+            ct.POINTER(ct.c_int),
+        ]
+        lib.crankl_sheaf_cohomology.restype = ct.c_int
+        lib.crankl_sheaf_resonance_h1.argtypes = [
+            ct.POINTER(ct.c_uint64),
+            ct.c_size_t,
+            ct.POINTER(ct.c_uint64),
+            ct.c_size_t,
+        ]
+        lib.crankl_sheaf_resonance_h1.restype = ct.c_double
 
         lib.crankl_crank_diff_count.argtypes = [
             ct.POINTER(ct.c_uint64),
@@ -333,6 +351,34 @@ class CranklAPI:
         b_owned, b_pointer = _u64_pointer(b_words)
         return float(
             self.lib.crankl_sheaf_resonance(
+                a_pointer, a_owned.size, b_pointer, b_owned.size
+            )
+        )
+
+    def h0_dim(self, words: np.ndarray) -> int:
+        owned_words, pointer = _u64_pointer(words)
+        return int(self.lib.crankl_sheaf_h0_dim(pointer, owned_words.size))
+
+    def h1_dim(self, words: np.ndarray) -> int:
+        owned_words, pointer = _u64_pointer(words)
+        return int(self.lib.crankl_sheaf_h1_dim(pointer, owned_words.size))
+
+    def cohomology(self, words: np.ndarray) -> tuple[int, int]:
+        owned_words, pointer = _u64_pointer(words)
+        h0 = ct.c_int()
+        h1 = ct.c_int()
+        status = self.lib.crankl_sheaf_cohomology(
+            pointer, owned_words.size, ct.byref(h0), ct.byref(h1)
+        )
+        if status != 0:
+            raise RuntimeError(f"crankl_sheaf_cohomology failed with status {status}")
+        return int(h0.value), int(h1.value)
+
+    def resonance_h1(self, a_words: np.ndarray, b_words: np.ndarray) -> float:
+        a_owned, a_pointer = _u64_pointer(a_words)
+        b_owned, b_pointer = _u64_pointer(b_words)
+        return float(
+            self.lib.crankl_sheaf_resonance_h1(
                 a_pointer, a_owned.size, b_pointer, b_owned.size
             )
         )
