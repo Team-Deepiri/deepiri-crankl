@@ -11,6 +11,7 @@
     "clifford_cases.hpp",
     "clifford_cases.json",
     "sheaf_ref.json",
+    "sheaf_cases.hpp",
     "holonomy_ref.json"
   ]
 }
