@@ -4,11 +4,48 @@
 #include "widgets/StyleUtil.h"
 
 #include <QHBoxLayout>
+#include <QJsonDocument>
 #include <QLabel>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 
 namespace crankl_gui {
+
+QJsonObject ResultSummaryPanel::snapshotToJson(const ArchiveSnapshot &snapshot) {
+    QJsonObject obj;
+    obj.insert(QStringLiteral("path"), snapshot.path);
+    obj.insert(QStringLiteral("file_name"), snapshot.fileName);
+    obj.insert(QStringLiteral("byte_size"), snapshot.byteSize);
+    obj.insert(QStringLiteral("gamma"), snapshot.gamma);
+    obj.insert(QStringLiteral("flags"), static_cast<qint64>(snapshot.flags));
+    switch (snapshot.metadataState) {
+    case MetadataState::Present:
+        obj.insert(QStringLiteral("has_metadata"), true);
+        break;
+    case MetadataState::Absent:
+        obj.insert(QStringLiteral("has_metadata"), false);
+        break;
+    case MetadataState::Error:
+        obj.insert(QStringLiteral("has_metadata"), QStringLiteral("error"));
+        break;
+    }
+    if (snapshot.metricsValid) {
+        QJsonObject metrics;
+        const ArchiveMetrics &m = snapshot.metrics;
+        metrics.insert(QStringLiteral("n_slots"), static_cast<qint64>(m.nSlots));
+        metrics.insert(QStringLiteral("depth_min"), static_cast<qint64>(m.depthMin));
+        metrics.insert(QStringLiteral("depth_max"), static_cast<qint64>(m.depthMax));
+        metrics.insert(QStringLiteral("scalar_mean"), m.scalarMean);
+        metrics.insert(QStringLiteral("scalar_abs_mean"), m.scalarAbsMean);
+        metrics.insert(QStringLiteral("trit_density"), m.tritDensity);
+        metrics.insert(QStringLiteral("trit_entropy"), m.tritEntropy);
+        metrics.insert(QStringLiteral("clifford_energy"), m.cliffordEnergy);
+        metrics.insert(QStringLiteral("beta1_proxy"), m.beta1Proxy);
+        obj.insert(QStringLiteral("metrics"), metrics);
+    }
+    return obj;
+}
 
 ResultSummaryPanel::ResultSummaryPanel(QWidget *parent) : QFrame(parent) {
     setObjectName(QStringLiteral("ResultSummaryPanel"));
@@ -33,6 +70,14 @@ ResultSummaryPanel::ResultSummaryPanel(QWidget *parent) : QFrame(parent) {
 
     m_metrics = new MetricsPanel(this);
     layout->addWidget(m_metrics);
+    layout->addSpacing(10);
+
+    m_jsonPreview = new QPlainTextEdit(this);
+    m_jsonPreview->setObjectName(QStringLiteral("JsonPreview"));
+    m_jsonPreview->setReadOnly(true);
+    m_jsonPreview->setMaximumHeight(160);
+    m_jsonPreview->setPlaceholderText(tr("json preview — appears once an archive is open"));
+    layout->addWidget(m_jsonPreview);
     layout->addSpacing(10);
 
     m_rollbackNote =
@@ -85,11 +130,13 @@ QWidget *ResultSummaryPanel::buildBottomActions() {
 }
 
 void ResultSummaryPanel::setSnapshot(const ArchiveSnapshot &snapshot) {
+    m_snapshot = snapshot;
     if (snapshot.metricsValid)
         m_metrics->setMetrics(snapshot.metrics);
     else
         m_metrics->setUnavailable();
     m_rollbackNote->setVisible(true);
+    updateJsonPreview();
     m_copyJsonButton->setEnabled(true);
     m_exportButton->setEnabled(true);
     m_actionsCaption->setText(tr("both write outside the archive · the .crank is untouched"));
@@ -97,8 +144,10 @@ void ResultSummaryPanel::setSnapshot(const ArchiveSnapshot &snapshot) {
 }
 
 void ResultSummaryPanel::setPending() {
+    m_snapshot = ArchiveSnapshot();
     m_metrics->setPending();
     m_rollbackNote->setVisible(false);
+    m_jsonPreview->clear();
     m_copyJsonButton->setEnabled(false);
     m_exportButton->setEnabled(false);
     m_actionsCaption->setText(tr("available once an archive is open"));
@@ -106,12 +155,23 @@ void ResultSummaryPanel::setPending() {
 }
 
 void ResultSummaryPanel::clear() {
+    m_snapshot = ArchiveSnapshot();
     m_metrics->clear();
     m_rollbackNote->setVisible(false);
+    m_jsonPreview->clear();
     m_copyJsonButton->setEnabled(false);
     m_exportButton->setEnabled(false);
     m_actionsCaption->setText(tr("available once an archive is open"));
     setStyleProperty(this, "state", QStringLiteral("empty"));
+}
+
+void ResultSummaryPanel::updateJsonPreview() {
+    if (m_snapshot.isEmpty()) {
+        m_jsonPreview->clear();
+        return;
+    }
+    m_jsonPreview->setPlainText(
+        QString::fromUtf8(QJsonDocument(snapshotToJson(m_snapshot)).toJson(QJsonDocument::Indented)));
 }
 
 } // namespace crankl_gui

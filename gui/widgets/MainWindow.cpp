@@ -1,9 +1,11 @@
 #include "widgets/MainWindow.h"
 
 #include "core/JobManager.h"
+#include "widgets/ComparePage.h"
 #include "widgets/HomePage.h"
 #include "widgets/InspectPage.h"
 #include "widgets/JobsDrawerPage.h"
+#include "widgets/NewJobDialog.h"
 #include "widgets/PlaceholderPage.h"
 
 #include <QCursor>
@@ -19,19 +21,21 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include <crankl/version_api.h>
+
 #include <utility>
 
 namespace crankl_gui {
 
 namespace {
 
-// Destinations without a Phase 1 screen. Compare is included deliberately:
-// the imported design renders it dimmed alongside Pack/Optimize/etc.,
-// because ArchiveAdapter only ever holds one open archive at a time.
+// Destinations without a Phase 2 screen. Pack/Optimize/History/Bind/Forward/
+// Unpack/Pipeline and the Math Lab stay dimmed placeholders; Compare now has
+// a real page (see buildCentralArea).
 const QVector<NavDestination> kPlaceholderDestinations = {
-    NavDestination::Compare, NavDestination::Pack,     NavDestination::Optimize,
-    NavDestination::History, NavDestination::Bind,     NavDestination::Forward,
-    NavDestination::Unpack,  NavDestination::Pipeline, NavDestination::AdvancedMathLab,
+    NavDestination::Pack,       NavDestination::Optimize, NavDestination::History,
+    NavDestination::Bind,       NavDestination::Forward,  NavDestination::Unpack,
+    NavDestination::Pipeline,   NavDestination::AdvancedMathLab,
 };
 
 QString placeholderTitle(NavDestination d) {
@@ -66,7 +70,8 @@ QString placeholderTitle(NavDestination d) {
 } // namespace
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    setWindowTitle(tr("crankl"));
+    const QString version = QString::fromUtf8(crankl_version_string());
+    setWindowTitle(tr("crankl %1").arg(version));
     resize(1360, 860);
     // Freely resizable, with a floor that fits the smallest common desktop
     // displays (1280x720 / 1366x768 / 1024x768, minus OS chrome). Below
@@ -117,8 +122,7 @@ void MainWindow::buildToolBar() {
 
     auto *newOperationButton = new QToolButton(this);
     newOperationButton->setText(tr("New operation"));
-    newOperationButton->setEnabled(false);
-    newOperationButton->setToolTip(tr("Not available yet."));
+    connect(newOperationButton, &QToolButton::clicked, this, [this] { showNewJobDialog(); });
     toolBar->addWidget(newOperationButton);
 
     toolBar->addSeparator();
@@ -174,6 +178,12 @@ void MainWindow::buildCentralArea() {
     connect(m_homePage, &HomePage::pathDropped, this, &MainWindow::openPath);
     connect(m_homePage, &HomePage::inspectRequested, this,
             [this] { m_nav->setCurrentDestination(NavDestination::Inspect); });
+    connect(m_homePage, &HomePage::compareRequested, this, [this] {
+        if (m_currentArchive)
+            m_comparePage->setArchiveA(m_currentArchive->path);
+        m_nav->setCurrentDestination(NavDestination::Compare);
+    });
+    connect(m_homePage, &HomePage::newJobRequested, this, &MainWindow::showNewJobDialog);
     connect(m_homePage, &HomePage::reVerifyRequested, this, &MainWindow::handleVerifyRequested);
     connect(m_homePage, &HomePage::closeArchiveRequested, this, &MainWindow::handleCloseRequested);
 
@@ -189,6 +199,11 @@ void MainWindow::buildCentralArea() {
     connect(m_inspectPage, &InspectPage::pathDropped, this, &MainWindow::openPath);
     connect(m_inspectPage, &InspectPage::recentRequested, this, &MainWindow::showRecentMenu);
 
+    m_comparePage = new ComparePage(m_stack);
+    connect(m_comparePage, &ComparePage::compareRequested, m_jobManager,
+            &JobManager::compareArchives);
+    connect(m_jobManager, &JobManager::compareDone, this, &MainWindow::handleCompareDone);
+
     m_jobsPage = new JobsDrawerPage(m_stack);
     connect(m_jobsPage, &JobsDrawerPage::clearFinishedRequested, m_jobManager,
             &JobManager::clearFinished);
@@ -197,6 +212,7 @@ void MainWindow::buildCentralArea() {
 
     m_pages.insert(NavDestination::Home, m_homePage);
     m_pages.insert(NavDestination::Inspect, m_inspectPage);
+    m_pages.insert(NavDestination::Compare, m_comparePage);
     m_pages.insert(NavDestination::Jobs, m_jobsPage);
 
     for (NavDestination destination : kPlaceholderDestinations) {
@@ -262,6 +278,19 @@ void MainWindow::handleArchiveOpened(QUuid /*jobId*/, ArchiveOpenResult result) 
     m_inspectPage->setSnapshot(*m_currentArchive);
     rememberRecent(m_currentArchive->path);
     updateBreadcrumb();
+}
+
+void MainWindow::handleCompareDone(QUuid /*jobId*/, CompareResult result) {
+    m_comparePage->showResult(result);
+}
+
+void MainWindow::showNewJobDialog() {
+    auto *dialog = new NewJobDialog(this);
+    if (m_currentArchive)
+        dialog->setInputPath(m_currentArchive->path);
+    connect(dialog, &NewJobDialog::jobRequested, m_jobManager, &JobManager::runCliJob);
+    connect(dialog, &NewJobDialog::finished, dialog, &QObject::deleteLater);
+    dialog->open();
 }
 
 void MainWindow::debugDumpWidths() {

@@ -4,9 +4,11 @@
 #include "core/ArchiveSnapshot.h"
 
 #include <QFrame>
+#include <QJsonObject>
 
 class QLabel;
 class QPushButton;
+class QPlainTextEdit;
 
 namespace crankl_gui {
 
@@ -34,6 +36,10 @@ class ResultSummaryPanel : public QFrame {
     void setPending();
     void clear();
 
+    // Serializes the loaded snapshot as `crankl inspect --json` would, for
+    // the preview pane and for copy/export.
+    static QJsonObject snapshotToJson(const ArchiveSnapshot &snapshot);
+
     QWidget *bottomActionsWidget() const {
         return m_bottomActions;
     }
@@ -44,13 +50,16 @@ class ResultSummaryPanel : public QFrame {
 
   private:
     QWidget *buildBottomActions();
+    void updateJsonPreview();
 
     MetricsPanel *m_metrics = nullptr;
     QLabel *m_rollbackNote = nullptr;
+    QPlainTextEdit *m_jsonPreview = nullptr;
     QWidget *m_bottomActions = nullptr;
     QPushButton *m_copyJsonButton = nullptr;
     QPushButton *m_exportButton = nullptr;
     QLabel *m_actionsCaption = nullptr;
+    ArchiveSnapshot m_snapshot;
 };
 
 } // namespace crankl_gui
