@@ -196,8 +196,8 @@ int main() {
     {
         std::string bad = make_temp_path(".safetensors");
         std::ofstream f(bad, std::ios::binary);
-        const unsigned char truncated[] = {0x10, 0, 0, 0, 0, 0, 0, 0, '{', '"',
-                                           'b', 'r', 'o', 'k', 'e', 'n'};
+        const unsigned char truncated[] = {0x10, 0,   0,   0,   0,   0,   0,   0,
+                                           '{',  '"', 'b', 'r', 'o', 'k', 'e', 'n'};
         f.write(reinterpret_cast<const char *>(truncated),
                 static_cast<std::streamsize>(sizeof(truncated)));
         f.close();
