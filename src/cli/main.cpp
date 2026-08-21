@@ -16,7 +16,10 @@ static void usage() {
     std::cout << "crankl v" << CRANKL_VERSION_STRING << " — Grand Unified Crank Theory engine\n"
               << "Usage: crankl <command> [options]\n"
               << "Commands: pack, unpack, resonance, turn, finetune, peel, bind, holonomy, stats,\n"
-              << "          verify, diff, inspect, compare, pipeline, version\n";
+              << "          verify, diff, inspect, compare, pipeline, version\n"
+              << "pack: --input f32|.safetensors|.gguf [--tensor NAME] [--multi]\n"
+              << "      [--pack-mode legacy|staged|bo] [--manifest path] [-o out.crank]\n"
+              << "holonomy: --input a.crank --vector x.f32 [--batch N] -o y.f32\n";
 }
 
 static std::vector<float> read_f32(const char *path, size_t &count) {
@@ -124,9 +127,28 @@ static int write_manifest(const char *path, const char *input, const char *outpu
     return 0;
 }
 
+static int parse_pack_mode(const char *m, int &mode) {
+    if (std::strcmp(m, "legacy") == 0)
+        mode = CRANKL_PACK_MODE_LEGACY;
+    else if (std::strcmp(m, "staged") == 0)
+        mode = CRANKL_PACK_MODE_STAGED;
+    else if (std::strcmp(m, "bo") == 0)
+        mode = CRANKL_PACK_MODE_BO;
+    else
+        return -1;
+    return 0;
+}
+
+static bool has_extension(const char *path, const char *ext) {
+    size_t len = std::strlen(path), elen = std::strlen(ext);
+    return len > elen && std::strcmp(path + len - elen, ext) == 0;
+}
+
 static int cmd_pack(int argc, char **argv) {
-    const char *input = nullptr, *output = nullptr, *tensor = nullptr;
+    const char *input = nullptr, *output = nullptr, *tensor = nullptr, *manifest = nullptr;
     size_t n_slots = 8;
+    int mode = crankl_pack_default_mode();
+    bool multi = false;
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
@@ -134,12 +156,42 @@ static int cmd_pack(int argc, char **argv) {
             output = argv[++i];
         else if (std::strcmp(argv[i], "--tensor") == 0 && i + 1 < argc)
             tensor = argv[++i];
-        else if (std::strcmp(argv[i], "--shape") == 0 && i + 1 < argc) {
+        else if (std::strcmp(argv[i], "--manifest") == 0 && i + 1 < argc)
+            manifest = argv[++i];
+        else if (std::strcmp(argv[i], "--multi") == 0)
+            multi = true;
+        else if (std::strcmp(argv[i], "--pack-mode") == 0 && i + 1 < argc) {
+            if (parse_pack_mode(argv[++i], mode) != 0) {
+                std::fprintf(stderr, "pack: unknown --pack-mode (legacy|staged|bo)\n");
+                return 1;
+            }
+        } else if (std::strcmp(argv[i], "--shape") == 0 && i + 1 < argc) {
             n_slots = static_cast<size_t>(std::atoi(argv[++i]));
         }
     }
     if (!input || !output)
         return 1;
+
+    // Multi-tensor and GGUF ingest bypass the raw-f32 path entirely.
+    if (multi) {
+        int rc = crankl_pack_safetensors_multi(input, output, manifest, 1.0f, 1.0f);
+        if (rc != 0) {
+            std::fprintf(stderr, "pack: multi-tensor pack failed (%d)\n", rc);
+            return 2;
+        }
+        std::cout << "packed_multi=" << output << "\n";
+        return 0;
+    }
+    if (has_extension(input, ".gguf")) {
+        if (!tensor) {
+            std::fprintf(stderr, "pack: .gguf input requires --tensor NAME\n");
+            return 1;
+        }
+        if (crankl_pack_gguf_f32(input, tensor, output) != 0)
+            return 2;
+        std::cout << "packed_gguf=" << output << " tensor=" << tensor << "\n";
+        return 0;
+    }
 
     std::vector<float> data;
     size_t count = 0;
@@ -158,7 +210,11 @@ static int cmd_pack(int argc, char **argv) {
         n_slots = crankl_pack_n_slots(count);
 
     std::vector<uint64_t> slots(n_slots);
-    crankl_pack_f32(data.data(), count, slots.data(), n_slots, 0.1f, 0.01f);
+    if (mode == CRANKL_PACK_MODE_LEGACY)
+        crankl_pack_f32(data.data(), count, slots.data(), n_slots, 0.1f, 0.01f);
+    else if (crankl_pack_f32_anneal(data.data(), count, slots.data(), n_slots, 1.0f, 1.0f, mode,
+                                    7u) != 0)
+        return 3;
     crankl_cran_header_t hdr{};
     hdr.n_slots = n_slots;
     hdr.depth_max = 1;
@@ -419,14 +475,9 @@ static int cmd_peel(int argc, char **argv) {
     if (load_cran_slots(input, slots, cran) != 0)
         return 2;
     uint32_t stack_depth = cran.header.depth_max;
-    // BUG(format-v2): cran.layers currently falls back to the address immediately
-    // after slots when no stack was validated. For a metadata archive that address
-    // is the META footer, so this pointer test can pass and feed JSON bytes to peel.
-    //
-    // TODO(format-v3): require both cran.layers != nullptr and an explicit,
-    // validated cran.n_stack_layers > 0. Pass that count to crankl_peel_stack,
-    // retain only the unpeeled history in the output, and preserve input metadata.
-    if (cran.layers && cran.layers != cran.slots)
+    // The reader guarantees layers is non-null only for a validated stack
+    // section, so a plain null test is the whole safety check.
+    if (cran.layers)
         crankl_peel_stack(slots.data(), slots.size(), cran.layers, stack_depth, layers);
     else
         for (auto &w : slots)
@@ -465,24 +516,36 @@ static int cmd_bind(int argc, char **argv) {
 
 static int cmd_holonomy(int argc, char **argv) {
     const char *input = nullptr, *vec = nullptr, *output = nullptr;
+    size_t batch = 1;
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
         else if (std::strcmp(argv[i], "--vector") == 0 && i + 1 < argc)
             vec = argv[++i];
+        else if (std::strcmp(argv[i], "--batch") == 0 && i + 1 < argc)
+            batch = static_cast<size_t>(std::atoi(argv[++i]));
         else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
             output = argv[++i];
     }
-    if (!input || !vec || !output)
+    if (!input || !vec || !output || batch == 0)
         return 1;
     crankl_cran_t cran{};
     if (crankl_cran_read(input, &cran) != 0)
         return 2;
     size_t count = 0;
     auto x = read_f32(vec, count);
+    if (count == 0 || count % batch != 0) {
+        crankl_cran_close(&cran);
+        std::fprintf(stderr, "holonomy: vector file must hold dim*batch floats\n");
+        return 3;
+    }
+    size_t dim = count / batch;
     std::vector<float> y(count);
-    crankl_holonomy(&cran, x.data(), count, y.data());
+    int rc = batch > 1 ? crankl_holonomy_batch(&cran, x.data(), dim, batch, y.data())
+                       : crankl_holonomy(&cran, x.data(), dim, y.data());
     crankl_cran_close(&cran);
+    if (rc != 0)
+        return 4;
     return write_f32(output, y.data(), y.size());
 }
 
@@ -569,6 +632,26 @@ static int cmd_inspect(int argc, char **argv) {
             std::cout << "\"metadata\":{\"model\":\"" << meta.model_name << "\",\"hash\":\""
                       << meta.source_hash << "\"},";
         }
+        int h0 = -1, h1 = -1;
+        crankl_sheaf_cohomology(cran.slots, cran.header.n_slots, &h0, &h1);
+        std::cout << "\"cohomology\":{\"h0\":" << h0 << ",\"h1\":" << h1 << "},";
+        size_t tensor_count = 0;
+        if (crankl_archive_tensor_count(argv[2], &tensor_count) == 0 && tensor_count > 0) {
+            std::vector<crankl_archive_tensor_t> tensors(tensor_count);
+            if (crankl_archive_tensor_list(argv[2], tensors.data(), tensors.size()) == 0) {
+                std::cout << "\"tensors\":[";
+                for (size_t t = 0; t < tensors.size(); ++t) {
+                    if (t)
+                        std::cout << ",";
+                    std::cout << "{\"name\":\"" << tensors[t].name << "\","
+                              << "\"slot_offset\":" << tensors[t].slot_offset << ","
+                              << "\"n_slots\":" << tensors[t].n_slots << ","
+                              << "\"n_floats\":" << tensors[t].n_floats << ","
+                              << "\"checksum\":\"" << tensors[t].checksum << "\"}";
+                }
+                std::cout << "],";
+            }
+        }
         std::cout << "\"metrics\":";
         print_metrics_json(metrics);
         std::cout << "}\n";
@@ -581,6 +664,22 @@ static int cmd_inspect(int argc, char **argv) {
         if (meta_rc == 0) {
             std::cout << "metadata_model=" << meta.model_name << "\n"
                       << "metadata_hash=" << meta.source_hash << "\n";
+        }
+        int h0 = -1, h1 = -1;
+        crankl_sheaf_cohomology(cran.slots, cran.header.n_slots, &h0, &h1);
+        std::cout << "cohomology_h0=" << h0 << "\n"
+                  << "cohomology_h1=" << h1 << "\n";
+        size_t tensor_count = 0;
+        if (crankl_archive_tensor_count(argv[2], &tensor_count) == 0 && tensor_count > 0) {
+            std::vector<crankl_archive_tensor_t> tensors(tensor_count);
+            if (crankl_archive_tensor_list(argv[2], tensors.data(), tensors.size()) == 0) {
+                std::cout << "tensors=" << tensor_count << "\n";
+                for (size_t t = 0; t < tensors.size(); ++t)
+                    std::cout << "tensor[" << t << "]=" << tensors[t].name
+                              << " slot_offset=" << tensors[t].slot_offset
+                              << " n_slots=" << tensors[t].n_slots
+                              << " n_floats=" << tensors[t].n_floats << "\n";
+            }
         }
         print_metrics_text(metrics);
     }
@@ -607,6 +706,7 @@ static int cmd_compare(int argc, char **argv) {
     size_t changed = crankl_crank_diff_count(sa.data(), sb.data(), n);
     double ham = crankl_crank_diff_hamming(sa.data(), sb.data(), n);
     double sheaf = crankl_sheaf_resonance(sa.data(), sa.size(), sb.data(), sb.size());
+    double h1 = crankl_sheaf_resonance_h1(sa.data(), sa.size(), sb.data(), sb.size());
     double clifford = 0.0;
     for (size_t i = 0; i < n; ++i)
         clifford += crankl_clifford_resonance(sa[i], sb[i]);
@@ -621,7 +721,8 @@ static int cmd_compare(int argc, char **argv) {
         std::cout << "{\"a\":\"" << argv[2] << "\",\"b\":\"" << argv[3] << "\","
                   << "\"slots_changed\":" << changed << "," << "\"slots_compared\":" << n << ","
                   << "\"hamming\":" << ham << "," << "\"clifford_resonance\":" << clifford << ","
-                  << "\"sheaf_resonance\":" << sheaf << ","
+                  << "\"sheaf_resonance\":" << sheaf << "," << "\"sheaf_resonance_h1\":" << h1
+                  << ","
                   << "\"delta_trit_density\":" << (mb.trit_density - ma.trit_density) << ","
                   << "\"delta_energy\":" << (mb.clifford_energy - ma.clifford_energy) << "}\n";
     } else {
@@ -629,6 +730,7 @@ static int cmd_compare(int argc, char **argv) {
                   << "hamming=" << ham << "\n"
                   << "clifford_resonance=" << clifford << "\n"
                   << "sheaf_resonance=" << sheaf << "\n"
+                  << "sheaf_resonance_h1=" << h1 << "\n"
                   << "delta_trit_density=" << (mb.trit_density - ma.trit_density) << "\n"
                   << "delta_energy=" << (mb.clifford_energy - ma.clifford_energy) << "\n";
     }
