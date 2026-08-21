@@ -20,13 +20,16 @@ add_executable(test_holonomy_blocked ctest/test_holonomy_blocked.cpp)
 add_executable(test_peel_stack ctest/test_peel_stack.cpp)
 add_executable(test_cran_multi_open ctest/test_cran_multi_open.cpp)
 add_executable(test_pack_anneal ctest/test_pack_anneal.cpp)
+add_executable(test_ingest_multi ctest/test_ingest_multi.cpp)
+add_executable(test_gguf ctest/test_gguf.cpp)
 
 set(CRANKL_TEST_INCLUDE ${CMAKE_SOURCE_DIR}/tests/golden)
 
 foreach(t test_trit test_clifford test_cran test_pack test_guct test_diff test_simd test_sheaf
         test_clifford_parity test_pack_roundtrip test_integration test_c_api test_safetensors
         test_turn_target test_metrics test_flow_pipeline test_pack_decrank_roundtrip test_finetune
-        test_holonomy_blocked test_peel_stack test_cran_multi_open test_pack_anneal)
+        test_holonomy_blocked test_peel_stack test_cran_multi_open test_pack_anneal
+        test_ingest_multi test_gguf)
     target_link_libraries(${t} PRIVATE crankl)
     target_include_directories(${t} PRIVATE ${CRANKL_TEST_INCLUDE})
     crankl_set_warnings(${t})
@@ -36,6 +39,8 @@ endforeach()
 target_compile_definitions(test_safetensors PRIVATE GOLDEN_DIR="${CMAKE_SOURCE_DIR}/tests/golden")
 target_include_directories(test_safetensors PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(test_pack_anneal PRIVATE GOLDEN_DIR="${CMAKE_SOURCE_DIR}/tests/golden")
+target_include_directories(test_ingest_multi PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(test_gguf PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # test_simd calls crankl::simd::mat8_mul_avx2 directly, which is only declared internally
 target_include_directories(test_simd PRIVATE ${CMAKE_SOURCE_DIR}/src)

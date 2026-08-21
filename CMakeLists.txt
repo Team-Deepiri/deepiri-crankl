@@ -26,6 +26,7 @@ set(CRANKL_C_BINDINGS_SOURCES
     src/c_bindings/bind_diff.cpp
     src/c_bindings/bind_simd.cpp
     src/c_bindings/bind_metrics.cpp
+    src/c_bindings/bind_ingest.cpp
 )
 
 set(CRANKL_CORE_SOURCES
@@ -48,6 +49,8 @@ set(CRANKL_CORE_SOURCES
     src/archive/cran_writer.cpp
     src/archive/cran_metadata.cpp
     src/ingest/safetensors.cpp
+    src/ingest/gguf.cpp
+    src/ingest/pack_multi.cpp
     src/holonomy/wilson.cpp
     ${CRANKL_C_BINDINGS_SOURCES}
 )
@@ -99,6 +102,7 @@ install(FILES
     include/crankl/diff.h
     include/crankl/simd.h
     include/crankl/metrics.h
+    include/crankl/ingest.h
     DESTINATION include/crankl)
 
 configure_file(crankl.pc.in crankl.pc @ONLY)
