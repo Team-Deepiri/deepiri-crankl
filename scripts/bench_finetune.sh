@@ -14,4 +14,13 @@ cmake --build "$ROOT/build" --parallel
     -o "${BASE}_ft.crank" | tee "${BASE}_ft.log"
 grep -q recon_after "${BASE}_ft.log"
 
+# LoRA-scale holonomy: serial per-vector forward vs batched AVX2 forward.
+CC_BIN="${CC:-cc}"
+if "$CC_BIN" -O2 -I"$ROOT/include" tools/bench_holonomy.c -L"$ROOT/build" -lcrankl \
+    -Wl,-rpath,"$ROOT/build" -o /tmp/crankl_bench_holonomy 2>/dev/null; then
+    /tmp/crankl_bench_holonomy
+else
+    echo "bench_finetune: holonomy bench skipped (no compiler or lib)"
+fi
+
 echo "bench_finetune ok"
