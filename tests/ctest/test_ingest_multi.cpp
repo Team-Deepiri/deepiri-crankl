@@ -196,7 +196,10 @@ int main() {
     {
         std::string bad = make_temp_path(".safetensors");
         std::ofstream f(bad, std::ios::binary);
-        f.write("\x10\x00\x00\x00\x00\x00\x00\x00{\"broken", 20);
+        const unsigned char truncated[] = {0x10, 0, 0, 0, 0, 0, 0, 0, '{', '"',
+                                           'b', 'r', 'o', 'k', 'e', 'n'};
+        f.write(reinterpret_cast<const char *>(truncated),
+                static_cast<std::streamsize>(sizeof(truncated)));
         f.close();
         size_t n = 7;
         if (crankl_safetensors_count(bad.c_str(), &n) == CRANKL_OK && n > 4) {
