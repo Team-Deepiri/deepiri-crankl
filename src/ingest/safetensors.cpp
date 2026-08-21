@@ -31,11 +31,23 @@ static bool parse_json_string_field(const std::string &json, const std::string &
     return true;
 }
 
+// Locate the '[' of the data_offsets array, tolerating whitespace after the key.
+static size_t find_data_offsets_bracket(const std::string &block) {
+    size_t key = block.find("\"data_offsets\"");
+    if (key == std::string::npos)
+        return std::string::npos;
+    return block.find('[', key + 14);
+}
+
 static bool parse_tensor_shape(const std::string &block, std::vector<int64_t> &shape) {
-    size_t shape_pos = block.find("\"shape\":[");
+    size_t key = block.find("\"shape\"");
+    if (key == std::string::npos)
+        return false;
+    // Whitespace between the key and '[' is legal JSON; tolerate it.
+    size_t shape_pos = block.find('[', key + 7);
     if (shape_pos == std::string::npos)
         return false;
-    shape_pos += 9;
+    ++shape_pos;
     size_t shape_end = block.find(']', shape_pos);
     if (shape_end == std::string::npos)
         return false;
@@ -75,10 +87,10 @@ static bool parse_tensor_block(const std::string &json, const std::string &tenso
 
     parse_tensor_shape(block, t.shape);
 
-    size_t off_pos = block.find("\"data_offsets\":[");
-    if (off_pos == std::string::npos)
+    size_t off_pos = find_data_offsets_bracket(block);
+    if (off_pos == std::string::npos || off_pos + 1 >= block.size())
         return false;
-    off_pos += 16;
+    ++off_pos;
     long start = 0, end_off = 0;
     if (std::sscanf(block.c_str() + off_pos, "%ld,%ld", &start, &end_off) != 2)
         return false;
@@ -91,16 +103,6 @@ static bool parse_tensor_block(const std::string &json, const std::string &tenso
 // Scan the header JSON for top-level tensor keys. A tensor key is a quoted string
 // followed by an object containing "dtype" and "data_offsets". The header has no
 // nested objects except per-tensor ones, and "__metadata__" is skipped explicitly.
-static bool scan_tensor_key_at(const std::string &json, size_t key_start, std::string &name_out) {
-    size_t pos = json.find('"', key_start);
-    if (pos == std::string::npos)
-        return false;
-    size_t end = json.find('"', pos + 1);
-    if (end == std::string::npos)
-        return false;
-    name_out = json.substr(pos + 1, end - pos - 1);
-    return true;
-}
 
 int enumerate_safetensors_tensors(const char *path, std::vector<SafetensorsTensor> &out) {
     out.clear();
@@ -132,31 +134,36 @@ int enumerate_safetensors_tensors(const char *path, std::vector<SafetensorsTenso
             break;
         std::string name = header.substr(quote + 1, key_end - quote - 1);
 
-        // Advance past the key to find the value object.
+        // Advance past the key to find the value object. Whitespace between the
+        // colon and '{' is legal JSON and appears in hand-written headers.
         size_t colon = header.find(':', key_end + 1);
         if (colon == std::string::npos)
             break;
-        if (name == "__metadata__" || header[colon + 1] != '{') {
+        size_t value_pos = colon + 1;
+        while (value_pos < header.size() &&
+               std::isspace(static_cast<unsigned char>(header[value_pos])))
+            ++value_pos;
+        if (name == "__metadata__" || value_pos >= header.size() || header[value_pos] != '{') {
             i = colon + 1;
             continue;
         }
 
-        size_t obj_end = header.find('}', colon);
+        size_t obj_end = header.find('}', value_pos);
         if (obj_end == std::string::npos)
             break;
-        std::string block = header.substr(colon, obj_end - colon);
+        std::string block = header.substr(value_pos, obj_end - value_pos);
 
         SafetensorsTensor t;
         t.name = name;
         parse_json_string_field(block, "dtype", t.dtype);
         parse_tensor_shape(block, t.shape);
 
-        size_t off_pos = block.find("\"data_offsets\":[");
-        if (off_pos == std::string::npos) {
+        size_t off_pos = find_data_offsets_bracket(block);
+        if (off_pos == std::string::npos || off_pos + 1 >= block.size()) {
             i = obj_end + 1;
             continue;
         }
-        off_pos += 16;
+        ++off_pos;
         long start = 0, end_off = 0;
         if (std::sscanf(block.c_str() + off_pos, "%ld,%ld", &start, &end_off) != 2 || start < 0 ||
             end_off < start) {
