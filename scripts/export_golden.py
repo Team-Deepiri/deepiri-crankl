@@ -226,15 +226,54 @@ def main() -> None:
     lines = [
         "#pragma once",
         "#include <cstdint>",
-        "struct CliffordCase { double a[8]; double b[8]; double expected; double tol; };",
+        "struct CliffordCase {",
+        "    double a[8];",
+        "    double b[8];",
+        "    double expected;",
+        "    double tol;",
+        "};",
         "static const CliffordCase CLIFFORD_CASES[] = {",
     ]
     json_cases = []
-    for a, b, exp, tol in cases:
-        def fmt(m):
-            return "{" + ", ".join(f"{x:.9f}" for x in m) + "}"
 
-        lines.append(f"  {{{fmt(a)}, {fmt(b)}, {exp:.9f}, {tol:.9f}}},")
+    def fmt_vec(vals, content_col):
+        # Rows of a braced initializer list whose first element starts at column
+        # content_col, wrapped to stay within 100 columns like clang-format so
+        # regeneration is idempotent with the formatted golden header.
+        pieces = [f"{x:.9f}" for x in vals]
+        one_line = ", ".join(pieces)
+        if content_col + len(one_line) <= 99:
+            return [one_line]
+        pad = " " * content_col
+        limit = 99 - content_col
+        rows, cur, w = [], [], 0
+        for p in pieces:
+            extra = len(p) if not cur else len(p) + 2
+            if cur and w + extra > limit:
+                rows.append(", ".join(cur))
+                cur = []
+                w = 0
+            cur.append(p)
+            w += len(p) + 2
+        rows.append(", ".join(cur))
+        return [rows[0]] + [pad + r for r in rows[1:]]
+
+    def emit_vec(rows, first_prefix, close):
+        out = []
+        for j, r in enumerate(rows):
+            if j == 0:
+                out.append(first_prefix + r + (close if len(rows) == 1 else ","))
+            elif j == len(rows) - 1:
+                out.append(r + close)
+            else:
+                out.append(r + ",")
+        return out
+
+    for a, b, exp, tol in cases:
+        lines += emit_vec(fmt_vec(a, 6), "    {{", "},")
+        lines += emit_vec(fmt_vec(b, 6), "     {", "},")
+        lines.append(f"     {exp:.9f},")
+        lines.append(f"     {tol:.9f}}},")
         json_cases.append({"a": a, "b": b, "expected": exp, "tol": tol})
     lines.append("};")
     lines.append(f"static const int CLIFFORD_CASE_COUNT = {len(cases)};")
