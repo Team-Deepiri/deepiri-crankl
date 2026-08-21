@@ -43,6 +43,7 @@ set(CRANKL_CORE_SOURCES
     src/pack/unfold.cpp
     src/pack/persistence.cpp
     src/pack/tiling.cpp
+    src/pack/anneal.cpp
     src/archive/cran_reader.cpp
     src/archive/cran_writer.cpp
     src/archive/cran_metadata.cpp
