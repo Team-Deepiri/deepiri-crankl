@@ -137,8 +137,7 @@ int crankl_archive_tensor_list(const char *path, crankl_archive_tensor_t *out, s
         out[i].slot_offset = entries[i].slot_offset;
         out[i].n_slots = entries[i].n_slots;
         out[i].n_floats = entries[i].n_floats;
-        std::strncpy(out[i].checksum, entries[i].checksum.c_str(),
-                     CRANKL_INGEST_CHECKSUM_MAX - 1);
+        std::strncpy(out[i].checksum, entries[i].checksum.c_str(), CRANKL_INGEST_CHECKSUM_MAX - 1);
     }
     return CRANKL_OK;
 }

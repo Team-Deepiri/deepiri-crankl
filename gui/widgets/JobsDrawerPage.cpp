@@ -128,9 +128,9 @@ JobsDrawerPage::JobsDrawerPage(QWidget *parent) : QWidget(parent) {
     connect(cancelButton, &QPushButton::clicked, this, &JobsDrawerPage::cancelRunningRequested);
     auto *clearButton = new QPushButton(tr("Clear finished"), buttonsRow);
     connect(clearButton, &QPushButton::clicked, this, &JobsDrawerPage::clearFinishedRequested);
-    auto *note = new QLabel(
-        tr("queued, running, done, failed, cancelled — cancellation kills the QProcess"),
-        buttonsRow);
+    auto *note =
+        new QLabel(tr("queued, running, done, failed, cancelled — cancellation kills the QProcess"),
+                   buttonsRow);
     note->setObjectName(QStringLiteral("MutedNote"));
     buttonsLayout->addWidget(cancelButton);
     buttonsLayout->addWidget(clearButton);

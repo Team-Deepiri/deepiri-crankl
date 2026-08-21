@@ -64,9 +64,8 @@ static size_t collect_edits(uint64_t word, uint64_t candidates[kMaxEdits]) {
     uint8_t depth;
     unpack_crank_word(word, mv, depth);
     uint8_t flags = static_cast<uint8_t>(word >> 60);
-    double *blades[kBladeCount] = {&mv.vec[0],    &mv.vec[1],    &mv.vec[2],
-                                   &mv.bivec[0],  &mv.bivec[1],  &mv.bivec[2],
-                                   &mv.trivec};
+    double *blades[kBladeCount] = {&mv.vec[0],   &mv.vec[1],   &mv.vec[2], &mv.bivec[0],
+                                   &mv.bivec[1], &mv.bivec[2], &mv.trivec};
     size_t n = 0;
     for (int b = 0; b < kBladeCount; ++b) {
         double saved = *blades[b];
@@ -154,9 +153,8 @@ static int bo_anneal(const std::vector<TileState> &tiles, uint64_t *slots, float
         size_t pick = 0;
         double best_acq = 1e300;
         for (size_t s = 0; s < tiles.size(); ++s) {
-            double bonus =
-                explore * std::sqrt(std::log(static_cast<double>(t) + 1.0) /
-                                    static_cast<double>(visits[s] + 1));
+            double bonus = explore * std::sqrt(std::log(static_cast<double>(t) + 1.0) /
+                                               static_cast<double>(visits[s] + 1));
             double acq = mu[s] - bonus;
             if (acq < best_acq) {
                 best_acq = acq;

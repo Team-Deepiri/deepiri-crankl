@@ -2,8 +2,8 @@
 
 #include "widgets/StyleUtil.h"
 
-#include <QClipboard>
 #include <QApplication>
+#include <QClipboard>
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -87,9 +87,8 @@ ComparePage::ComparePage(QWidget *parent) : QWidget(parent) {
         auto *browse = new QPushButton(tr("Browse…"), row);
         browse->setObjectName(QStringLiteral("SecondaryButton"));
         connect(browse, &QPushButton::clicked, this, [this, lineEdit] {
-            const QString path =
-                QFileDialog::getOpenFileName(this, tr("Open crank archive"), QString(),
-                                             tr("Crank archives (*.crank)"));
+            const QString path = QFileDialog::getOpenFileName(
+                this, tr("Open crank archive"), QString(), tr("Crank archives (*.crank)"));
             if (!path.isEmpty())
                 lineEdit->setText(path);
         });
@@ -156,8 +155,7 @@ ComparePage::ComparePage(QWidget *parent) : QWidget(parent) {
     deltaLayout->addWidget(deltaHeading);
     m_deltaTable = new QTableWidget(0, 4, deltaCard);
     m_deltaTable->setObjectName(QStringLiteral("CompareDeltaTable"));
-    m_deltaTable->setHorizontalHeaderLabels(
-        {tr("metric"), tr("A"), tr("B"), tr("Δ")});
+    m_deltaTable->setHorizontalHeaderLabels({tr("metric"), tr("A"), tr("B"), tr("Δ")});
     m_deltaTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     m_deltaTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     m_deltaTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
@@ -208,8 +206,7 @@ ComparePage::ComparePage(QWidget *parent) : QWidget(parent) {
     actionsRowLayout->setSpacing(8);
     m_copyJsonButton = new QPushButton(tr("Copy as JSON"), actionsRow2);
     m_copyJsonButton->setObjectName(QStringLiteral("SecondaryButton"));
-    connect(m_copyJsonButton, &QPushButton::clicked, this,
-            [this] { copyResultJson(m_result); });
+    connect(m_copyJsonButton, &QPushButton::clicked, this, [this] { copyResultJson(m_result); });
     m_exportJsonButton = new QPushButton(tr("Export report JSON"), actionsRow2);
     m_exportJsonButton->setObjectName(QStringLiteral("SecondaryButton"));
     connect(m_exportJsonButton, &QPushButton::clicked, this,
@@ -229,9 +226,9 @@ ComparePage::ComparePage(QWidget *parent) : QWidget(parent) {
 }
 
 QGridLayout *ComparePage::buildSummaryStrip() {
-    static const char *const kKeys[] = {"slots compared", "slots changed", "hamming",
-                                        "clifford resonance", "sheaf resonance",
-                                        "Δ trit density", "Δ clifford energy"};
+    static const char *const kKeys[] = {"slots compared",     "slots changed",   "hamming",
+                                        "clifford resonance", "sheaf resonance", "Δ trit density",
+                                        "Δ clifford energy"};
     auto *grid = new QGridLayout;
     grid->setContentsMargins(0, 0, 0, 0);
     grid->setHorizontalSpacing(10);
@@ -252,8 +249,7 @@ QGridLayout *ComparePage::buildSummaryStrip() {
 
 void ComparePage::onCompareClicked() {
     if (!pathsReady()) {
-        QMessageBox::warning(this, tr("Compare"),
-                             tr("Choose two .crank archives to compare."));
+        QMessageBox::warning(this, tr("Compare"), tr("Choose two .crank archives to compare."));
         return;
     }
     setBusy(true);
@@ -397,11 +393,9 @@ void ComparePage::populateChangedList(const CompareResult &result) {
     }
     const size_t total = result.slotsChanged;
     const size_t shown = result.changedSlots.size();
-    m_changedCaption->setText(
-        total == 0
-            ? tr("no slots differ")
-            : shown < total ? tr("showing first %1 of %2").arg(shown).arg(total)
-                            : tr("%1 slots").arg(total));
+    m_changedCaption->setText(total == 0      ? tr("no slots differ")
+                              : shown < total ? tr("showing first %1 of %2").arg(shown).arg(total)
+                                              : tr("%1 slots").arg(total));
 }
 
 void ComparePage::copyResultJson(const CompareResult &result) {
@@ -418,9 +412,9 @@ void ComparePage::copyResultJson(const CompareResult &result) {
     obj.insert(QStringLiteral("clifford_resonance"), result.cliffordResonance);
     obj.insert(QStringLiteral("sheaf_resonance"), result.sheafResonance);
     obj.insert(QStringLiteral("delta_trit_density"),
-              result.metricsB.tritDensity - result.metricsA.tritDensity);
+               result.metricsB.tritDensity - result.metricsA.tritDensity);
     obj.insert(QStringLiteral("delta_energy"),
-              result.metricsB.cliffordEnergy - result.metricsA.cliffordEnergy);
+               result.metricsB.cliffordEnergy - result.metricsA.cliffordEnergy);
     const QByteArray payload = QJsonDocument(obj).toJson(QJsonDocument::Indented);
     QApplication::clipboard()->setText(QString::fromUtf8(payload));
 }
@@ -451,9 +445,9 @@ void ComparePage::exportResultJson(const CompareResult &result) {
     obj.insert(QStringLiteral("clifford_resonance"), result.cliffordResonance);
     obj.insert(QStringLiteral("sheaf_resonance"), result.sheafResonance);
     obj.insert(QStringLiteral("delta_trit_density"),
-              result.metricsB.tritDensity - result.metricsA.tritDensity);
+               result.metricsB.tritDensity - result.metricsA.tritDensity);
     obj.insert(QStringLiteral("delta_energy"),
-              result.metricsB.cliffordEnergy - result.metricsA.cliffordEnergy);
+               result.metricsB.cliffordEnergy - result.metricsA.cliffordEnergy);
     const QByteArray payload = QJsonDocument(obj).toJson(QJsonDocument::Indented);
     if (file.write(payload) != payload.size() || !file.flush()) {
         QMessageBox::critical(

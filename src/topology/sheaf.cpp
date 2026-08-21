@@ -42,7 +42,7 @@ static void slot_direction(uint64_t word, double dir[8]) {
     unpack_crank_word(word, mv, depth);
     (void)depth;
 
-    double comp[8] = {mv.scalar,  mv.vec[0],  mv.vec[1],  mv.vec[2],
+    double comp[8] = {mv.scalar,   mv.vec[0],   mv.vec[1],   mv.vec[2],
                       mv.bivec[0], mv.bivec[1], mv.bivec[2], mv.trivec};
     double norm = 0.0;
     for (int k = 0; k < 8; ++k)
@@ -299,8 +299,7 @@ double sheaf_resonance(const uint64_t *slots, size_t n, const uint64_t *other, s
 // Resonance over the H1 cohomology instead of the beta1 proxy: the local
 // alternating sum is unchanged, the coboundary term compares restriction maps
 // over the full window-2 slot graph, and the topology term uses dim H1.
-double sheaf_resonance_h1(const uint64_t *slots, size_t n, const uint64_t *other,
-                          size_t n_other) {
+double sheaf_resonance_h1(const uint64_t *slots, size_t n, const uint64_t *other, size_t n_other) {
     size_t m = std::min(n, n_other);
     if (m == 0)
         return 0.0;

@@ -10,8 +10,7 @@ int sheaf_beta1_proxy(const uint64_t *slots, size_t n);
 int sheaf_h0_dim(const uint64_t *slots, size_t n);
 int sheaf_h1_dim(const uint64_t *slots, size_t n);
 int sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out);
-double sheaf_resonance_h1(const uint64_t *slots, size_t n, const uint64_t *other,
-                          size_t n_other);
+double sheaf_resonance_h1(const uint64_t *slots, size_t n, const uint64_t *other, size_t n_other);
 
 int rg_peel(uint64_t &word, uint32_t layers);
 int rg_peel_stack(uint64_t *slots, size_t n_slots, const uint64_t *layer_stacks,

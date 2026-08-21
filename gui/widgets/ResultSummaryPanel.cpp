@@ -170,8 +170,8 @@ void ResultSummaryPanel::updateJsonPreview() {
         m_jsonPreview->clear();
         return;
     }
-    m_jsonPreview->setPlainText(
-        QString::fromUtf8(QJsonDocument(snapshotToJson(m_snapshot)).toJson(QJsonDocument::Indented)));
+    m_jsonPreview->setPlainText(QString::fromUtf8(
+        QJsonDocument(snapshotToJson(m_snapshot)).toJson(QJsonDocument::Indented)));
 }
 
 } // namespace crankl_gui

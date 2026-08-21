@@ -5,8 +5,7 @@
 #include <cstring>
 
 namespace {
-template <size_t N>
-void copy_bounded(char (&dst)[N], const char *src) {
+template <size_t N> void copy_bounded(char (&dst)[N], const char *src) {
     std::memcpy(dst, src, strnlen(src, N));
     dst[N - 1] = '\0';
 }

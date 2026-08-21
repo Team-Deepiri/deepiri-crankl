@@ -36,8 +36,7 @@ QPushButton *makeBrowseButton(QWidget *parent) {
 
 } // namespace
 
-NewJobDialog::NewJobDialog(QWidget *parent)
-    : QDialog(parent) {
+NewJobDialog::NewJobDialog(QWidget *parent) : QDialog(parent) {
     setWindowTitle(tr("New crankl job"));
     setModal(true);
     setObjectName(QStringLiteral("NewJobDialog"));
@@ -129,9 +128,9 @@ QString NewJobDialog::inputPath() const {
 }
 
 void NewJobDialog::onTypeChanged() {
-    const bool needsSteps = m_typeCombo->currentIndex() == 1 ||
-                            m_typeCombo->currentIndex() == 2; // Turn | Finetune
-    const bool needsLayers = m_typeCombo->currentIndex() == 3; // Peel
+    const bool needsSteps =
+        m_typeCombo->currentIndex() == 1 || m_typeCombo->currentIndex() == 2; // Turn | Finetune
+    const bool needsLayers = m_typeCombo->currentIndex() == 3;                // Peel
     m_stepsSpin->setVisible(needsSteps);
     m_lrSpin->setVisible(needsSteps);
     m_layersSpin->setVisible(needsLayers);
@@ -167,8 +166,7 @@ QString NewJobDialog::suggestOutput() const {
 }
 
 void NewJobDialog::updatePreview() {
-    const JobType type =
-        static_cast<JobType>(m_typeCombo->currentData().toInt());
+    const JobType type = static_cast<JobType>(m_typeCombo->currentData().toInt());
     QStringList args;
     const QString input = m_inputEdit->text().trimmed();
     const QString output = m_outputEdit->text().trimmed();
@@ -188,8 +186,8 @@ void NewJobDialog::updatePreview() {
     default:
         break;
     }
-    m_previewLabel->setText(QStringLiteral("crankl %1 %2").arg(cliCommandName(type),
-                                                              args.join(QLatin1Char(' '))));
+    m_previewLabel->setText(
+        QStringLiteral("crankl %1 %2").arg(cliCommandName(type), args.join(QLatin1Char(' '))));
     const bool ready = !input.isEmpty() && !output.isEmpty();
     m_runButton->setEnabled(ready);
 }
@@ -221,9 +219,9 @@ void NewJobDialog::accept() {
 
     const QFileInfo outInfo(output);
     const QString workingDir = outInfo.dir().absolutePath();
-    Q_EMIT jobRequested(type, QStringLiteral("%1 · %2").arg(cliCommandName(type),
-                                                            QFileInfo(input).fileName()),
-                        input, args, workingDir);
+    Q_EMIT jobRequested(
+        type, QStringLiteral("%1 · %2").arg(cliCommandName(type), QFileInfo(input).fileName()),
+        input, args, workingDir);
     QDialog::accept();
 }
 

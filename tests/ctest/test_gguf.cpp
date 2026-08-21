@@ -115,8 +115,7 @@ int main() {
     }
     std::vector<crankl_source_tensor_t> src(count);
     if (crankl_gguf_list(gg_path.c_str(), src.data(), src.size()) != CRANKL_OK ||
-        std::strcmp(src[0].name, "blk.0.attn_q") != 0 || !src[0].is_f32 ||
-        src[1].is_f32) {
+        std::strcmp(src[0].name, "blk.0.attn_q") != 0 || !src[0].is_f32 || src[1].is_f32) {
         std::fprintf(stderr, "FAIL: gguf list\n");
         ++failures;
     }
@@ -150,8 +149,7 @@ int main() {
     // ---- F16 pack (widened to f32) ----
     {
         std::string out = make_temp_path(".crank");
-        if (crankl_pack_gguf_f32(gg_path.c_str(), "blk.0.ffn_down", out.c_str()) !=
-            CRANKL_OK) {
+        if (crankl_pack_gguf_f32(gg_path.c_str(), "blk.0.ffn_down", out.c_str()) != CRANKL_OK) {
             std::fprintf(stderr, "FAIL: pack gguf f16\n");
             ++failures;
         }

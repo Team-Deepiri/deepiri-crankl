@@ -14,8 +14,8 @@ namespace {
 
 std::string make_temp_path(const char *suffix) {
     static int counter = 0;
-    return "/tmp/crankl_test_ingest_" + std::to_string(getpid()) + "_" +
-           std::to_string(counter++) + suffix;
+    return "/tmp/crankl_test_ingest_" + std::to_string(getpid()) + "_" + std::to_string(counter++) +
+           suffix;
 }
 
 // Minimal safetensors writer: 8-byte header length + JSON header + tensor data.
@@ -26,10 +26,14 @@ void write_safetensors(const std::string &path,
     for (size_t i = 0; i < tensors.size(); ++i) {
         if (i)
             json += ",";
-        json += "\"" + tensors[i].first + "\":{"
+        json += "\"" + tensors[i].first +
+                "\":{"
                 "\"dtype\":\"F32\","
-                "\"shape\":[" + std::to_string(tensors[i].second.size()) + "],"
-                "\"data_offsets\":[" + std::to_string(offset) + "," +
+                "\"shape\":[" +
+                std::to_string(tensors[i].second.size()) +
+                "],"
+                "\"data_offsets\":[" +
+                std::to_string(offset) + "," +
                 std::to_string(offset + tensors[i].second.size() * 4) + "]}";
         offset += tensors[i].second.size() * 4;
     }
@@ -69,8 +73,8 @@ int main() {
     for (size_t i = 0; i < b.size(); ++i)
         b[i] = 0.05f * std::sin(static_cast<float>(i % 64) * 0.31f);
     for (size_t i = 0; i < c.size(); ++i)
-        c[i] = 0.02f * static_cast<float>((int)(i / 64)) + 0.01f *
-                                                          std::sin(static_cast<float>(i) * 0.11f);
+        c[i] = 0.02f * static_cast<float>((int)(i / 64)) +
+               0.01f * std::sin(static_cast<float>(i) * 0.11f);
     write_safetensors(st_path, {{"lora_A", a}, {"lora_B", b}, {"embed", c}});
 
     // ---- Enumerate source tensors ----
@@ -83,8 +87,7 @@ int main() {
         std::fprintf(stderr, "FAIL: source list\n");
         return 1;
     }
-    if (std::strcmp(src[0].name, "lora_A") != 0 || !src[0].is_f32 ||
-        src[0].n_floats != a.size()) {
+    if (std::strcmp(src[0].name, "lora_A") != 0 || !src[0].is_f32 || src[0].n_floats != a.size()) {
         std::fprintf(stderr, "FAIL: source[0] name/f32/n_floats\n");
         ++failures;
     }
@@ -99,8 +102,7 @@ int main() {
     }
     {
         std::ifstream mf(manifest_path);
-        std::string body((std::istreambuf_iterator<char>(mf)),
-                         std::istreambuf_iterator<char>());
+        std::string body((std::istreambuf_iterator<char>(mf)), std::istreambuf_iterator<char>());
         if (body.find("\"format_version\": 2") == std::string::npos ||
             body.find("\"parent_run_id\"") == std::string::npos ||
             body.find("\"peels_applied\"") == std::string::npos ||
@@ -201,8 +203,8 @@ int main() {
             std::fprintf(stderr, "FAIL: truncated safetensors enumerated\n");
             ++failures;
         }
-        if (crankl_pack_safetensors_multi(bad.c_str(), make_temp_path(".crank").c_str(),
-                                          nullptr, 0.1f, 0.01f) == CRANKL_OK) {
+        if (crankl_pack_safetensors_multi(bad.c_str(), make_temp_path(".crank").c_str(), nullptr,
+                                          0.1f, 0.01f) == CRANKL_OK) {
             std::fprintf(stderr, "FAIL: truncated safetensors packed\n");
             ++failures;
         }
@@ -215,7 +217,6 @@ int main() {
         }
     }
 
-    std::printf(failures ? "test_ingest_multi FAILURES=%d\n" : "test_ingest_multi ok\n",
-                failures);
+    std::printf(failures ? "test_ingest_multi FAILURES=%d\n" : "test_ingest_multi ok\n", failures);
     return failures ? 1 : 0;
 }

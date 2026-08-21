@@ -33,9 +33,9 @@ namespace {
 // Unpack/Pipeline and the Math Lab stay dimmed placeholders; Compare now has
 // a real page (see buildCentralArea).
 const QVector<NavDestination> kPlaceholderDestinations = {
-    NavDestination::Pack,       NavDestination::Optimize, NavDestination::History,
-    NavDestination::Bind,       NavDestination::Forward,  NavDestination::Unpack,
-    NavDestination::Pipeline,   NavDestination::AdvancedMathLab,
+    NavDestination::Pack,     NavDestination::Optimize,        NavDestination::History,
+    NavDestination::Bind,     NavDestination::Forward,         NavDestination::Unpack,
+    NavDestination::Pipeline, NavDestination::AdvancedMathLab,
 };
 
 QString placeholderTitle(NavDestination d) {

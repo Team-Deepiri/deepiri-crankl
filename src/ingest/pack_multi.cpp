@@ -1,9 +1,9 @@
 #include "crankl/crankl.h"
+#include "crankl/version.h"
 #include "internal_headers/archive.hpp"
 #include "internal_headers/ingest.hpp"
 #include "internal_headers/metrics.hpp"
 #include "internal_headers/pack.hpp"
-#include "crankl/version.h"
 #include "xxhash.h"
 
 #include <cstdio>
@@ -108,8 +108,7 @@ int pack_safetensors_multi(const char *path, const char *output_crank, const cha
         if (before + need > CRANKL_MAX_SLOTS)
             return -9;
         slots.resize(before + need);
-        if (pack::fold_f32(data.data(), e.n_floats, slots.data() + before, need, alpha, beta) !=
-            0)
+        if (pack::fold_f32(data.data(), e.n_floats, slots.data() + before, need, alpha, beta) != 0)
             return -3;
 
         e.slot_offset = before;

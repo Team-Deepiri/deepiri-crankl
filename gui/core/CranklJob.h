@@ -44,8 +44,8 @@ struct CranklJob {
     QDateTime startedAt;
     QDateTime finishedAt;
     int exitCode = 0;
-    QString stdoutTail;  // last kJobCaptureLimitBytes of stdout
-    QString stderrTail;  // last kJobCaptureLimitBytes of stderr
+    QString stdoutTail;    // last kJobCaptureLimitBytes of stdout
+    QString stderrTail;    // last kJobCaptureLimitBytes of stderr
     QString resultSummary; // human-readable completion summary (parsed from output)
     QString errorMessage;  // populated only when state == Failed
 };

@@ -47,8 +47,8 @@ QStringList finetuneArgs(const QString &input, const QString &output, int steps,
 }
 
 QStringList peelArgs(const QString &input, const QString &output, int layers) {
-    return {QStringLiteral("--input"), input,
-            QStringLiteral("-o"),      output,
+    return {QStringLiteral("--input"),  input,
+            QStringLiteral("-o"),       output,
             QStringLiteral("--layers"), QString::number(layers)};
 }
 

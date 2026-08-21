@@ -92,8 +92,7 @@ int forward_blocked(const ::crankl_cran_t *cran, const float *x, size_t dim, flo
     return 0;
 }
 
-int forward_batch(const ::crankl_cran_t *cran, const float *x, size_t dim, size_t batch,
-                  float *y) {
+int forward_batch(const ::crankl_cran_t *cran, const float *x, size_t dim, size_t batch, float *y) {
     if (!cran || !x || !y || dim == 0 || batch == 0)
         return -1;
 
@@ -114,8 +113,7 @@ int forward_batch(const ::crankl_cran_t *cran, const float *x, size_t dim, size_
             apply_slot_batch(&cran->slots[s], gamma, states.data(), batch);
         for (size_t v = 0; v < batch; ++v) {
             for (size_t i = 0; i < dim; ++i)
-                y[v * dim + i] =
-                    i < d ? static_cast<float>(states[v * pack::BLOCK_DIM + i]) : 0.0f;
+                y[v * dim + i] = i < d ? static_cast<float>(states[v * pack::BLOCK_DIM + i]) : 0.0f;
         }
         return 0;
     }

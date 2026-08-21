@@ -1,10 +1,10 @@
 #include "core/ArchiveAdapter.h"
 
+#include "crankl/clifford.h"
 #include "crankl/cran.h"
+#include "crankl/diff.h"
 #include "crankl/errors.h"
 #include "crankl/metrics.h"
-#include "crankl/clifford.h"
-#include "crankl/diff.h"
 #include "crankl/sheaf.h"
 
 #include <QFileInfo>
@@ -159,21 +159,19 @@ CompareResult ArchiveAdapter::compareArchives(const QString &pathA, const QStrin
     result.slotsCompared = n;
     result.slotsChanged = crankl_crank_diff_count(slotsA.data(), slotsB.data(), n);
     result.hamming = crankl_crank_diff_hamming(slotsA.data(), slotsB.data(), n);
-    result.sheafResonance = crankl_sheaf_resonance(slotsA.data(), slotsA.size(), slotsB.data(),
-                                                   slotsB.size());
+    result.sheafResonance =
+        crankl_sheaf_resonance(slotsA.data(), slotsA.size(), slotsB.data(), slotsB.size());
 
     double cliffordSum = 0.0;
     for (size_t i = 0; i < n; ++i)
         cliffordSum += crankl_clifford_resonance(slotsA[i], slotsB[i]);
     result.cliffordResonance = n > 0 ? cliffordSum / static_cast<double>(n) : 0.0;
 
-    result.changedSlots.reserve(
-        std::min<size_t>(CompareResult::kMaxChangedSlotsShown, n));
+    result.changedSlots.reserve(std::min<size_t>(CompareResult::kMaxChangedSlotsShown, n));
     for (size_t i = 0; i < n; ++i) {
         if (slotsA[i] != slotsB[i]) {
             if (result.changedSlots.size() < CompareResult::kMaxChangedSlotsShown) {
-                result.changedSlots.push_back(
-                    {static_cast<uint32_t>(i), slotsA[i], slotsB[i]});
+                result.changedSlots.push_back({static_cast<uint32_t>(i), slotsA[i], slotsB[i]});
             } else {
                 break; // total count already known from crankl_crank_diff_count
             }

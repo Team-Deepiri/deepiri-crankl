@@ -45,7 +45,9 @@ enum GgufDtype : uint32_t { GGUF_F32 = 0, GGUF_F16 = 1 };
 struct Cursor {
     const uint8_t *p;
     size_t left;
-    bool ok() const { return p != nullptr; }
+    bool ok() const {
+        return p != nullptr;
+    }
 };
 
 bool take(Cursor &c, void *dst, size_t n) {
@@ -57,8 +59,12 @@ bool take(Cursor &c, void *dst, size_t n) {
     return true;
 }
 
-bool take_u32(Cursor &c, uint32_t &v) { return take(c, &v, sizeof v); }
-bool take_u64(Cursor &c, uint64_t &v) { return take(c, &v, sizeof v); }
+bool take_u32(Cursor &c, uint32_t &v) {
+    return take(c, &v, sizeof v);
+}
+bool take_u64(Cursor &c, uint64_t &v) {
+    return take(c, &v, sizeof v);
+}
 
 bool take_string(Cursor &c, std::string &s) {
     uint64_t len = 0;
@@ -265,8 +271,7 @@ int read_gguf_f32(const char *path, const char *tensor_name, std::vector<float> 
         f.seekg(static_cast<std::streamoff>(found->byte_offset));
         if (!f)
             return -6;
-        f.read(reinterpret_cast<char *>(out.data()),
-               static_cast<std::streamsize>(found->byte_len));
+        f.read(reinterpret_cast<char *>(out.data()), static_cast<std::streamsize>(found->byte_len));
         if (!f)
             return -7;
     } else {

@@ -3,8 +3,8 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <ctime>
 #include <cstring>
+#include <ctime>
 #include <random>
 #include <vector>
 
@@ -22,9 +22,7 @@ static std::vector<float> read_f32(const char *path) {
 
 static std::vector<float> rank8_matrix(unsigned seed) {
     std::mt19937 rng(seed);
-    auto urand = [&]() {
-        return (static_cast<float>(rng()) / 4294967295.0f) * 2.0f - 1.0f;
-    };
+    auto urand = [&]() { return (static_cast<float>(rng()) / 4294967295.0f) * 2.0f - 1.0f; };
     std::vector<float> U(64 * 8), V(64 * 8), S(8);
     for (auto &x : U)
         x = urand();
@@ -62,8 +60,7 @@ int main() {
         ++fails;
     }
 
-    std::vector<std::vector<float>> inputs = {read_f32(golden), read_f32(small),
-                                              rank8_matrix(42)};
+    std::vector<std::vector<float>> inputs = {read_f32(golden), read_f32(small), rank8_matrix(42)};
     if (inputs[0].empty() || inputs[1].empty()) {
         std::fprintf(stderr, "FAIL: could not read golden inputs\n");
         return 1;
@@ -73,8 +70,7 @@ int main() {
         const size_t ns = crankl_pack_n_slots(data.size());
 
         std::vector<uint64_t> legacy(ns);
-        if (crankl_pack_f32(data.data(), data.size(), legacy.data(), ns, 1.0f, 1.0f) !=
-            CRANKL_OK) {
+        if (crankl_pack_f32(data.data(), data.size(), legacy.data(), ns, 1.0f, 1.0f) != CRANKL_OK) {
             std::fprintf(stderr, "FAIL: pack_f32\n");
             return 1;
         }

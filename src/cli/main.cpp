@@ -646,8 +646,8 @@ static int cmd_inspect(int argc, char **argv) {
                     std::cout << "{\"name\":\"" << tensors[t].name << "\","
                               << "\"slot_offset\":" << tensors[t].slot_offset << ","
                               << "\"n_slots\":" << tensors[t].n_slots << ","
-                              << "\"n_floats\":" << tensors[t].n_floats << ","
-                              << "\"checksum\":\"" << tensors[t].checksum << "\"}";
+                              << "\"n_floats\":" << tensors[t].n_floats << "," << "\"checksum\":\""
+                              << tensors[t].checksum << "\"}";
                 }
                 std::cout << "],";
             }
@@ -722,8 +722,7 @@ static int cmd_compare(int argc, char **argv) {
                   << "\"slots_changed\":" << changed << "," << "\"slots_compared\":" << n << ","
                   << "\"hamming\":" << ham << "," << "\"clifford_resonance\":" << clifford << ","
                   << "\"sheaf_resonance\":" << sheaf << "," << "\"sheaf_resonance_h1\":" << h1
-                  << ","
-                  << "\"delta_trit_density\":" << (mb.trit_density - ma.trit_density) << ","
+                  << "," << "\"delta_trit_density\":" << (mb.trit_density - ma.trit_density) << ","
                   << "\"delta_energy\":" << (mb.clifford_energy - ma.clifford_energy) << "}\n";
     } else {
         std::cout << "slots_changed=" << changed << "/" << n << "\n"

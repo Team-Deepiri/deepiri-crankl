@@ -84,12 +84,13 @@ class CliRunner : public QObject {
         connect(process, &QProcess::readyReadStandardError, this, [this, process] {
             Q_EMIT stderrChunk(m_jobId, QString::fromUtf8(process->readAllStandardError()));
         });
-        connect(process, &QProcess::errorOccurred, this, [this, process](QProcess::ProcessError err) {
-            if (err == QProcess::FailedToStart && !m_finished) {
-                m_finished = true;
-                Q_EMIT processFinished(m_jobId, -1, true, process->errorString());
-            }
-        });
+        connect(process, &QProcess::errorOccurred, this,
+                [this, process](QProcess::ProcessError err) {
+                    if (err == QProcess::FailedToStart && !m_finished) {
+                        m_finished = true;
+                        Q_EMIT processFinished(m_jobId, -1, true, process->errorString());
+                    }
+                });
         connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
                 [this, process](int exitCode, QProcess::ExitStatus status) {
                     if (m_finished)
@@ -197,8 +198,8 @@ QUuid JobManager::openArchive(const QString &path) {
     Q_EMIT jobsChanged();
 
     auto *worker = static_cast<ArchiveWorker *>(m_worker);
-    QMetaObject::invokeMethod(worker, [worker, jobId, path]() { worker->doOpen(jobId, path); },
-                              Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+        worker, [worker, jobId, path]() { worker->doOpen(jobId, path); }, Qt::QueuedConnection);
     return jobId;
 }
 
@@ -216,9 +217,9 @@ QUuid JobManager::compareArchives(const QString &pathA, const QString &pathB) {
     Q_EMIT jobsChanged();
 
     auto *worker = static_cast<ArchiveWorker *>(m_worker);
-    QMetaObject::invokeMethod(worker,
-                              [worker, jobId, a = pathA, b = pathB]() { worker->doCompare(jobId, a, b); },
-                              Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+        worker, [worker, jobId, a = pathA, b = pathB]() { worker->doCompare(jobId, a, b); },
+        Qt::QueuedConnection);
     return jobId;
 }
 
@@ -257,8 +258,8 @@ void JobManager::pumpQueue() {
     }
 }
 
-void JobManager::invokeCliStart(const QUuid &jobId, const QString &command,
-                                const QStringList &args, const QString &workingDir) {
+void JobManager::invokeCliStart(const QUuid &jobId, const QString &command, const QStringList &args,
+                                const QString &workingDir) {
     CliRunner *runner = m_cliRunner;
     const QString program = m_cliPath;
     QMetaObject::invokeMethod(
@@ -278,8 +279,8 @@ void JobManager::cancel(const QUuid &jobId) {
             job.finishedAt = QDateTime::currentDateTime();
             if (jobId == m_runningCliJob) {
                 CliRunner *runner = m_cliRunner;
-                QMetaObject::invokeMethod(runner, [runner]() { runner->cancelJob(); },
-                                          Qt::QueuedConnection);
+                QMetaObject::invokeMethod(
+                    runner, [runner]() { runner->cancelJob(); }, Qt::QueuedConnection);
             }
         }
     });
@@ -358,10 +359,10 @@ void JobManager::handleCliFinished(QUuid jobId, int exitCode, bool crashed, QStr
         job.finishedAt = QDateTime::currentDateTime();
         if (crashed || exitCode != 0) {
             job.state = JobState::Failed;
-            job.errorMessage = crashed && errorText.isEmpty()
-                                   ? QObject::tr("the crankl process crashed (exit code %1)")
-                                         .arg(exitCode)
-                                   : errorText;
+            job.errorMessage =
+                crashed && errorText.isEmpty()
+                    ? QObject::tr("the crankl process crashed (exit code %1)").arg(exitCode)
+                    : errorText;
         } else {
             job.state = JobState::Done;
             job.resultSummary = summarizeCliOutput(job);
@@ -396,26 +397,29 @@ QString JobManager::summarizeCliOutput(const CranklJob &job) {
                 .arg(obj.value(QStringLiteral("slots_changed")).toVariant().toString(),
                      obj.value(QStringLiteral("slots_compared")).toVariant().toString(),
                      QString::number(obj.value(QStringLiteral("hamming")).toDouble(), 'f', 4),
-                     QString::number(obj.value(QStringLiteral("clifford_resonance")).toDouble(), 'f', 4),
-                     QString::number(obj.value(QStringLiteral("sheaf_resonance")).toDouble(), 'f', 4));
+                     QString::number(obj.value(QStringLiteral("clifford_resonance")).toDouble(),
+                                     'f', 4),
+                     QString::number(obj.value(QStringLiteral("sheaf_resonance")).toDouble(), 'f',
+                                     4));
         }
         break;
     case JobType::Inspect:
         if (json) {
-            const QJsonObject metrics =
-                json->value(QStringLiteral("metrics")).toObject();
+            const QJsonObject metrics = json->value(QStringLiteral("metrics")).toObject();
             return QObject::tr("verify ok · n_slots %1 · depth %2–%3 · trit density %4")
                 .arg(metrics.value(QStringLiteral("n_slots")).toVariant().toString(),
                      metrics.value(QStringLiteral("depth_min")).toVariant().toString(),
                      metrics.value(QStringLiteral("depth_max")).toVariant().toString(),
-                     QString::number(metrics.value(QStringLiteral("trit_density")).toDouble(), 'f', 4));
+                     QString::number(metrics.value(QStringLiteral("trit_density")).toDouble(), 'f',
+                                     4));
         }
         break;
     case JobType::Finetune:
         if (json) {
             return QObject::tr("reconstruction loss %1 → %2")
-                .arg(QString::number(json->value(QStringLiteral("recon_before")).toDouble(), 'g', 6),
-                     QString::number(json->value(QStringLiteral("recon_after")).toDouble(), 'g', 6));
+                .arg(
+                    QString::number(json->value(QStringLiteral("recon_before")).toDouble(), 'g', 6),
+                    QString::number(json->value(QStringLiteral("recon_after")).toDouble(), 'g', 6));
         }
         break;
     case JobType::Pack:

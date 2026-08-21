@@ -173,8 +173,7 @@ static void test_hand_built_graphs() {
     check_coh(span3, 4, 32, 0, "four mutually orthogonal slots");
 
     // A degenerate (all-zero) slot must not break the sheaf: h0 >= 1, h1 >= 0.
-    uint64_t with_zero[3] = {word_from_mv(1, 0, 0, 0, 0, 0), 0,
-                             word_from_mv(1, 0, 0, 0, 0, 0)};
+    uint64_t with_zero[3] = {word_from_mv(1, 0, 0, 0, 0, 0), 0, word_from_mv(1, 0, 0, 0, 0, 0)};
     int h0 = 0;
     int h1 = -1;
     check(crankl_sheaf_cohomology(with_zero, 3, &h0, &h1) == 0, "degenerate slot rc");
@@ -274,8 +273,9 @@ static void test_stability_peel() {
         crankl_peel(&peeled_biv[i], 1);
     int h1_biv = crankl_sheaf_h1_dim(peeled_biv, 4);
     if (std::abs(h1_biv - base_biv) > 5) {
-        std::fprintf(stderr, "FAIL: peel on bivector archive moved h1 outside bound (base=%d "
-                             "after=%d)\n",
+        std::fprintf(stderr,
+                     "FAIL: peel on bivector archive moved h1 outside bound (base=%d "
+                     "after=%d)\n",
                      base_biv, h1_biv);
         ++failures;
     }
