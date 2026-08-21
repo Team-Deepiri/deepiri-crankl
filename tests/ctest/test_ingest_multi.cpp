@@ -46,7 +46,7 @@ void write_safetensors(const std::string &path,
                 static_cast<std::streamsize>(t.second.size() * 4));
 }
 
-int expect_count(const char *path, const char *what, size_t expected, size_t actual) {
+int expect_count(const char *what, size_t expected, size_t actual) {
     if (actual != expected) {
         std::fprintf(stderr, "FAIL: %s count %zu != %zu\n", what, expected, actual);
         return 1;
@@ -76,7 +76,7 @@ int main() {
     // ---- Enumerate source tensors ----
     size_t count = 0;
     if (crankl_safetensors_count(st_path.c_str(), &count) != CRANKL_OK ||
-        (failures += expect_count(st_path.c_str(), "source", 3, count)))
+        (failures += expect_count("source", 3, count)))
         return 1;
     std::vector<crankl_source_tensor_t> src(count);
     if (crankl_safetensors_list(st_path.c_str(), src.data(), src.size()) != CRANKL_OK) {
@@ -113,7 +113,7 @@ int main() {
     // ---- Archive tensor index roundtrip ----
     size_t acount = 99;
     if (crankl_archive_tensor_count(crank_path.c_str(), &acount) != CRANKL_OK ||
-        (failures += expect_count(crank_path.c_str(), "archive tensors", 3, acount)))
+        (failures += expect_count("archive tensors", 3, acount)))
         return 1;
     std::vector<crankl_archive_tensor_t> idx(acount);
     if (crankl_archive_tensor_list(crank_path.c_str(), idx.data(), idx.size()) != CRANKL_OK) {

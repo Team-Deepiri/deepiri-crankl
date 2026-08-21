@@ -4,6 +4,14 @@
 
 #include <cstring>
 
+namespace {
+template <size_t N>
+void copy_bounded(char (&dst)[N], const char *src) {
+    std::memcpy(dst, src, strnlen(src, N));
+    dst[N - 1] = '\0';
+}
+} // namespace
+
 extern "C" {
 
 int crankl_cran_write(const char *path, const crankl_cran_header_t *hdr, const uint64_t *slots,
@@ -20,8 +28,8 @@ int crankl_cran_write_with_metadata(const char *path, const crankl_cran_header_t
         return CRANKL_ERR_NULL;
     crankl::io::CranMetadata m{};
     if (meta) {
-        std::strncpy(m.model_name, meta->model_name, sizeof(m.model_name) - 1);
-        std::strncpy(m.source_hash, meta->source_hash, sizeof(m.source_hash) - 1);
+        copy_bounded(m.model_name, meta->model_name);
+        copy_bounded(m.source_hash, meta->source_hash);
     }
     int rc = crankl::io::write_cran_with_metadata(path, hdr, slots, meta ? &m : nullptr);
     return rc == 0 ? CRANKL_OK : CRANKL_ERR_IO;
@@ -54,8 +62,8 @@ int crankl_cran_read_metadata(const crankl_cran_t *cran, crankl_cran_metadata_t 
         return CRANKL_ERR_NO_METADATA;
     if (rc != 0)
         return CRANKL_ERR_FORMAT;
-    std::strncpy(out->model_name, m.model_name, sizeof(out->model_name) - 1);
-    std::strncpy(out->source_hash, m.source_hash, sizeof(out->source_hash) - 1);
+    copy_bounded(out->model_name, m.model_name);
+    copy_bounded(out->source_hash, m.source_hash);
     return CRANKL_OK;
 }
 
