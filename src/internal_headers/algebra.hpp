@@ -37,5 +37,9 @@ void mat8_exp(const double a[64], double out[64]);
 void mat8_skew(const double a[64], double out[64]);
 void mat8_sym(const double a[64], double out[64]);
 void mat8_exp_i_apply(const double a[64], double gamma, const double x[8], double y[8]);
+// Build E = exp(gamma*sym(a)) * exp(gamma*skew(a)) once; apply to many vectors
+// with mat8_vec_batch. x and y are [batch][8] row-major state buffers.
+void mat8_exp_i_matrix(const double a[64], double gamma, double out[64]);
+void mat8_vec_batch(const double a[64], const double *x, double *y, size_t batch);
 
 } // namespace crankl
