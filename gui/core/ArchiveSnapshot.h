@@ -46,6 +46,9 @@ struct ArchiveSnapshot {
 
     VerifyState verifyState = VerifyState::Unverified;
     QDateTime verifiedAt;
+    // crankl_strerror() text when verifyState == Fail, empty otherwise. Gives
+    // the Inspect/verify-fail card a reason instead of a bare red rail.
+    QString verifyError;
 
     // Populated only when verifyState == Pass -- a failing archive shows no
     // metrics and no slot browser, per the design's verify-fail state.

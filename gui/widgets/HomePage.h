@@ -29,6 +29,8 @@ class HomePage : public QWidget {
     void openWeightsRequested();
     void pathDropped(QString path);
     void inspectRequested();
+    void compareRequested();
+    void newJobRequested();
     void reVerifyRequested();
     void closeArchiveRequested();
 

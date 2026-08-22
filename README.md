@@ -27,6 +27,8 @@ train / finetune → crankl pack → .crank artifact
 | You are… | Reach for… |
 |----------|------------|
 | Shipping a LoRA / adapter | `crankl pack` |
+| Packing a whole checkpoint (many tensors) | `crankl pack --multi` |
+| Ingesting GGUF weights | `crankl pack --input m.gguf --tensor NAME` |
 | Cheap symplectic anneal on cranks | `crankl turn` |
 | Decrank-unified finetune loop | `crankl finetune` |
 | Creating a full training artifact | `crankl pipeline --manifest run.json` |
@@ -35,7 +37,7 @@ train / finetune → crankl pack → .crank artifact
 | Debugging two agent runs | `crankl diff` + `resonance` |
 | Merging specialist heads | `crankl bind` |
 | Undoing a finetune layer | `crankl peel` |
-| Inference on compressed weights | `crankl holonomy` |
+| Inference on compressed weights | `crankl holonomy` (add `--batch N` for throughput) |
 
 Install once, pipe from anything. No Python wheel required — shell out from Helox, Cyrex, Tombstone, or your own scripts.
 

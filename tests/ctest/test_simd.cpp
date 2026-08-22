@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <vector>
 
 // mat8_mul_avx2 picks its implementation at compile time from __AVX2__: intrinsics when -mavx2 is
 // passed, a scalar triple loop otherwise. This checks whichever one was built against a reference
@@ -61,6 +62,35 @@ static int check_mat8_mul() {
     return fails;
 }
 
+// Batched matrix-vector apply must match per-vector mat8_vec exactly in structure;
+// values are compared with a tight tolerance since the AVX2 kernel reorders adds.
+static int check_mat8_vec_batch() {
+    double a[64];
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+            a[r * 8 + c] = 1.0 / (1.0 + static_cast<double>(r) + static_cast<double>(c));
+
+    const size_t batch = 11; // deliberately not a multiple of 4 to exercise the remainder path
+    std::vector<double> x(batch * 8), y_batch(batch * 8, 0.0), y_ref(batch * 8, 0.0);
+    for (size_t v = 0; v < batch; ++v)
+        for (int c = 0; c < 8; ++c)
+            x[v * 8 + c] = 0.125 * static_cast<double>((v * 8 + c) % 16) - 0.5;
+
+    for (size_t v = 0; v < batch; ++v)
+        crankl::mat8_vec(a, x.data() + v * 8, y_ref.data() + v * 8);
+    crankl::mat8_vec_batch(a, x.data(), y_batch.data(), batch);
+
+    int fails = 0;
+    for (size_t i = 0; i < batch * 8; ++i) {
+        if (std::fabs(y_batch[i] - y_ref[i]) > 1e-12) {
+            std::fprintf(stderr, "FAIL: mat8_vec_batch[%zu] got %.17g expected %.17g\n", i,
+                         y_batch[i], y_ref[i]);
+            ++fails;
+        }
+    }
+    return fails;
+}
+
 int main() {
     std::printf("avx2=%d\n", crankl_has_avx2());
     // smoke: library loads and simd probe works
@@ -68,6 +98,13 @@ int main() {
         return 1;
     }
     if (check_mat8_mul() != 0) {
+        return 1;
+    }
+    if (check_mat8_vec_batch() != 0) {
+        return 1;
+    }
+    if (crankl_holonomy_avx2_supported() != crankl_has_avx2()) {
+        std::fprintf(stderr, "FAIL: holonomy avx2 probe disagrees with simd probe\n");
         return 1;
     }
     std::printf("test_simd ok\n");
