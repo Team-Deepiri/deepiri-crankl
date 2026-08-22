@@ -292,7 +292,12 @@ def main() -> None:
     sheaf_lines = [
         "#pragma once",
         "#include <cstdint>",
-        "struct SheafCase { int n; uint64_t slots[6]; int h0; int h1; };",
+        "struct SheafCase {",
+        "    int n;",
+        "    uint64_t slots[6];",
+        "    int h0;",
+        "    int h1;",
+        "};",
         "static const SheafCase SHEAF_CASES[] = {",
     ]
     for name, mvs in sheaf_cases:
@@ -300,8 +305,8 @@ def main() -> None:
         h0, h1 = sheaf_cohomology(mvs)
         words_literal = ", ".join(f"0x{w:016x}" for w in words)
         sheaf_lines.append(
-            f"  // {name}: h0={h0}, h1={h1}\n"
-            f"  {{{len(words)}, {{{words_literal}}}, {h0}, {h1}}},"
+            f"    // {name}: h0={h0}, h1={h1}\n"
+            f"    {{{len(words)}, {{{words_literal}}}, {h0}, {h1}}},"
         )
         sheaf["h0_h1_cases"].append(
             {"name": name, "slots": [f"0x{w:016x}" for w in words], "h0": h0, "h1": h1}
