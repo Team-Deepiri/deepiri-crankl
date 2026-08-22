@@ -23,13 +23,17 @@ static void apply_slot(const uint64_t *slot, float gamma, double state[8], size_
 }
 
 // Batched twin of apply_slot: the Padé exps are built once per slot, then every
-// batch vector pays only a matrix-vector apply.
-static void apply_slot_batch(const uint64_t *slot, float gamma, double *states, size_t batch) {
+// batch vector pays only a matrix-vector apply. The dense kernel reads all 8
+// lanes per vector while it writes, so results land in scratch[] and are copied
+// back — an in-place update would feed overwritten lanes into later rows.
+static void apply_slot_batch(const uint64_t *slot, float gamma, double *states, double *scratch,
+                             size_t batch) {
     std::array<double, 64> M{};
     decrank_matrix(*slot, M);
     double e[64];
     mat8_exp_i_matrix(M.data(), static_cast<double>(gamma), e);
-    mat8_vec_batch(e, states, states, batch);
+    mat8_vec_batch(e, states, scratch, batch);
+    std::memcpy(states, scratch, batch * sizeof(double) * pack::BLOCK_DIM);
 }
 
 int forward_blocked(const ::crankl_cran_t *cran, const float *x, size_t dim, float *y);
@@ -106,11 +110,12 @@ int forward_batch(const ::crankl_cran_t *cran, const float *x, size_t dim, size_
         size_t d = std::min(dim, pack::BLOCK_DIM);
         // Serial path twin: every slot is applied in order to the single block.
         std::vector<double> states(batch * pack::BLOCK_DIM, 0.0);
+        std::vector<double> scratch(batch * pack::BLOCK_DIM, 0.0);
         for (size_t v = 0; v < batch; ++v)
             for (size_t i = 0; i < d; ++i)
                 states[v * pack::BLOCK_DIM + i] = x[v * dim + i];
         for (size_t s = 0; s < n_slots; ++s)
-            apply_slot_batch(&cran->slots[s], gamma, states.data(), batch);
+            apply_slot_batch(&cran->slots[s], gamma, states.data(), scratch.data(), batch);
         for (size_t v = 0; v < batch; ++v) {
             for (size_t i = 0; i < dim; ++i)
                 y[v * dim + i] = i < d ? static_cast<float>(states[v * pack::BLOCK_DIM + i]) : 0.0f;
@@ -121,6 +126,7 @@ int forward_batch(const ::crankl_cran_t *cran, const float *x, size_t dim, size_
     // Blocked path twin: one slot per block, matrix shared across the batch.
     size_t n_blocks = (dim + pack::BLOCK_DIM - 1) / pack::BLOCK_DIM;
     std::vector<double> states(batch * pack::BLOCK_DIM, 0.0);
+    std::vector<double> scratch(batch * pack::BLOCK_DIM, 0.0);
     for (size_t b = 0; b < n_blocks; ++b) {
         size_t off = b * pack::BLOCK_DIM;
         size_t d = std::min(pack::BLOCK_DIM, dim - off);
@@ -128,7 +134,7 @@ int forward_batch(const ::crankl_cran_t *cran, const float *x, size_t dim, size_
             for (size_t i = 0; i < d; ++i)
                 states[v * pack::BLOCK_DIM + i] = x[v * dim + off + i];
         size_t s = b < n_slots ? b : b % n_slots;
-        apply_slot_batch(&cran->slots[s], gamma, states.data(), batch);
+        apply_slot_batch(&cran->slots[s], gamma, states.data(), scratch.data(), batch);
         for (size_t v = 0; v < batch; ++v)
             for (size_t i = 0; i < d; ++i)
                 y[v * dim + off + i] = static_cast<float>(states[v * pack::BLOCK_DIM + i]);

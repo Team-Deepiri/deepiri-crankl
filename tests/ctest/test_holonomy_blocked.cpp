@@ -108,6 +108,58 @@ int main() {
         return 10;
     }
 
+    // Adversarial-magnitude equivalence: the aliasing regression in apply_slot_batch
+    // only shows with matrices far from identity, so use LoRA-scale pseudo-weights,
+    // a deep slot sequence, and demand tight agreement on both paths.
+    {
+        const size_t lora_count = 4096 * 64;
+        const size_t ns = crankl_pack_n_slots(lora_count);
+        std::vector<float> w(lora_count);
+        for (size_t i = 0; i < lora_count; ++i)
+            w[i] = static_cast<float>((int)(i % 251) - 125) / 32.0f;
+        std::vector<uint64_t> big(ns);
+        if (crankl_pack_f32(w.data(), lora_count, big.data(), ns, 0.1f, 0.01f) != 0)
+            return 12;
+        crankl_cran_t bc{};
+        bc.header.n_slots = ns;
+        bc.header.gamma = 0.5f;
+        bc.slots = big.data();
+
+        const size_t bb = 5;
+        std::vector<float> bx(bb * dim), bs(bb * dim), bg(bb * dim);
+        for (size_t i = 0; i < bx.size(); ++i)
+            bx[i] = static_cast<float>((int)(i % 97) - 48) / 16.0f;
+        for (size_t v = 0; v < bb; ++v)
+            if (crankl_holonomy(&bc, bx.data() + v * dim, dim, bs.data() + v * dim) != 0)
+                return 13;
+        if (crankl_holonomy_batch(&bc, bx.data(), dim, bb, bg.data()) != 0)
+            return 14;
+        double worst = 0.0;
+        for (size_t i = 0; i < bb * dim; ++i) {
+            double d = std::fabs((double)bg[i] - (double)bs[i]);
+            if (d > worst)
+                worst = d;
+        }
+        if (worst > 1e-3) {
+            std::fprintf(stderr, "FAIL: adversarial batch-vs-serial diff %g\n", worst);
+            return 15;
+        }
+
+        // Single-block path at the same magnitude: sequential slot applications.
+        std::vector<float> x8(bb * 8), y8s(8), y8b(bb * 8);
+        for (size_t i = 0; i < x8.size(); ++i)
+            x8[i] = static_cast<float>((int)(i % 61) - 30) / 8.0f;
+        if (crankl_holonomy(&bc, x8.data(), 8, y8s.data()) != 0 ||
+            crankl_holonomy_batch(&bc, x8.data(), 8, bb, y8b.data()) != 0)
+            return 16;
+        for (size_t i = 0; i < 8; ++i) {
+            if (std::fabs(y8b[i] - y8s[i]) > 1e-3) {
+                std::fprintf(stderr, "FAIL: adversarial single-block diff\n");
+                return 17;
+            }
+        }
+    }
+
     // Null/zero guards.
     if (crankl_holonomy_batch(&cran, nullptr, dim, batch, yb.data()) == 0 ||
         crankl_holonomy_batch(&cran, xb.data(), 0, batch, yb.data()) == 0 ||
