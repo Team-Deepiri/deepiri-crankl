@@ -6,6 +6,7 @@ set(CMAKE_AUTORCC ON)
 set(CRANKL_GUI_SOURCES
     app/main.cpp
     core/ArchiveAdapter.cpp
+    core/CliCommands.cpp
     core/JobManager.cpp
     widgets/MainWindow.cpp
     widgets/NavigationList.cpp
@@ -18,6 +19,8 @@ set(CRANKL_GUI_SOURCES
     widgets/ResultSummaryPanel.cpp
     widgets/HomePage.cpp
     widgets/InspectPage.cpp
+    widgets/ComparePage.cpp
+    widgets/NewJobDialog.cpp
     widgets/JobsDrawerPage.cpp
     resources/gui.qrc
 )

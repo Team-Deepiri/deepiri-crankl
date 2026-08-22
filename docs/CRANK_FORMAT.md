@@ -354,3 +354,56 @@ The format work is complete when one archive can simultaneously:
 - peel safely without reading metadata or out-of-bounds bytes,
 - reject corrupt dimensions and sections,
 - and remain readable alongside legacy v1/v2 fixtures.
+
+## Multi-tensor addendum (v2.1, 2026-08)
+
+LoRA adapters ship as many named tensors; one archive per tensor makes provenance and
+peel bookkeeping painful. The multi-tensor layout packs every F32 tensor of a
+`.safetensors` file into ONE archive, keeping the on-disk structure unchanged:
+
+```
+[header v2, flags bit0 = 1][slots: tensor A | tensor B | ...][META][json_len][json]
+```
+
+- **Slot ranges are contiguous.** Tensor k occupies `slot_offset[k] .. slot_offset[k] + n_slots[k]`.
+  Ranges are derived with the same `crankl_pack_n_slots` rule used by single-tensor pack.
+- **The index lives in the META footer JSON**, after `model`/`hash` so legacy readers that scan
+  only the first bytes keep working:
+
+  ```json
+  {"model":"multi","hash":"...","format_version":2,"tensor_count":3,
+   "tensors":[{"name":"lora_A","slot_offset":0,"n_slots":64,"n_floats":4096,
+               "checksum":"xxh64hex"}, ...]}
+  ```
+
+- **Checksums are xxh64** (16 hex chars) of the original little-endian f32 bytes of each tensor.
+  xxhash matches the payload checksum already in use; it detects corruption, not adversarial
+  tampering — signatures belong to a transport layer, not the container.
+- **Limits:** at most 32 tensors per archive (`CRANKL_MAX_TENSORS_PER_ARCHIVE`), total slots under
+  `CRANKL_MAX_SLOTS`, each tensor under `CRANKL_MAX_FLOAT_BYTES`. META JSON stays within the
+  reader's validated 4096-byte bound.
+- **Non-F32 tensors** make `crankl_pack_safetensors_multi` fail rather than silently dropping
+  weights; a GGUF path exists for F32/F16 smoke ingest (`crankl_pack_gguf_f32`, F16 widened).
+
+### Manifest schema v2
+
+Pipelines emit manifests alongside artifacts. New fields extend, never replace, the v1 fields:
+
+| Field | Meaning |
+|-------|---------|
+| `format_version` | 2 for multi-tensor manifests |
+| `parent_run_id` | training run this artifact descends from (null when fresh) |
+| `peels_applied` | ordered list of peel operations since packing |
+| `finetune_loss_curve` | `{step, recon, task}` samples from a finetune |
+| `tensors[]` | name, n_floats, slot_offset, n_slots, checksum per packed tensor |
+
+### C API surface
+
+```c
+crankl_safetensors_count / crankl_safetensors_list   // enumerate source tensors
+crankl_gguf_count / crankl_gguf_list                 // enumerate GGUF tensors
+crankl_pack_safetensors_multi(...)                   // all F32 tensors -> one archive (+ manifest)
+crankl_pack_safetensors_tensor(...)                  // single tensor -> classic archive
+crankl_pack_gguf_f32(...)                            // GGUF smoke ingest
+crankl_archive_tensor_count / crankl_archive_tensor_list // read back the index
+```

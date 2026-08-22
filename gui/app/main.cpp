@@ -4,6 +4,17 @@
 #include <QDebug>
 #include <QFile>
 
+namespace {
+
+// --smoke-test: bring up the full UI and exit 0 immediately. Lets CI / shell
+// scripts verify the binary links, its resources load, and every page builds,
+// without needing a display (QT_QPA_PLATFORM=offscreen) or a timed kill.
+bool handleSmokeTest(const QStringList &args) {
+    return args.contains(QStringLiteral("--smoke-test"));
+}
+
+} // namespace
+
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
     QApplication::setOrganizationName(QStringLiteral("Deepiri"));
@@ -19,6 +30,12 @@ int main(int argc, char **argv) {
     } else {
         qWarning("crankl-gui: could not load :/theme.qss (%s) -- falling back to the default style",
                  qUtf8Printable(themeFile.errorString()));
+    }
+
+    if (handleSmokeTest(app.arguments())) {
+        crankl_gui::MainWindow window;
+        window.show();
+        return 0;
     }
 
     crankl_gui::MainWindow window;

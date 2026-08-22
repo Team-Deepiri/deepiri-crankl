@@ -153,6 +153,14 @@ void mat8_exp(const double a[N * N], double out[N * N]) {
 
 // exp(i·γ·A) · x — uses Padé exp on skew (rotation) and symmetric (scale) parts.
 void mat8_exp_i_apply(const double a[N * N], double gamma, const double x[N], double y[N]) {
+    double e[N * N];
+    mat8_exp_i_matrix(a, gamma, e);
+    mat8_vec(e, x, y);
+}
+
+// Hoisted form: the two Padé exps and their product do not depend on the input
+// vector, so a batch pays for them once and then only runs matrix-vector applies.
+void mat8_exp_i_matrix(const double a[N * N], double gamma, double out[N * N]) {
     double skew[N * N], sym[N * N], gskew[N * N], gsym[N * N];
     double rot[N * N], scale[N * N];
     mat8_skew(a, skew);
@@ -162,10 +170,18 @@ void mat8_exp_i_apply(const double a[N * N], double gamma, const double x[N], do
 
     mat8_exp(gskew, rot);
     mat8_exp(gsym, scale);
+    mat8_mul(scale, rot, out);
+}
 
-    double rotated[N];
-    mat8_vec(rot, x, rotated);
-    mat8_vec(scale, rotated, y);
+void mat8_vec_batch(const double a[N * N], const double *x, double *y, size_t batch) {
+#if defined(__AVX2__)
+    if (batch >= 4) {
+        simd::mat8_vec_batch_avx2(a, x, y, batch);
+        return;
+    }
+#endif
+    for (size_t v = 0; v < batch; ++v)
+        mat8_vec(a, x + v * N, y + v * N);
 }
 
 } // namespace crankl

@@ -71,6 +71,111 @@ def quantize_trit(x):
     return 0
 
 
+def sheaf_restriction_weight(ca, cb):
+    """Restriction weight of two slots (ADR 0001) — must match sheaf.cpp.
+
+    Components are ordered [scalar, v0, v1, v2, b0, b1, b2, triv].
+    """
+    align = ca[4] * cb[4] + ca[5] * cb[5] + ca[6] * cb[6]
+    orient = ca[7] * cb[7]
+    vec = ca[1] * cb[1] + ca[2] * cb[2] + ca[3] * cb[3]
+    return align + 0.5 * orient + 0.25 * vec
+
+
+def sheaf_row_value(row, col):
+    for c, v in row:
+        if c == col:
+            return v
+        if c > col:
+            return 0.0
+    return 0.0
+
+
+def sheaf_rank(edges, dirs, n):
+    """Sparse Gaussian elimination over the m x 8n coboundary matrix (tol 1e-9)."""
+    active = []
+    for u, v in edges:
+        row = []
+        for k in range(8):
+            if abs(dirs[u][k]) > 1e-9:
+                row.append((8 * u + k, -dirs[u][k]))
+            if abs(dirs[v][k]) > 1e-9:
+                row.append((8 * v + k, dirs[v][k]))
+        row.sort()
+        active.append(row)
+    rank = 0
+    for col in range(8 * n):
+        pivot = None
+        for r, row in enumerate(active):
+            if abs(sheaf_row_value(row, col)) > 1e-9:
+                pivot = r
+                break
+        if pivot is None:
+            continue
+        prow = active[pivot]
+        pv = sheaf_row_value(prow, col)
+        prow = [(c, v / pv) for c, v in prow]
+        rank += 1
+        nxt = []
+        for r, row in enumerate(active):
+            if r == pivot:
+                continue
+            f = sheaf_row_value(row, col)
+            if abs(f) <= 1e-9:
+                nxt.append(row)
+                continue
+            ia = ib = 0
+            out = []
+            while ia < len(row) or ib < len(prow):
+                ca = row[ia][0] if ia < len(row) else float("inf")
+                cb = prow[ib][0] if ib < len(prow) else float("inf")
+                if ca == cb:
+                    vv = row[ia][1] - f * prow[ib][1]
+                    ia += 1
+                    ib += 1
+                elif ca < cb:
+                    vv = row[ia][1]
+                    ia += 1
+                else:
+                    vv = -f * prow[ib][1]
+                    ib += 1
+                if abs(vv) > 1e-9:
+                    out.append((min(ca, cb), vv))
+            if out:
+                nxt.append(out)
+        active = nxt
+    return rank
+
+
+def sheaf_cohomology(mvs):
+    """Cohomology of a hand-built sheaf of multivectors — mirrors sheaf.cpp."""
+    n = len(mvs)
+    if n == 0:
+        return 0, 0
+    if n == 1:
+        return 1, 0
+    comps = []
+    words = []
+    for mv in mvs:
+        comps.append([quantize_trit(v) for v in mv])
+        words.append(pack_crank_word(mv, 1))
+    edges = []
+    for i in range(n):
+        for j in range(i + 1, min(n, i + 3)):
+            if abs(sheaf_restriction_weight(comps[i], comps[j])) > 1e-6:
+                edges.append((i, j))
+    dirs = []
+    for c in comps:
+        norm = (sum(x * x for x in c)) ** 0.5
+        if norm <= 1e-9:
+            d = [1.0] + [0.0] * 7
+        else:
+            d = [x / norm for x in c]
+        dirs.append(d)
+    rank = sheaf_rank(edges, dirs, n)
+    return 8 * n - rank, len(edges) - rank
+
+
 def pack_crank_word(m, depth=1):
     """Approximate crank word pack — scalar + trits at same bit positions as C++."""
     w = 0
@@ -121,22 +226,94 @@ def main() -> None:
     lines = [
         "#pragma once",
         "#include <cstdint>",
-        "struct CliffordCase { double a[8]; double b[8]; double expected; double tol; };",
+        "struct CliffordCase {",
+        "    double a[8];",
+        "    double b[8];",
+        "    double expected;",
+        "    double tol;",
+        "};",
         "static const CliffordCase CLIFFORD_CASES[] = {",
     ]
     json_cases = []
-    for a, b, exp, tol in cases:
-        def fmt(m):
-            return "{" + ", ".join(f"{x:.9f}" for x in m) + "}"
 
-        lines.append(f"  {{{fmt(a)}, {fmt(b)}, {exp:.9f}, {tol:.9f}}},")
+    def fmt_vec(vals, content_col):
+        # Rows of a braced initializer list whose first element starts at column
+        # content_col, wrapped to stay within 100 columns like clang-format so
+        # regeneration is idempotent with the formatted golden header.
+        pieces = [f"{x:.9f}" for x in vals]
+        one_line = ", ".join(pieces)
+        if content_col + len(one_line) <= 99:
+            return [one_line]
+        pad = " " * content_col
+        limit = 99 - content_col
+        rows, cur, w = [], [], 0
+        for p in pieces:
+            extra = len(p) if not cur else len(p) + 2
+            if cur and w + extra > limit:
+                rows.append(", ".join(cur))
+                cur = []
+                w = 0
+            cur.append(p)
+            w += len(p) + 2
+        rows.append(", ".join(cur))
+        return [rows[0]] + [pad + r for r in rows[1:]]
+
+    def emit_vec(rows, first_prefix, close):
+        out = []
+        for j, r in enumerate(rows):
+            if j == 0:
+                out.append(first_prefix + r + (close if len(rows) == 1 else ","))
+            elif j == len(rows) - 1:
+                out.append(r + close)
+            else:
+                out.append(r + ",")
+        return out
+
+    for a, b, exp, tol in cases:
+        lines += emit_vec(fmt_vec(a, 6), "    {{", "},")
+        lines += emit_vec(fmt_vec(b, 6), "     {", "},")
+        lines.append(f"     {exp:.9f},")
+        lines.append(f"     {tol:.9f}}},")
         json_cases.append({"a": a, "b": b, "expected": exp, "tol": tol})
     lines.append("};")
     lines.append(f"static const int CLIFFORD_CASE_COUNT = {len(cases)};")
     (GOLDEN / "clifford_cases.hpp").write_text("\n".join(lines) + "\n")
     (GOLDEN / "clifford_cases.json").write_text(json.dumps(json_cases, indent=2))
 
-    sheaf = {"beta1_proxy_min": 0, "slots": [1.0, -1.0, 0.5, 0.2]}
+    sheaf_cases = [
+        ("two_aligned", [e1, e1]),
+        ("two_orthogonal", [e1, e2]),
+        ("chain3", [e1, mv(v=(1, 1, 0)), e2]),
+        ("triangle", [e1, e1, e1]),
+        ("bivec_pair", [e12, e12]),
+        ("bivec_triangle", [e12, e12, e12]),
+    ]
+    sheaf = {"beta1_proxy_min": 0, "slots": [1.0, -1.0, 0.5, 0.2], "h0_h1_cases": []}
+    sheaf_lines = [
+        "#pragma once",
+        "#include <cstdint>",
+        "struct SheafCase {",
+        "    int n;",
+        "    uint64_t slots[6];",
+        "    int h0;",
+        "    int h1;",
+        "};",
+        "static const SheafCase SHEAF_CASES[] = {",
+    ]
+    for name, mvs in sheaf_cases:
+        words = [pack_crank_word(mv, 1) for mv in mvs]
+        h0, h1 = sheaf_cohomology(mvs)
+        words_literal = ", ".join(f"0x{w:016x}" for w in words)
+        sheaf_lines.append(
+            f"    // {name}: h0={h0}, h1={h1}\n"
+            f"    {{{len(words)}, {{{words_literal}}}, {h0}, {h1}}},"
+        )
+        sheaf["h0_h1_cases"].append(
+            {"name": name, "slots": [f"0x{w:016x}" for w in words], "h0": h0, "h1": h1}
+        )
+    sheaf_lines.append("};")
+    sheaf_lines.append(f"static const int SHEAF_CASE_COUNT = {len(sheaf_cases)};")
+    (GOLDEN / "sheaf_cases.hpp").write_text("\n".join(sheaf_lines) + "\n")
     (GOLDEN / "sheaf_ref.json").write_text(json.dumps(sheaf, indent=2))
 
     holonomy = {"gamma": 1.0, "input": [1.0] + [0.0] * 7, "expect_nonzero": True}
@@ -164,6 +341,7 @@ def main() -> None:
             "clifford_cases.hpp",
             "clifford_cases.json",
             "sheaf_ref.json",
+            "sheaf_cases.hpp",
             "holonomy_ref.json",
         ],
     }

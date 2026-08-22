@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankl VERSION 0.4.0 LANGUAGES C CXX)
+project(deepiri-crankl VERSION 0.5.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,6 +26,7 @@ set(CRANKL_C_BINDINGS_SOURCES
     src/c_bindings/bind_diff.cpp
     src/c_bindings/bind_simd.cpp
     src/c_bindings/bind_metrics.cpp
+    src/c_bindings/bind_ingest.cpp
 )
 
 set(CRANKL_CORE_SOURCES
@@ -43,10 +44,13 @@ set(CRANKL_CORE_SOURCES
     src/pack/unfold.cpp
     src/pack/persistence.cpp
     src/pack/tiling.cpp
+    src/pack/anneal.cpp
     src/archive/cran_reader.cpp
     src/archive/cran_writer.cpp
     src/archive/cran_metadata.cpp
     src/ingest/safetensors.cpp
+    src/ingest/gguf.cpp
+    src/ingest/pack_multi.cpp
     src/holonomy/wilson.cpp
     ${CRANKL_C_BINDINGS_SOURCES}
 )
@@ -55,7 +59,7 @@ add_library(crankl SHARED ${CRANKL_CORE_SOURCES})
 target_include_directories(crankl
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-set_target_properties(crankl PROPERTIES OUTPUT_NAME crankl VERSION 0.4.0 SOVERSION 0)
+set_target_properties(crankl PROPERTIES OUTPUT_NAME crankl VERSION 0.5.0 SOVERSION 0)
 crankl_set_warnings(crankl)
 
 if(CRANKL_ENABLE_SIMD)
@@ -98,6 +102,7 @@ install(FILES
     include/crankl/diff.h
     include/crankl/simd.h
     include/crankl/metrics.h
+    include/crankl/ingest.h
     DESTINATION include/crankl)
 
 configure_file(crankl.pc.in crankl.pc @ONLY)

@@ -46,7 +46,10 @@ typedef struct crankl_cran {
     size_t mmap_size;
     crankl_cran_header_t header;
     const uint64_t *slots;  /* n_slots current crank words */
-    const uint64_t *layers; /* flattened full-slot snapshots used by peel */
+    const uint64_t *layers; /* validated flattened stack snapshots, or NULL when
+                             * the archive carries no history section. Callers
+                             * must treat NULL as "nothing to peel from" rather
+                             * than probing bytes after slots. */
     /*
      * TODO(format-v3): append an explicit uint32_t n_stack_layers field.
      * `layers` must be NULL when no validated stack section exists. The current

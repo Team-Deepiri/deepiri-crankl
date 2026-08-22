@@ -28,5 +28,14 @@ int fold_f32(const float *data, size_t count, uint64_t *out_slots, size_t n_slot
 int unfold_f32(const uint64_t *slots, size_t n_slots, float *out, size_t count);
 int unfold_f32_mode(const uint64_t *slots, size_t n_slots, float *out, size_t count, int mode);
 
+constexpr int PACK_MODE_LEGACY = 0;
+constexpr int PACK_MODE_STAGED = 1;
+constexpr int PACK_MODE_BO = 2;
+
+int fold_f32_anneal(const float *data, size_t count, uint64_t *out_slots, size_t n_slots,
+                    float alpha, float beta, int mode, unsigned seed);
+double pack_objective(const float *data, size_t count, const uint64_t *slots, size_t n_slots,
+                      double lambda, double *w2_out, double *frobenius_out);
+
 } // namespace pack
 } // namespace crankl

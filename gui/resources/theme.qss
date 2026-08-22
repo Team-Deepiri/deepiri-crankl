@@ -182,7 +182,25 @@ QPushButton#SegmentButton:disabled {
 
 /* ================= Inputs ================= */
 
-QSpinBox {
+QLineEdit, QPlainTextEdit {
+    background-color: #0e1113;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    padding: 6px 9px;
+    color: #f2f5f7;
+    selection-background-color: rgba(79, 195, 218, 0.35);
+}
+
+QLineEdit:focus {
+    border-color: #1d5560;
+}
+
+QLineEdit:disabled {
+    color: #3f464b;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+QSpinBox, QDoubleSpinBox {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 4px;
@@ -191,7 +209,7 @@ QSpinBox {
     color: #f2f5f7;
 }
 
-QSpinBox:disabled {
+QSpinBox:disabled, QDoubleSpinBox:disabled {
     color: #3f464b;
     border-color: rgba(255, 255, 255, 0.07);
 }
@@ -283,8 +301,10 @@ QCheckBox::indicator:disabled {
 }
 
 #NavigationListView::item:selected {
-    background-color: rgba(255, 255, 255, 0.09);
+    background-color: rgba(79, 195, 218, 0.14);
     color: #f2f5f7;
+    border-left: 2px solid #4fc3da;
+    border-radius: 0 4px 4px 0;
 }
 
 #NavigationListView::item:hover:!disabled {
@@ -829,6 +849,44 @@ QTableWidget#NumericTable::item:selected {
 }
 
 /* ================= Jobs ================= */
+
+#CommandPreview {
+    background-color: #101315;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 5px;
+    padding: 8px 10px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: #8d959b;
+}
+
+#JobOutputView, #JsonPreview {
+    background-color: #0e1113;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: #dfe4e7;
+}
+
+QTabWidget::pane {
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: #121618;
+    border-radius: 5px;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background: transparent;
+    color: #8d959b;
+    padding: 5px 12px;
+    font-size: 11px;
+}
+
+QTabBar::tab:selected {
+    color: #f2f5f7;
+    border-bottom: 2px solid #4fc3da;
+}
 
 #JobErrorDetail {
     color: #f0c5b8;

@@ -37,6 +37,12 @@ crankl pipeline \
 | `clifford_energy` | average multivector norm squared |
 | `beta1_proxy` | sheaf cycle-rank proxy |
 
+`inspect` also reports sheaf cohomology (`cohomology_h0`, `cohomology_h1`): h0 counts the
+independent global sections carried by the slots, and h1 counts obstructions (cycles). A
+finetune that stays in-distribution keeps h1 at its baseline; a spike means new cycles
+appeared. Multi-tensor archives additionally list their tensor index with per-tensor xxh64
+checksums.
+
 ## Why this matters
 
 Crankl now has the minimum usable loop for AI development:

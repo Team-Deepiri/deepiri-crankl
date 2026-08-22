@@ -203,13 +203,11 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     out->header.gamma = hd->gamma;
     out->header.flags = hd->flags;
     out->slots = reinterpret_cast<const uint64_t *>(payload);
-    // BUG(format-v2): when no stack was validated, this fallback is merely the
-    // address after the current slots. It may point at metadata or exactly at EOF.
-    // cmd_peel currently treats it as valid history because it is non-null and
-    // differs from out->slots. The v3 implementation must use nullptr here and
-    // expose an explicit validated n_stack_layers field.
-    out->layers =
-        layers_ptr ? reinterpret_cast<const uint64_t *>(layers_ptr) : out->slots + hd->n_slots;
+    // layers is non-null only when a validated stack section exists. There is no
+    // address fallback: pointing at the bytes after slots would hand callers a
+    // pointer that may alias the META footer or EOF, which peel would then read
+    // as history. NULL is the "no validated history" sentinel, matching close.
+    out->layers = layers_ptr ? reinterpret_cast<const uint64_t *>(layers_ptr) : nullptr;
     // Each handle owns its own mapping, so any number of archives may be open at once.
     // Ownership moves to the caller last, once every other field is valid; close_cran
     // keys off mmap_base.

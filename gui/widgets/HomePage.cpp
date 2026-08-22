@@ -5,6 +5,7 @@
 
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QEvent>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -15,6 +16,9 @@
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
+
+#include <functional>
+#include <utility>
 
 namespace crankl_gui {
 
@@ -36,6 +40,30 @@ QPushButton *makeActionButton(const QString &text, bool enabled, QWidget *parent
         button->setToolTip(QObject::tr("Not available yet."));
     return button;
 }
+
+// Makes a quick-action card clickable without restyling it as a button: a
+// pointing-hand cursor and a single released-mouse-press callback.
+class ClickableCardFilter : public QObject {
+  public:
+    using Callback = std::function<void()>;
+    ClickableCardFilter(QWidget *target, Callback callback)
+        : QObject(target), m_callback(std::move(callback)) {
+        target->setCursor(Qt::PointingHandCursor);
+        target->installEventFilter(this);
+    }
+
+  protected:
+    bool eventFilter(QObject *watched, QEvent *event) override {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            m_callback();
+            return true;
+        }
+        return QObject::eventFilter(watched, event);
+    }
+
+  private:
+    Callback m_callback;
+};
 
 } // namespace
 
@@ -88,8 +116,11 @@ QWidget *HomePage::buildEmptyStatePanel() {
     connect(openArchiveButton, &QPushButton::clicked, this, &HomePage::openArchiveRequested);
     auto *openWeightsButton = new QPushButton(tr("Open weights…"), buttonsRow);
     connect(openWeightsButton, &QPushButton::clicked, this, &HomePage::openWeightsRequested);
+    auto *newJobButton = new QPushButton(tr("New job…"), buttonsRow);
+    connect(newJobButton, &QPushButton::clicked, this, &HomePage::newJobRequested);
     buttonsLayout->addWidget(openArchiveButton);
     buttonsLayout->addWidget(openWeightsButton);
+    buttonsLayout->addWidget(newJobButton);
 
     auto *hint = new QLabel(tr("accepts .crank · read via crankl_cran_read()"), dropZone);
     hint->setObjectName(QStringLiteral("DropZoneHint"));
@@ -103,7 +134,8 @@ QWidget *HomePage::buildEmptyStatePanel() {
 
     auto *quickActions = new QWidget(panel);
     auto *quickLayout = new QHBoxLayout(quickActions);
-    auto addQuickCard = [&](const QString &title_, const QString &subtitle_, bool enabled) {
+    auto addQuickCard = [&](const QString &title_, const QString &subtitle_, bool enabled,
+                            ClickableCardFilter::Callback onActivated = {}) {
         auto *card = makeCard(QStringLiteral("QuickActionCard"), quickActions);
         card->setProperty("enabled_card", enabled);
         auto *cardLayout = new QVBoxLayout(card);
@@ -115,21 +147,27 @@ QWidget *HomePage::buildEmptyStatePanel() {
         cardLayout->addWidget(cardTitle);
         cardLayout->addWidget(cardSubtitle);
         quickLayout->addWidget(card);
+        if (enabled && onActivated)
+            new ClickableCardFilter(card, std::move(onActivated));
         return card;
     };
     addQuickCard(tr("Inspect archive"),
-                 tr("Metrics, identity, slot browser and pass/fail verify on one page."), true);
+                 tr("Metrics, identity, slot browser and pass/fail verify on one page."), true,
+                 [this] { Q_EMIT inspectRequested(); });
     addQuickCard(tr("Pack weights"), tr("Not available yet."), false);
-    addQuickCard(tr("Compare two archives"), tr("Not available yet."), false);
+    addQuickCard(tr("Compare two archives"),
+                 tr("Slots changed, hamming distance, resonance and metric deltas."), true,
+                 [this] { Q_EMIT compareRequested(); });
     layout->addWidget(quickActions);
 
     auto *readOnlyBanner = makeCard(QStringLiteral("ReadOnlyBanner"), panel);
     auto *bannerLayout = new QHBoxLayout(readOnlyBanner);
-    auto *bannerLabel = new QLabel(tr("READ-ONLY BUILD"), readOnlyBanner);
+    auto *bannerLabel = new QLabel(tr("READ-ONLY PAGE"), readOnlyBanner);
     bannerLabel->setObjectName(QStringLiteral("ReadOnlyBannerLabel"));
     auto *bannerText = new QLabel(
-        tr("No archive file is created, modified, or deleted anywhere in this build — there "
-           "is no code path to write_cran() and none to crankl_peel_stack()."),
+        tr("This page never writes an archive. Read-only inspection runs the C API in-process; "
+           "operations that produce files (pack, turn, finetune, peel) run through real crankl "
+           "CLI jobs from the Jobs page."),
         readOnlyBanner);
     bannerText->setWordWrap(true);
     bannerLayout->addWidget(bannerLabel);
@@ -228,7 +266,9 @@ QWidget *HomePage::buildActionButtonsGrid() {
     layout->addWidget(inspectButton, 0, 0);
     layout->addWidget(reVerifyButton, 0, 1);
     layout->addWidget(makeActionButton(tr("Optimize"), false, grid), 1, 0);
-    layout->addWidget(makeActionButton(tr("Compare"), false, grid), 1, 1);
+    auto *compareButton = makeActionButton(tr("Compare"), true, grid);
+    connect(compareButton, &QPushButton::clicked, this, &HomePage::compareRequested);
+    layout->addWidget(compareButton, 1, 1);
     layout->addWidget(makeActionButton(tr("Peel history"), false, grid), 2, 0);
     layout->addWidget(makeActionButton(tr("Bind"), false, grid), 2, 1);
     layout->addWidget(makeActionButton(tr("Run forward"), false, grid), 3, 0);

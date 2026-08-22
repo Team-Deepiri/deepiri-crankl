@@ -2,6 +2,7 @@
 #define CRANKL_GUI_CORE_ARCHIVE_ADAPTER_H
 
 #include "core/ArchiveSnapshot.h"
+#include "core/CompareResult.h"
 
 #include <QMetaType>
 #include <QString>
@@ -20,6 +21,10 @@ struct ArchiveOpenResult {
 class ArchiveAdapter {
   public:
     static ArchiveOpenResult openArchive(const QString &path);
+
+    // Structural + numerical comparison of two archives, computed from the C
+    // API on copied slots (see CompareResult.h). Errors name the failing side.
+    static CompareResult compareArchives(const QString &pathA, const QString &pathB);
 };
 
 } // namespace crankl_gui

@@ -90,6 +90,35 @@ crankl pipeline --input weights.f32 -o tuned.crank --manifest run.json
 crankl finetune --input adapter.crank --target weights.f32 --steps 200 -o tuned.crank --json
 ```
 
+## New in v0.5.0
+
+| Function | Description |
+|----------|-------------|
+| `crankl_sheaf_cohomology` | h0/h1 dimensions of the slot sheaf (rank theorem: h1 = m − n + c) |
+| `crankl_sheaf_h0_dim` / `crankl_sheaf_h1_dim` | Individual Betti numbers |
+| `crankl_sheaf_resonance_h1` | h1-weighted resonance between two slot sets |
+| `crankl_pack_f32_anneal` | Pack with mode: legacy (0), staged (1), BO-lite (2) |
+| `crankl_pack_objective` | Weighted pack objective (w2 + λ·Frobenius) |
+| `crankl_pack_default_mode` | Default pack mode for new artifacts |
+| `crankl_safetensors_count/list` | Enumerate tensors of a `.safetensors` checkpoint |
+| `crankl_gguf_count/list` | Enumerate tensors of a GGUF checkpoint (F32/F16 packable) |
+| `crankl_pack_safetensors_multi` | All F32 tensors → ONE archive with tensor index footer |
+| `crankl_pack_safetensors_tensor` | Single tensor → classic archive |
+| `crankl_pack_gguf_f32` | GGUF smoke ingest (F16 widened to F32) |
+| `crankl_archive_tensor_count/list` | Read back the multi-tensor index |
+| `crankl_holonomy_batch` | Batched Wilson forward — per-slot exp built once, AVX2 applies |
+| `crankl_holonomy_mse_batch` | Batch-mean calibration MSE |
+| `crankl_holonomy_avx2_supported` | 1 when batched kernels use AVX2/FMA |
+
+### CLI additions
+
+- `pack --multi` packs every F32 tensor of a safetensors file into one archive.
+- `pack --input model.gguf --tensor NAME` ingests GGUF checkpoints.
+- `pack --pack-mode legacy|staged|bo` selects the pack objective mode.
+- `inspect` reports cohomology h0/h1 and, for multi-tensor archives, the tensor index.
+- `compare` reports `sheaf_resonance_h1`.
+- `holonomy --batch N` runs batched forward over N stacked vectors.
+
 ## New in v0.4.0
 
 | Function | Description |

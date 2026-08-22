@@ -63,7 +63,7 @@ NavigationList::NavigationList(QWidget *parent) : QWidget(parent) {
     addGroupLabel(tr("WORKSPACE"));
     addDestinationRow(NavDestination::Home, destinationLabel(NavDestination::Home), true);
     addDestinationRow(NavDestination::Inspect, destinationLabel(NavDestination::Inspect), true);
-    addDestinationRow(NavDestination::Compare, destinationLabel(NavDestination::Compare), false);
+    addDestinationRow(NavDestination::Compare, destinationLabel(NavDestination::Compare), true);
 
     addGroupLabel(tr("PROCESS"));
     addDestinationRow(NavDestination::Pack, destinationLabel(NavDestination::Pack), false);

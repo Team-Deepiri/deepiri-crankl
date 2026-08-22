@@ -9,6 +9,7 @@
 #include "crankl/diff.h"
 #include "crankl/errors.h"
 #include "crankl/holonomy.h"
+#include "crankl/ingest.h"
 #include "crankl/metrics.h"
 #include "crankl/pack.h"
 #include "crankl/sheaf.h"

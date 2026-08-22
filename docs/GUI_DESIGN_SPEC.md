@@ -931,6 +931,27 @@ Tasks:
 - Compare, Diff, and Resonance;
 - report export.
 
+#### Phase 2 delivery (GUI)
+
+The desktop GUI shipped the following live behavior on top of Phase 1's
+read-only shell (all in `gui/`):
+
+- ArchiveAdapter runs `open`/`compare` through the C API on a worker thread
+  and reports `crankl_strerror()` text on failure.
+- Pack / Turn / Finetune / Peel run as **real `crankl` CLI subprocesses**
+  through `JobManager` (QProcess, FIFO queue, kill-on-cancel, bounded
+  stdout/stderr capture, exit codes, parsed JSON summaries). The executable is
+  resolved from `$CRANKL_CLI`, then QSettings `cli/path`, then a `crankl`
+  sibling of the app binary, then `PATH`.
+- New job dialog builds and previews the exact `crankl <command> …` invocation
+  (§16 Jobs).
+- Compare page (§11) shows per-slot changes with real hex words, hamming,
+  resonance, and B−A metric deltas, with copy/export as JSON.
+- Jobs drawer shows live stdout/stderr and exit codes per job (§16).
+- Inspect result summary previews the `inspect --json` report inline.
+- `--smoke-test` starts the full UI and exits 0 (works under
+  `QT_QPA_PLATFORM=offscreen`).
+
 ### Phase 3: Mutation workflows
 
 Builds:
