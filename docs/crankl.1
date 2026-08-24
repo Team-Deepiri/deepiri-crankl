@@ -1,0 +1,81 @@
+.\" Manual page for crankl.
+.TH CRANKL 1 "2026-08-24" "crankl 0.5.1" "User Commands"
+.SH NAME
+crankl \- pack, inspect, compare, and run forward on compressed weight artifacts
+.SH SYNOPSIS
+.B crankl
+.I COMMAND
+.RI [ options ]
+.SH DESCRIPTION
+.B crankl
+turns neural-network weight tensors (f32 files, .safetensors checkpoints,
+GGUF models) into self-describing compressed
+.I .crank
+artifacts with provenance metadata, quality metrics, sheaf-cohomology health
+gates, and inference support on the compressed form (Wilson-line holonomy).
+.SH COMMANDS
+.TP
+.BI version
+Print the engine version and AVX2 availability.
+.TP
+.BI pack " --input FILE [--output OUT.crank] [options]"
+Pack a tensor into a .crank archive. Input may be a raw f32 file, a
+.safetensors checkpoint, or GGUF. Options:
+.RS
+.IP "--tensor NAME"
+pack one named tensor from a safetensors/GGUF checkpoint
+.IP "--multi"
+pack every F32 tensor of the checkpoint into ONE archive with an index footer
+.IP "--pack-mode legacy|staged|bo"
+select the pack objective (legacy is byte-identical to v1/v2)
+.IP "--gguf"
+write a GGUF container instead of .crank
+.IP "--manifest FILE"
+emit a format-version-2 JSON manifest (--multi)
+.RE
+.TP
+.BI unpack " --input IN.crank [--output FILE]"
+Reconstruct f32 weights from an archive.
+.TP
+.BI verify " IN.crank"
+Validate checksums and structure; exits nonzero on any inconsistency.
+.TP
+.BI inspect " IN.crank [--json]"
+Report metrics and sheaf cohomology (h0/h1). Multi-tensor archives also list
+their tensor index. --json emits machine-readable output.
+.TP
+.BI compare " A.crank B.crank"
+Similarity between two archives including the h1-weighted sheaf resonance.
+.TP
+.BI diff " A.crank B.crank"
+Slot-level difference counts.
+.TP
+.BI turn " IN.crank [options]"
+Anneal toward calibration targets (finetune on the compressed form).
+.TP
+.BI peel " IN.crank N"
+Remove N history layers from an archive with a validated stack.
+.TP
+.BI holonomy " IN.crank [options]"
+Run Wilson-line forward on compressed weights;
+.B --batch N
+applies N stacked input vectors through the batched AVX2 path (bitwise
+identical to per-vector application).
+.TP
+.BI flow " SCRIPT"
+Replay a pipeline script of the commands above.
+.SH EXIT STATUS
+Zero on success. Nonzero values are typed error codes (see
+.IR include/crankl/errors.h );
+corrupt or truncated inputs are rejected, never partially processed.
+.SH FILES
+.TP
+.I *.crank
+Format v2 archive: header, slot payload, optional history stacks, META footer
+with provenance and (for --multi) a per-tensor xxh64 index.
+.SH SEE ALSO
+Project docs:
+.IR docs/API.md ,
+.IR docs/CRANK_FORMAT.md ,
+.IR docs/FLOW.md .
+Technical report: docs/research/PAPER.md.

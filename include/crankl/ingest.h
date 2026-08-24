@@ -48,6 +48,12 @@ int crankl_pack_safetensors_tensor(const char *path, const char *tensor_name,
 /* GGUF smoke ingest: read one tensor (F32 native or F16 widened) and pack it. */
 int crankl_pack_gguf_f32(const char *path, const char *tensor_name, const char *output_crank);
 
+/* Read one tensor of a .safetensors file as f32 (widening F16/BF16 sources).
+ * *out is allocated with malloc and must be freed by the caller; n_floats
+ * receives the element count. CRANKL_ERR_NOT_FOUND when the name is absent. */
+int crankl_safetensors_read_f32(const char *path, const char *tensor_name, float **out,
+                                size_t *n_floats);
+
 /* Read back the multi-tensor index of an archive. count first, then list. */
 int crankl_archive_tensor_count(const char *path, size_t *out_count);
 int crankl_archive_tensor_list(const char *path, crankl_archive_tensor_t *out, size_t capacity);

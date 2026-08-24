@@ -84,6 +84,19 @@ crankl compare baseline.crank tuned.crank [--json]
 crankl pipeline --input weights.f32 --steps 64 -o tuned.crank --manifest run.json
 ```
 
+## Downstream integration
+
+CMake consumers:
+
+```cmake
+find_package(crankl REQUIRED CONFIG)   # after cmake --install
+target_link_libraries(app PRIVATE crankl::crankl)
+```
+
+pkg-config and a man page (`man crankl`) ship with the install. The shared
+library exports only the `crankl_*` C API; implementation internals are not
+part of any stability contract.
+
 ## Theory
 
 See [docs/GUCT.md](docs/GUCT.md), [docs/FLOW.md](docs/FLOW.md), [docs/FINETUNE.md](docs/FINETUNE.md),

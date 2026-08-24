@@ -315,10 +315,73 @@ static void table3_drift_gate(void) {
     free(out);
 }
 
+
+static void table4_trajectory(void) {
+    const size_t count = 4096 * 64;
+    const size_t n_slots = crankl_pack_n_slots(count);
+    const int epochs = 12;
+
+    float *base = make_lora_data(count);
+    float *drift = malloc(count * sizeof(float));
+    uint64_t *slots = malloc(n_slots * sizeof(uint64_t));
+    float *out = malloc(count * sizeof(float));
+    if (!drift || !slots || !out)
+        exit(18);
+
+    /* Baseline cohomology on the healthy archive. */
+    memset(slots, 0, n_slots * sizeof(uint64_t));
+    if (crankl_pack_f32(base, count, slots, n_slots, 0.1f, 0.01f) != 0)
+        exit(19);
+    int h0_base, h1_base;
+    if (crankl_sheaf_cohomology(slots, n_slots, &h0_base, &h1_base) != 0)
+        exit(20);
+    const double alarm_h1 = 0.8 * (double)h1_base;
+
+    printf("\n### T4: simulated finetune trajectory, gate alarm vs magnitude metrics\n\n");
+    printf("base h0=%d h1=%d, alarm when h1 < %.0f (20%% band)\n\n", h0_base, h1_base,
+           alarm_h1);
+    printf("| epoch | row-scale | h0 | h1 | rel.err | alarm |\n");
+    printf("|------:|----------:|---:|---:|--------:|:------|\n");
+
+    int alarm_epoch = -1;
+    double err_at_alarm = 0.0;
+    for (int e = 0; e <= epochs; ++e) {
+        const double keep = 1.0 - 0.075 * (double)e;
+        memcpy(drift, base, count * sizeof(float));
+        for (size_t i = 0; i < count; ++i)
+            drift[i] *= (float)keep;
+        memset(slots, 0, n_slots * sizeof(uint64_t));
+        if (crankl_pack_f32(drift, count, slots, n_slots, 0.1f, 0.01f) != 0)
+            exit(21);
+        int h0, h1;
+        if (crankl_sheaf_cohomology(slots, n_slots, &h0, &h1) != 0)
+            exit(22);
+        if (crankl_unpack_f32(slots, n_slots, out, count) != 0)
+            exit(23);
+        const double rel = relative_error(base, out, count);
+        const int alarm = (double)h1 < alarm_h1;
+        if (alarm && alarm_epoch < 0) {
+            alarm_epoch = e;
+            err_at_alarm = rel;
+        }
+        printf("| %d | %.3f | %d | %d | %.4f | %s |\n", e, keep, h0, h1, rel,
+               alarm ? "**ALARM**" : "");
+    }
+    if (alarm_epoch >= 0)
+        printf("\nGate alarmed at epoch %d with rel.err %.4f; terminal-state rel.err is "
+               "%.4f.\n",
+               alarm_epoch, err_at_alarm, relative_error(base, out, count));
+    free(base);
+    free(drift);
+    free(slots);
+    free(out);
+}
+
 int main(void) {
     table1_holonomy();
     table1b_shapes();
     table2_pack();
     table3_drift_gate();
+    table4_trajectory();
     return 0;
 }

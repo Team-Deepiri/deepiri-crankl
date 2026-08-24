@@ -6,6 +6,8 @@
 
 #include <cstring>
 
+#include <cstdlib>
+
 extern "C" {
 
 static int fill_source_list(const std::vector<crankl::io::SafetensorsTensor> &tensors,
@@ -92,6 +94,26 @@ int crankl_pack_safetensors_tensor(const char *path, const char *tensor_name,
     if (crankl::io::read_safetensors_f32(path, tensor_name, data) != 0)
         return CRANKL_ERR_IO;
     return pack_one(data, output_crank, 0.1f, 0.01f);
+}
+
+int crankl_safetensors_read_f32(const char *path, const char *tensor_name, float **out,
+                                size_t *n_floats) {
+    if (!path || !tensor_name || !out || !n_floats)
+        return CRANKL_ERR_NULL;
+    *out = nullptr;
+    *n_floats = 0;
+    std::vector<float> data;
+    if (crankl::io::read_safetensors_f32(path, tensor_name, data) != 0)
+        return CRANKL_ERR_IO;
+    if (data.empty())
+        return CRANKL_ERR_FORMAT;
+    float *buf = static_cast<float *>(malloc(data.size() * sizeof(float)));
+    if (!buf)
+        return CRANKL_ERR_IO;
+    std::memcpy(buf, data.data(), data.size() * sizeof(float));
+    *out = buf;
+    *n_floats = data.size();
+    return CRANKL_OK;
 }
 
 int crankl_pack_gguf_f32(const char *path, const char *tensor_name, const char *output_crank) {

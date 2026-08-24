@@ -67,8 +67,9 @@ struct SheafComplex {
 };
 
 // Build the restriction slot graph: vertices are slots, edges are index
-// neighbors at distance <= kSheafWindow with |restriction_map| > kSheafTol.
-static void build_sheaf(const uint64_t *slots, size_t n, SheafComplex &out) {
+// neighbors at distance <= kSheafWindow with |restriction_map| > edge_tol.
+static void build_sheaf(const uint64_t *slots, size_t n, SheafComplex &out,
+                        double edge_tol = kSheafTol) {
     out.n_slots = n;
     out.edge_u.clear();
     out.edge_v.clear();
@@ -78,7 +79,7 @@ static void build_sheaf(const uint64_t *slots, size_t n, SheafComplex &out) {
 
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = i + 1; j < n && j <= i + static_cast<size_t>(kSheafWindow); ++j) {
-            if (std::fabs(restriction_map(slots[i], slots[j])) > kSheafTol) {
+            if (std::fabs(restriction_map(slots[i], slots[j])) > edge_tol) {
                 out.edge_u.push_back(i);
                 out.edge_v.push_back(j);
             }
@@ -181,6 +182,23 @@ static int gaussian_rank(const std::vector<SparseRow> &rows, size_t n_cols) {
     return rank;
 }
 
+// Shared pipeline: delta_0 rows from the sheaf complex, then rank.
+// On success fills h0/h1. Returns 0, or -1 on null pointers.
+static int cohomology_pipeline(const uint64_t *slots, size_t n, const SheafComplex &sc, int *h0_out,
+                               int *h1_out) {
+    std::vector<SparseRow> rows;
+    rows.reserve(sc.m_edges);
+    for (size_t e = 0; e < sc.m_edges; ++e) {
+        const double *du = sc.dir[sc.edge_u[e]].data();
+        const double *dv = sc.dir[sc.edge_v[e]].data();
+        rows.push_back(build_delta_row(sc.edge_u[e], sc.edge_v[e], du, dv));
+    }
+    const int rank = gaussian_rank(rows, 8 * n);
+    *h0_out = static_cast<int>(8 * n - static_cast<size_t>(rank));
+    *h1_out = static_cast<int>(sc.m_edges - static_cast<size_t>(rank));
+    return 0;
+}
+
 int sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out) {
     if (!slots || !h0_out || !h1_out)
         return -1;
@@ -196,18 +214,28 @@ int sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out) 
 
     SheafComplex sc;
     build_sheaf(slots, n, sc);
-    std::vector<SparseRow> rows;
-    rows.reserve(sc.m_edges);
-    for (size_t e = 0; e < sc.m_edges; ++e) {
-        const double *du = sc.dir[sc.edge_u[e]].data();
-        const double *dv = sc.dir[sc.edge_v[e]].data();
-        rows.push_back(build_delta_row(sc.edge_u[e], sc.edge_v[e], du, dv));
+    return cohomology_pipeline(slots, n, sc, h0_out, h1_out);
+}
+
+int sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *h0_out,
+                         int *h1_out) {
+    if (!slots || !h0_out || !h1_out)
+        return -1;
+    if (!(edge_tol > 0.0) || !std::isfinite(edge_tol))
+        return -2;
+    *h0_out = 0;
+    *h1_out = 0;
+    if (n == 0)
+        return 0;
+    if (n == 1) {
+        *h0_out = 1;
+        *h1_out = 0;
+        return 0;
     }
 
-    int rank = gaussian_rank(rows, 8 * n);
-    *h0_out = static_cast<int>(8 * n - static_cast<size_t>(rank));
-    *h1_out = static_cast<int>(sc.m_edges - static_cast<size_t>(rank));
-    return 0;
+    SheafComplex sc;
+    build_sheaf(slots, n, sc, edge_tol);
+    return cohomology_pipeline(slots, n, sc, h0_out, h1_out);
 }
 
 int sheaf_h0_dim(const uint64_t *slots, size_t n) {

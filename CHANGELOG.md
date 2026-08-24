@@ -3,6 +3,39 @@
 All notable changes to crankl are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is SemVer.
 
+## [0.5.1-alpha] — 2026-08-24
+
+Productization pass: export hygiene, downstream packaging, parser fuzzing,
+tunable cohomology gate, and research-report depth.
+
+### Added
+
+- **Tunable cohomology gate** (`crankl_sheaf_cohomology_tol`): caller-chosen
+  edge-restriction threshold; the default path keeps 1e-6. Looser thresholds
+  monotonically weaken the restriction graph (h1 falls toward the disconnected
+  limit); non-finite / non-positive tolerances return `CRANKL_ERR_INVALID`.
+- **Single-tensor read** (`crankl_safetensors_read_f32`): malloc'd f32 buffer +
+  element count for one named tensor of a `.safetensors` file.
+- **`find_package(crankl)` support**: installs `crankl::crankl` CMake target
+  with config/version files under `lib/cmake/crankl`; verified by a consumer
+  build against a fresh install tree.
+- **Parser robustness harness** (`tests/ctest/test_fuzz_parsers`): 12 000
+  mutated inputs per run across the .crank, safetensors, and GGUF readers;
+  deterministic seeds, runs in CI and under ASan/UBSan.
+- **Research report**: shape-scaling table (§4.4), drift-gate families (§4.5:
+  benign noise invariance, row-decay collapse h1→0/h0→8n, mode-collapse
+  inflation +4%), and a gated-trajectory study (§4.6: alarm at epoch 5/12 while
+  Frobenius error moved 2%). All tables regenerate via `tools/bench_sweep.c`.
+- Man page `docs/crankl.1`, `CONTRIBUTING.md`, `SECURITY.md`.
+- CI: Qt6 GUI build job running the offscreen `--smoke-test`; README badges.
+
+### Changed
+
+- **Export surface locked**: the shared object now exports only `crankl_*`
+  symbols (GNU/Clang ELF version script); ~100 previously leaked C++
+  implementation symbols are hidden. The CLI now consumes only public API.
+- Version reporting unified on project version (0.5.1-alpha).
+
 ## [0.5.0-alpha] — 2026-08-21
 
 Production release: multi-tensor checkpoint ingest, sheaf cohomology quality

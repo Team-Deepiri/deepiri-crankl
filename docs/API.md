@@ -90,6 +90,24 @@ crankl pipeline --input weights.f32 -o tuned.crank --manifest run.json
 crankl finetune --input adapter.crank --target weights.f32 --steps 200 -o tuned.crank --json
 ```
 
+## New in v0.5.1
+
+| Function | Description |
+|----------|-------------|
+| `crankl_sheaf_cohomology_tol` | Cohomology with a caller-chosen edge-restriction threshold (default path: 1e-6) |
+| `crankl_safetensors_read_f32` | Read one tensor of a `.safetensors` file as malloc'd f32 |
+
+### Packaging
+
+- Shared object now exports **only** the `crankl_*` C API (linker version
+  script); implementation internals are hidden. Code that reached into
+  internals must move to the public API.
+- `find_package(crankl)` support: installs `crankl::crankl` CMake target,
+  config + version files under `lib/cmake/crankl`.
+- `tests/ctest/test_fuzz_parsers` mutates 12 000 inputs across the three
+  untrusted-input parsers (.crank, safetensors, GGUF) per run; runs in CI and
+  under sanitizers.
+
 ## New in v0.5.0
 
 | Function | Description |
