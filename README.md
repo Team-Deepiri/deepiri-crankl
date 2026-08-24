@@ -1,5 +1,9 @@
 # Crankl
 
+[![Crankl Build and Test](https://github.com/Team-Deepiri/deepiri-crankl/actions/workflows/crankl-build-and-test.yml/badge.svg?branch=dev)](https://github.com/Team-Deepiri/deepiri-crankl/actions/workflows/crankl-build-and-test.yml)
+[![CodeQL](https://github.com/Team-Deepiri/deepiri-crankl/actions/workflows/codeql.yml/badge.svg?branch=dev)](https://github.com/Team-Deepiri/deepiri-crankl/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/Team-Deepiri/deepiri-crankl)](https://github.com/Team-Deepiri/deepiri-crankl/releases/latest)
+
 **Crankl** — low-level engine for compressing, finetuning, and comparing model weights in
 Deepiri's AI development flow. GUCT math under the hood; `crankl` on the CLI.
 
