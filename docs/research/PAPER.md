@@ -218,6 +218,31 @@ T3b this gives operators a signed diagnostic — h1 collapsing toward 0 indicate
 rank decay; h1 inflating above baseline indicates degenerate repetition — while
 benign noise moves neither.
 
+### 4.6 Gate-as-alarm on a simulated trajectory
+
+A deterministic 12-epoch finetune simulation (rows scaled by 1 − 0.075·e each
+epoch), gate configured with a ±20% band around baseline h1 = 3509:
+
+| epoch | row-scale | h0 | h1 | rel.err | alarm |
+|------:|----------:|---:|---:|--------:|:------|
+|     0 |     1.000 | 28868 | 3509 | 1.0381 |       |
+|     2 |     0.850 | 28931 | 3320 | 1.0287 |       |
+|     4 |     0.700 | 29031 | 2872 | 1.0212 |       |
+|     5 |     0.625 | 29063 | 2776 | 1.0181 | **ALARM** |
+|     8 |     0.400 | 29388 | 1790 | 1.0081 | **ALARM** |
+|    11 |     0.175 | 32546 |    0 | 1.0000 | **ALARM** |
+|    12 |     0.100 | 32768 |    0 | 0.9991 | **ALARM** |
+
+The gate fires at epoch 5 — 42% into the degradation — while the relative
+reconstruction error has moved 2%. Worse for magnitude-based monitoring: rel.
+error *decreases* monotonically toward the fully degraded state (packing noise
+shrinks with the signal). A Frobenius monitor would never fire; a CI gate on
+(h0, h1) fires halfway with a monotone, thresholdable precursor.
+
+The adaptive-threshold API (`crankl_sheaf_cohomology_tol`) makes the band
+tunable: sweeping tol trades edge sensitivity against baseline variance
+(§9 notes the calibration study against real training runs as future work).
+
 ## 5. Multi-tensor archives and provenance
 
 LoRA adapters ship as named tensor collections; one-archive-per-tensor breaks
@@ -303,8 +328,9 @@ Every numeric claim above regenerates from source alone:
 - The cohomology gate is calibrated on synthetic structural families (T3a–c);
   a study against real finetune trajectories (e.g., measured h1 along actual
   LoRA training runs) is future work.
-- The edge threshold kSheafTol = 10⁻⁶ is fixed; an adaptive or reported
-  threshold would make gate sensitivity tunable per deployment.
+- v0.5.1 adds a caller-chosen edge threshold (`crankl_sheaf_cohomology_tol`);
+  the default remains kSheafTol = 10⁻⁶. Guidance for choosing per-deployment
+  bands is still empirical.
 - Holonomy batching parallelizes trivially across threads; the current release
   is deliberately single-threaded for determinism.
 - BO-lite's acquisition function is budget-limited; a proper GP surrogate is

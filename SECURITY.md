@@ -1,29 +1,34 @@
-# Security
+# Security Policy
 
-## Input limits
+## Supported versions
 
-Crankl rejects oversized or malformed inputs before mmap, allocation, or parsing:
+| Version | Support |
+|---------|---------|
+| 0.5.x   | active  |
+| < 0.5   | none    |
 
-| Surface | Limit |
-|---------|-------|
-| `.crank` file size | 1 GiB |
-| `.f32` payload | 256 MiB |
-| crank slots per archive | 1M |
-| finetune layer stack depth | 64k |
-| safetensors JSON header | 16 MiB |
-| safetensors tensor slice | 512 MiB |
+## Reporting a vulnerability
 
-## `.crank` validation
+Email **security@deepiri.dev** (PGP key on request). Do not open public
+issues or PRs describing the vulnerability. Expect acknowledgement within
+72 hours and a fix timeline within 7 days for confirmed reports.
 
-- Magic, version, and xxHash checksum are verified on read.
-- Slot count and v2 layer-stack tail length are bounds-checked against payload size.
-- Integer overflow is guarded when computing `n_slots * 8` and stack byte lengths.
+## Scope and hardening posture
 
-## CLI I/O
+crankl parses untrusted input in three places: `.crank` archives (mmap-based
+reader), `.safetensors` checkpoints, and GGUF models. Relevant guarantees:
 
-- `read_f32` checks `fread` return value and rejects truncated files.
-- Safetensors offsets must stay within the file and tensor byte length must be a multiple of 4.
+- All mmap/offset accesses are bounds-checked against section tables; malformed
+  section tables are rejected, not dereferenced.
+- Truncated/corrupt files return typed error codes; no partial processing.
+- Layer-history stacks are NULL unless explicitly validated (peel cannot read
+  metadata as history).
+- A randomized robustness harness (`tests/ctest/test_fuzz_parsers`) mutates
+  12 000 inputs across all three parsers per CI run, and the full suite runs
+  under ASan+UBSan.
+- The shared library exports only `crankl_*` symbols; implementation internals
+  are not part of any stability contract.
 
-## Reporting
-
-Report vulnerabilities to the Deepiri security contact for your organization. Do not open public issues for undisclosed security bugs.
+Out of scope at this stage: side-channel hardening of pack quality metrics,
+and denial-of-service via pathological-but-valid inputs that exceed declared
+resource ceilings (the CLI caps single-file input at 256 MiB of f32 payload).

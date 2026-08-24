@@ -1,0 +1,8 @@
+{
+  /* Exported surface = the public C API exactly. Everything else
+   * (namespace crankl implementation internals) stays local to the DSO. */
+  global:
+    crankl_*;
+  local:
+    *;
+};

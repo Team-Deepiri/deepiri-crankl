@@ -1,5 +1,8 @@
+#include "crankl/errors.h"
 #include "crankl/sheaf.h"
 #include "internal_headers/topology.hpp"
+
+#include <cmath>
 
 extern "C" {
 
@@ -22,6 +25,14 @@ int crankl_sheaf_h1_dim(const uint64_t *slots, size_t n) {
 
 int crankl_sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out) {
     return crankl::sheaf_cohomology(slots, n, h0_out, h1_out);
+}
+
+int crankl_sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *h0_out,
+                                int *h1_out) {
+    const int rc = crankl::sheaf_cohomology_tol(slots, n, edge_tol, h0_out, h1_out);
+    if (rc == -2)
+        return CRANKL_ERR_INVALID;
+    return rc;
 }
 
 double crankl_sheaf_resonance_h1(const uint64_t *slots, size_t n, const uint64_t *other,

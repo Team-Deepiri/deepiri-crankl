@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <random>
 #include <vector>
 
@@ -369,6 +370,53 @@ static void test_backward_compat() {
     check(std::isfinite(crankl_sheaf_resonance_h1(a, 4, b, 4)), "resonance_h1 finite");
 }
 
+// --- crankl_sheaf_cohomology_tol: tol=1e-6 matches the default path exactly,
+// looser thresholds weaken the graph (h1 falls, h0 rises), invalid tolerances
+// return CRANKL_ERR_INVALID.
+static int check_cohomology_tol(void) {
+    int fails = 0;
+    float weights[64 * 8];
+    for (size_t i = 0; i < sizeof(weights) / sizeof(weights[0]); ++i)
+        weights[i] = (float)((int)(i % 37) - 18) / 16.0f;
+    uint64_t packed[512];
+    const size_t n_slots = crankl_pack_n_slots(sizeof(weights) / sizeof(weights[0]));
+    if (crankl_pack_f32(weights, sizeof(weights) / sizeof(weights[0]), packed, n_slots, 0.5f,
+                        0.05f) != CRANKL_OK) {
+        std::puts("FAIL: cohomology_tol seed pack");
+        return ++fails;
+    }
+
+    int h0_def, h1_def;
+    if (crankl_sheaf_cohomology(packed, n_slots, &h0_def, &h1_def) != CRANKL_OK) {
+        std::puts("FAIL: default cohomology errored");
+        return ++fails;
+    }
+    int h0_same, h1_same;
+    if (crankl_sheaf_cohomology_tol(packed, n_slots, 1e-6, &h0_same, &h1_same) != CRANKL_OK ||
+        h0_same != h0_def || h1_same != h1_def) {
+        std::printf("FAIL: tol=1e-6 mismatch (%d,%d) vs (%d,%d)\n", h0_same, h1_same, h0_def,
+                    h1_def);
+        ++fails;
+    }
+    int h0_loose, h1_loose;
+    if (crankl_sheaf_cohomology_tol(packed, n_slots, 1e-2, &h0_loose, &h1_loose) != CRANKL_OK ||
+        h1_loose > h1_def || h0_loose < h0_def) {
+        std::printf("FAIL: loose tol did not weaken graph (%d,%d) vs (%d,%d)\n", h0_loose, h1_loose,
+                    h0_def, h1_def);
+        ++fails;
+    }
+    const double bad_tols[] = {0.0, -1e-3, std::numeric_limits<double>::infinity(),
+                               std::numeric_limits<double>::quiet_NaN()};
+    for (const double tol : bad_tols) {
+        if (crankl_sheaf_cohomology_tol(packed, n_slots, tol, &h0_same, &h1_same) !=
+            CRANKL_ERR_INVALID) {
+            std::printf("FAIL: tol %g not rejected\n", tol);
+            ++fails;
+        }
+    }
+    return fails;
+}
+
 int main() {
     test_trivial_cases();
     test_hand_built_graphs();
@@ -379,6 +427,7 @@ int main() {
     test_stability_trit_surgery();
     test_resonance_h1();
     test_backward_compat();
+    failures += check_cohomology_tol();
 
     if (failures == 0)
         std::printf("test_sheaf ok (cohomology: %d golden cases, %d hand-built graphs)\n",
