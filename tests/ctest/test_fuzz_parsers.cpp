@@ -8,7 +8,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <string>
+#include <system_error>
 #include <vector>
 
 namespace {
@@ -26,9 +28,17 @@ struct Rng {
     }
 };
 
+std::string temp_dir() {
+    /* std::filesystem resolves $TMPDIR and validates usability; falls back
+     * across platforms instead of assuming any fixed path. */
+    std::error_code ec;
+    const std::filesystem::path dir = std::filesystem::temp_directory_path(ec);
+    return ec ? std::string(".") : dir.string();
+}
+
 std::string temp_path(const char *tag) {
     static int counter = 0;
-    return std::string("/tmp/opencode/fuzz_") + tag + "_" + std::to_string(counter++) + ".bin";
+    return temp_dir() + "/crankl_fuzz_" + tag + "_" + std::to_string(counter++) + ".bin";
 }
 
 void write_file(const std::string &path, const std::vector<uint8_t> &bytes) {
@@ -67,10 +77,10 @@ std::vector<uint8_t> crank_seed() {
     crankl_cran_header_t hdr = {};
     hdr.n_slots = static_cast<uint32_t>(n_slots);
     hdr.gamma = 0.5f;
-    const char *path = "/tmp/opencode/fuzz_crank_seed.crank";
-    if (crankl_cran_write(path, &hdr, slots.data(), nullptr, 0) != CRANKL_OK)
+    const std::string path = temp_path("crankseed");
+    if (crankl_cran_write(path.c_str(), &hdr, slots.data(), nullptr, 0) != CRANKL_OK)
         exit(3);
-    FILE *f = std::fopen(path, "rb");
+    FILE *f = std::fopen(path.c_str(), "rb");
     if (!f)
         exit(3);
     std::fseek(f, 0, SEEK_END);
@@ -80,6 +90,7 @@ std::vector<uint8_t> crank_seed() {
     if (sz > 0 && std::fread(bytes.data(), 1, bytes.size(), f) != bytes.size())
         exit(3);
     std::fclose(f);
+    std::remove(path.c_str());
     return bytes;
 }
 
