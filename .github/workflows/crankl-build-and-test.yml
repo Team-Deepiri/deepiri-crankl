@@ -142,3 +142,28 @@ jobs:
 
       - name: Test
         run: ctest --test-dir build-asan --output-on-failure
+
+  gui-build:
+    name: Qt6 GUI build and smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cmake ninja-build build-essential qt6-base-dev
+
+      - name: Configure
+        run: cmake -B build-gui -G Ninja -DCMAKE_BUILD_TYPE=Release -DCRANKL_BUILD_GUI=ON
+
+      - name: Build
+        run: cmake --build build-gui --parallel --target crankl-gui
+
+      - name: Smoke test (offscreen)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ./build-gui/gui/crankl-gui --smoke-test
