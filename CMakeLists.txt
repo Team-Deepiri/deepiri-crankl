@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankl VERSION 0.5.0 LANGUAGES C CXX)
+project(deepiri-crankl VERSION 0.5.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,9 +58,18 @@ set(CRANKL_CORE_SOURCES
 add_library(crankl SHARED ${CRANKL_CORE_SOURCES})
 target_include_directories(crankl
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    INTERFACE $<INSTALL_INTERFACE:include>
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-set_target_properties(crankl PROPERTIES OUTPUT_NAME crankl VERSION 0.5.0 SOVERSION 0)
+set_target_properties(crankl PROPERTIES OUTPUT_NAME crankl VERSION ${PROJECT_VERSION} SOVERSION 0)
 crankl_set_warnings(crankl)
+
+# Export exactly the public C API from the shared object; every implementation
+# symbol (namespace crankl internals) stays local. Supported by GNU/LLVM ELF
+# linkers; other platforms keep default visibility.
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND UNIX AND NOT APPLE)
+    target_link_options(crankl PRIVATE
+        "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/cmake/crankl.map")
+endif()
 
 if(CRANKL_ENABLE_SIMD)
     target_compile_definitions(crankl PRIVATE CRANKL_HAVE_SIMD=1)
@@ -85,6 +94,26 @@ install(TARGETS crankl crankl-cli
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib)
+
+# Downstream integration: find_package(crankl) -> crankl::crankl target.
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_BINARY_DIR}/cmake/cranklConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion)
+configure_package_config_file(
+    cmake/cranklConfig.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/cranklConfig.cmake
+    INSTALL_DESTINATION lib/cmake/crankl)
+install(TARGETS crankl EXPORT cranklTargets)
+install(EXPORT cranklTargets
+    FILE cranklTargets.cmake
+    NAMESPACE crankl::
+    DESTINATION lib/cmake/crankl)
+install(FILES
+    ${CMAKE_BINARY_DIR}/cmake/cranklConfig.cmake
+    ${CMAKE_BINARY_DIR}/cmake/cranklConfigVersion.cmake
+    DESTINATION lib/cmake/crankl)
 install(FILES
     include/crankl/crankl.h
     include/crankl/version.h
@@ -107,6 +136,7 @@ install(FILES
 
 configure_file(crankl.pc.in crankl.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/crankl.pc DESTINATION lib/pkgconfig)
+install(FILES docs/crankl.1 DESTINATION share/man/man1)
 
 if(CRANKL_BUILD_TESTS)
     enable_testing()

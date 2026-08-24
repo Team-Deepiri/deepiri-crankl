@@ -1,6 +1,6 @@
 #include "crankl/crankl.h"
 #include "crankl/version.h"
-#include "internal_headers/api.hpp"
+#include "crankl/crankl.h"
 
 #include <algorithm>
 #include <cmath>
@@ -31,7 +31,10 @@ static std::vector<float> read_f32(const char *path, size_t &count) {
         return {};
     }
     long sz = std::ftell(f);
-    if (sz < 0 || static_cast<size_t>(sz) > crankl::io::CRANKL_MAX_FLOAT_BYTES) {
+    /* Matches the library's ingest payload ceiling: refuse absurd inputs before
+     * allocating. Keep in sync with archive.hpp CRANKL_MAX_FLOAT_BYTES. */
+    constexpr size_t kMaxInputBytes = 256u << 20;
+    if (sz < 0 || static_cast<size_t>(sz) > kMaxInputBytes) {
         std::fclose(f);
         return {};
     }
@@ -51,6 +54,20 @@ static std::vector<float> read_f32(const char *path, size_t &count) {
         return {};
     return data;
 }
+
+/* Reads a named tensor through the public ingest API so the CLI consumes
+ * exactly the surface downstream users have. Returns empty vector on error. */
+static std::vector<float> read_tensor_f32(const char *path, const char *tensor) {
+    float *buf = nullptr;
+    size_t n = 0;
+    std::vector<float> data;
+    if (crankl_safetensors_read_f32(path, tensor, &buf, &n) != CRANKL_OK)
+        return data;
+    data.assign(buf, buf + n);
+    free(buf);
+    return data;
+}
+
 
 static int write_f32(const char *path, const float *data, size_t count) {
     FILE *f = std::fopen(path, "wb");
@@ -197,7 +214,8 @@ static int cmd_pack(int argc, char **argv) {
     size_t count = 0;
 
     if (tensor) {
-        if (crankl::io::read_safetensors_f32(input, tensor, data) != 0)
+        data = read_tensor_f32(input, tensor);
+        if (data.empty())
             return 2;
         count = data.size();
     } else {
@@ -601,18 +619,36 @@ static int cmd_diff(int argc, char **argv) {
     return 0;
 }
 
+/* Flags may appear in any order; positionals are the non-flag arguments. */
+static bool parse_json_flag(int argc, char **argv, int first, char *positionals[], int n_pos) {
+    bool json = false;
+    int found = 0;
+    for (int i = first; i < argc; ++i) {
+        if (std::strcmp(argv[i], "--json") == 0) {
+            json = true;
+        } else if (argv[i][0] != '-' && found < n_pos) {
+            positionals[found++] = argv[i];
+        }
+    }
+    return json;
+}
+
 static int cmd_inspect(int argc, char **argv) {
     if (argc < 3)
         return 1;
-    bool json = false;
-    for (int i = 3; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--json") == 0)
-            json = true;
+    char *pos[1] = {nullptr};
+    const bool json = parse_json_flag(argc, argv, 2, pos, 1);
+    const char *path = pos[0];
+    if (!path || !*path) {
+        std::fprintf(stderr, "inspect: missing archive path\n");
+        return 1;
     }
 
     crankl_cran_t cran{};
-    if (crankl_cran_read(argv[2], &cran) != 0)
+    if (crankl_cran_read(path, &cran) != 0) {
+        std::fprintf(stderr, "inspect: cannot read archive '%s'\n", path);
         return 2;
+    }
 
     crankl_archive_metrics_t metrics{};
     int rc = crankl_cran_compute_metrics(&cran, &metrics);
@@ -625,7 +661,7 @@ static int cmd_inspect(int argc, char **argv) {
     }
 
     if (json) {
-        std::cout << "{\"path\":\"" << argv[2] << "\"," << "\"mmap_size\":" << cran.mmap_size << ","
+        std::cout << "{\"path\":\"" << path << "\"," << "\"mmap_size\":" << cran.mmap_size << ","
                   << "\"gamma\":" << cran.header.gamma << "," << "\"flags\":" << cran.header.flags
                   << "," << "\"has_metadata\":" << bool_text(meta_rc == 0) << ",";
         if (meta_rc == 0) {
@@ -636,9 +672,9 @@ static int cmd_inspect(int argc, char **argv) {
         crankl_sheaf_cohomology(cran.slots, cran.header.n_slots, &h0, &h1);
         std::cout << "\"cohomology\":{\"h0\":" << h0 << ",\"h1\":" << h1 << "},";
         size_t tensor_count = 0;
-        if (crankl_archive_tensor_count(argv[2], &tensor_count) == 0 && tensor_count > 0) {
+        if (crankl_archive_tensor_count(path, &tensor_count) == 0 && tensor_count > 0) {
             std::vector<crankl_archive_tensor_t> tensors(tensor_count);
-            if (crankl_archive_tensor_list(argv[2], tensors.data(), tensors.size()) == 0) {
+            if (crankl_archive_tensor_list(path, tensors.data(), tensors.size()) == 0) {
                 std::cout << "\"tensors\":[";
                 for (size_t t = 0; t < tensors.size(); ++t) {
                     if (t)
@@ -656,7 +692,7 @@ static int cmd_inspect(int argc, char **argv) {
         print_metrics_json(metrics);
         std::cout << "}\n";
     } else {
-        std::cout << "path=" << argv[2] << "\n"
+        std::cout << "path=" << path << "\n"
                   << "mmap_size=" << cran.mmap_size << "\n"
                   << "gamma=" << cran.header.gamma << "\n"
                   << "flags=" << cran.header.flags << "\n"
@@ -670,9 +706,9 @@ static int cmd_inspect(int argc, char **argv) {
         std::cout << "cohomology_h0=" << h0 << "\n"
                   << "cohomology_h1=" << h1 << "\n";
         size_t tensor_count = 0;
-        if (crankl_archive_tensor_count(argv[2], &tensor_count) == 0 && tensor_count > 0) {
+        if (crankl_archive_tensor_count(path, &tensor_count) == 0 && tensor_count > 0) {
             std::vector<crankl_archive_tensor_t> tensors(tensor_count);
-            if (crankl_archive_tensor_list(argv[2], tensors.data(), tensors.size()) == 0) {
+            if (crankl_archive_tensor_list(path, tensors.data(), tensors.size()) == 0) {
                 std::cout << "tensors=" << tensor_count << "\n";
                 for (size_t t = 0; t < tensors.size(); ++t)
                     std::cout << "tensor[" << t << "]=" << tensors[t].name
@@ -691,16 +727,23 @@ static int cmd_inspect(int argc, char **argv) {
 static int cmd_compare(int argc, char **argv) {
     if (argc < 4)
         return 1;
-    bool json = false;
-    for (int i = 4; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--json") == 0)
-            json = true;
+    char *pos[2] = {nullptr, nullptr};
+    const bool json = parse_json_flag(argc, argv, 2, pos, 2);
+    if (!pos[0] || !pos[1]) {
+        std::fprintf(stderr, "compare: expected two archive paths\n");
+        return 1;
     }
 
     crankl_cran_t a{}, b{};
     std::vector<uint64_t> sa, sb;
-    if (load_cran_slots(argv[2], sa, a) != 0 || load_cran_slots(argv[3], sb, b) != 0)
+    if (load_cran_slots(pos[0], sa, a) != 0) {
+        std::fprintf(stderr, "compare: cannot read archive '%s'\n", pos[0]);
         return 2;
+    }
+    if (load_cran_slots(pos[1], sb, b) != 0) {
+        std::fprintf(stderr, "compare: cannot read archive '%s'\n", pos[1]);
+        return 2;
+    }
 
     size_t n = std::min(sa.size(), sb.size());
     size_t changed = crankl_crank_diff_count(sa.data(), sb.data(), n);
@@ -718,7 +761,7 @@ static int cmd_compare(int argc, char **argv) {
     crankl_compute_archive_metrics(sb.data(), sb.size(), &mb);
 
     if (json) {
-        std::cout << "{\"a\":\"" << argv[2] << "\",\"b\":\"" << argv[3] << "\","
+        std::cout << "{\"a\":\"" << pos[0] << "\",\"b\":\"" << pos[1] << "\","
                   << "\"slots_changed\":" << changed << "," << "\"slots_compared\":" << n << ","
                   << "\"hamming\":" << ham << "," << "\"clifford_resonance\":" << clifford << ","
                   << "\"sheaf_resonance\":" << sheaf << "," << "\"sheaf_resonance_h1\":" << h1
@@ -769,7 +812,8 @@ static int cmd_pipeline(int argc, char **argv) {
     std::vector<float> data;
     size_t count = 0;
     if (tensor) {
-        if (crankl::io::read_safetensors_f32(input, tensor, data) != 0)
+        data = read_tensor_f32(input, tensor);
+        if (data.empty())
             return 2;
         count = data.size();
     } else {

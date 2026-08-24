@@ -30,6 +30,12 @@ int crankl_sheaf_h0_dim(const uint64_t *slots, size_t n);
 int crankl_sheaf_h1_dim(const uint64_t *slots, size_t n);
 int crankl_sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out);
 
+/* Same computation with a caller-chosen edge-restriction threshold (the default
+ * path uses 1e-6). Larger tol drops weaker edges (h1 falls toward the
+ * disconnected limit); CRANKL_ERR_INVALID for tol <= 0 or non-finite. */
+int crankl_sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol,
+                                int *h0_out, int *h1_out);
+
 /* Resonance over dim H1 (instead of the beta1 proxy) plus the coboundary term. */
 double crankl_sheaf_resonance_h1(const uint64_t *slots, size_t n, const uint64_t *other,
                                  size_t n_other);
