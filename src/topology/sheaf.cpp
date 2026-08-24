@@ -184,8 +184,7 @@ static int gaussian_rank(const std::vector<SparseRow> &rows, size_t n_cols) {
 
 // Shared pipeline: delta_0 rows from the sheaf complex, then rank.
 // On success fills h0/h1. Returns 0, or -1 on null pointers.
-static int cohomology_pipeline(const uint64_t *slots, size_t n, const SheafComplex &sc, int *h0_out,
-                               int *h1_out) {
+static int cohomology_pipeline(size_t n, const SheafComplex &sc, int *h0_out, int *h1_out) {
     std::vector<SparseRow> rows;
     rows.reserve(sc.m_edges);
     for (size_t e = 0; e < sc.m_edges; ++e) {
@@ -214,7 +213,7 @@ int sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out) 
 
     SheafComplex sc;
     build_sheaf(slots, n, sc);
-    return cohomology_pipeline(slots, n, sc, h0_out, h1_out);
+    return cohomology_pipeline(n, sc, h0_out, h1_out);
 }
 
 int sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *h0_out,
@@ -235,7 +234,7 @@ int sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *
 
     SheafComplex sc;
     build_sheaf(slots, n, sc, edge_tol);
-    return cohomology_pipeline(slots, n, sc, h0_out, h1_out);
+    return cohomology_pipeline(n, sc, h0_out, h1_out);
 }
 
 int sheaf_h0_dim(const uint64_t *slots, size_t n) {
