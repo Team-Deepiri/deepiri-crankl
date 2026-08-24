@@ -1,6 +1,5 @@
 #include "crankl/crankl.h"
 #include "crankl/version.h"
-#include "crankl/crankl.h"
 
 #include <algorithm>
 #include <cmath>
@@ -67,7 +66,6 @@ static std::vector<float> read_tensor_f32(const char *path, const char *tensor) 
     free(buf);
     return data;
 }
-
 
 static int write_f32(const char *path, const float *data, size_t count) {
     FILE *f = std::fopen(path, "wb");

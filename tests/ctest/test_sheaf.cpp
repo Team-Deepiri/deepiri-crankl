@@ -401,12 +401,11 @@ static int check_cohomology_tol(void) {
     int h0_loose, h1_loose;
     if (crankl_sheaf_cohomology_tol(packed, n_slots, 1e-2, &h0_loose, &h1_loose) != CRANKL_OK ||
         h1_loose > h1_def || h0_loose < h0_def) {
-        std::printf("FAIL: loose tol did not weaken graph (%d,%d) vs (%d,%d)\n", h0_loose,
-                    h1_loose, h0_def, h1_def);
+        std::printf("FAIL: loose tol did not weaken graph (%d,%d) vs (%d,%d)\n", h0_loose, h1_loose,
+                    h0_def, h1_def);
         ++fails;
     }
-    const double bad_tols[] = {0.0, -1e-3,
-                               std::numeric_limits<double>::infinity(),
+    const double bad_tols[] = {0.0, -1e-3, std::numeric_limits<double>::infinity(),
                                std::numeric_limits<double>::quiet_NaN()};
     for (const double tol : bad_tols) {
         if (crankl_sheaf_cohomology_tol(packed, n_slots, tol, &h0_same, &h1_same) !=

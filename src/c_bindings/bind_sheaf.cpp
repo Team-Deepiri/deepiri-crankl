@@ -27,8 +27,8 @@ int crankl_sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h
     return crankl::sheaf_cohomology(slots, n, h0_out, h1_out);
 }
 
-int crankl_sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol,
-                                int *h0_out, int *h1_out) {
+int crankl_sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *h0_out,
+                                int *h1_out) {
     const int rc = crankl::sheaf_cohomology_tol(slots, n, edge_tol, h0_out, h1_out);
     if (rc == -2)
         return CRANKL_ERR_INVALID;

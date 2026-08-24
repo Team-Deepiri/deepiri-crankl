@@ -184,8 +184,8 @@ static int gaussian_rank(const std::vector<SparseRow> &rows, size_t n_cols) {
 
 // Shared pipeline: delta_0 rows from the sheaf complex, then rank.
 // On success fills h0/h1. Returns 0, or -1 on null pointers.
-static int cohomology_pipeline(const uint64_t *slots, size_t n, const SheafComplex &sc,
-                               int *h0_out, int *h1_out) {
+static int cohomology_pipeline(const uint64_t *slots, size_t n, const SheafComplex &sc, int *h0_out,
+                               int *h1_out) {
     std::vector<SparseRow> rows;
     rows.reserve(sc.m_edges);
     for (size_t e = 0; e < sc.m_edges; ++e) {

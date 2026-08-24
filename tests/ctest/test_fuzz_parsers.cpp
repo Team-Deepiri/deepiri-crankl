@@ -5,8 +5,8 @@
 // surface under the ASan/UBSan CI job; logic bugs surface as crashes here.
 #include "crankl/crankl.h"
 
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -21,7 +21,9 @@ struct Rng {
         state = state * kRngMul + 1442695040888963407ULL;
         return static_cast<uint32_t>(state >> 33);
     }
-    size_t below(size_t n) { return static_cast<size_t>(next() % n); }
+    size_t below(size_t n) {
+        return static_cast<size_t>(next() % n);
+    }
 };
 
 std::string temp_path(const char *tag) {
@@ -83,9 +85,8 @@ std::vector<uint8_t> crank_seed() {
 
 /* Seed: minimal valid safetensors — header JSON + one F32 tensor. */
 std::vector<uint8_t> safetensors_seed() {
-    const char *json =
-        "{\"weights\":{\"dtype\":\"F32\",\"shape\":[4,16],\"data_offsets\":[0,256]},"
-        "\"__metadata__\":{\"format\":\"crankl-fuzz\"}}";
+    const char *json = "{\"weights\":{\"dtype\":\"F32\",\"shape\":[4,16],\"data_offsets\":[0,256]},"
+                       "\"__metadata__\":{\"format\":\"crankl-fuzz\"}}";
     const uint64_t hdr_len = static_cast<uint64_t>(strlen(json));
     std::vector<uint8_t> bytes;
     bytes.insert(bytes.end(), reinterpret_cast<const uint8_t *>(&hdr_len),
@@ -115,17 +116,17 @@ std::vector<uint8_t> gguf_seed() {
         u64(n);
         b.insert(b.end(), s, s + n);
     };
-    u32(3);         // magic GGUF
-    u32(3);         // version 3
-    u64(0);         // n_tensors placeholder patched below
-    u64(0);         // n_kv = 0
+    u32(3); // magic GGUF
+    u32(3); // version 3
+    u64(0); // n_tensors placeholder patched below
+    u64(0); // n_kv = 0
     // tensor info
     str("t");
-    u32(2);         // n_dims
+    u32(2); // n_dims
     u64(2);
     u64(8);
-    u32(0);         // type F32
-    u64(0);         // offset
+    u32(0); // type F32
+    u64(0); // offset
     // patch n_tensors
     const uint64_t one = 1;
     memcpy(b.data() + 12, &one, 8);
@@ -138,8 +139,8 @@ std::vector<uint8_t> gguf_seed() {
     return b;
 }
 
-int run_family(const char *tag, const std::vector<uint8_t> &seed, int iterations,
-               uint64_t rng_seed, void (*parse)(const std::string &)) {
+int run_family(const char *tag, const std::vector<uint8_t> &seed, int iterations, uint64_t rng_seed,
+               void (*parse)(const std::string &)) {
     Rng rng(rng_seed);
     for (int i = 0; i < iterations; ++i) {
         std::vector<uint8_t> mutated(seed);
