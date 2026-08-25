@@ -77,8 +77,7 @@ int main() {
                     ++failures[t];
                     continue;
                 }
-                if (crankl_holonomy_batch(&cran, x.data(), kDim, kBatch, y.data()) !=
-                        CRANKL_OK ||
+                if (crankl_holonomy_batch(&cran, x.data(), kDim, kBatch, y.data()) != CRANKL_OK ||
                     !same_bytes(y.data(), ref.data(), y.size()))
                     ++failures[t];
                 crankl_cran_close(&cran);
@@ -95,8 +94,7 @@ int main() {
         std::printf("FAIL: %d concurrent mismatches across %d threads\n", total, kThreads);
         return 1;
     }
-    std::printf(
-        "threading ok: %d threads x %zu batches, bitwise-identical to serial\n", kThreads,
-        kBatchesPerThread);
+    std::printf("threading ok: %d threads x %zu batches, bitwise-identical to serial\n", kThreads,
+                kBatchesPerThread);
     return 0;
 }

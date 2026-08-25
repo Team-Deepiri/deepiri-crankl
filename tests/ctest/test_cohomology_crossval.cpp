@@ -6,8 +6,8 @@
 #include "crankl/crankl.h"
 #include "internal_headers/topology.hpp"
 
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <random>
 
 namespace {
@@ -69,7 +69,6 @@ int main() {
                     cases);
         return 1;
     }
-    std::printf("cohomology cross-validation ok: %lld random cases, fast == elimination\n",
-                cases);
+    std::printf("cohomology cross-validation ok: %lld random cases, fast == elimination\n", cases);
     return 0;
 }
