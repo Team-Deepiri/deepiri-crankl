@@ -1,11 +1,13 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 #include <cstring>
 #include <vector>
 
-static int write_f32(const char *path, const std::vector<float> &data) {
-    FILE *f = std::fopen(path, "wb");
+static int write_f32(const std::string &path, const std::vector<float> &data) {
+    FILE *f = std::fopen(path.c_str(), "wb");
     if (!f)
         return 1;
     std::fwrite(data.data(), sizeof(float), data.size(), f);
@@ -18,8 +20,8 @@ int main() {
     for (size_t i = 0; i < data.size(); ++i)
         data[i] = static_cast<float>(i) * 0.05f - 0.5f;
 
-    const char *in = "/tmp/crankl_flow_in.f32";
-    const char *out = "/tmp/crankl_flow_out.crank";
+    std::string in = std::filesystem::temp_directory_path().string() + "/" + "crankl_flow_in.f32";
+    std::string out = std::filesystem::temp_directory_path().string() + "/" + "crankl_flow_out.crank";
     if (write_f32(in, data) != 0)
         return 1;
 
@@ -37,11 +39,11 @@ int main() {
     crankl_cran_metadata_t meta{};
     std::snprintf(meta.model_name, sizeof(meta.model_name), "flow-test");
     std::snprintf(meta.source_hash, sizeof(meta.source_hash), "unit");
-    if (crankl_cran_write_with_metadata(out, &hdr, slots.data(), &meta) != CRANKL_OK)
+    if (crankl_cran_write_with_metadata(out.c_str(), &hdr, slots.data(), &meta) != CRANKL_OK)
         return 3;
 
     crankl_cran_t cran{};
-    if (crankl_cran_read(out, &cran) != CRANKL_OK)
+    if (crankl_cran_read(out.c_str(), &cran) != CRANKL_OK)
         return 4;
     crankl_archive_metrics_t metrics{};
     if (crankl_cran_compute_metrics(&cran, &metrics) != CRANKL_OK)

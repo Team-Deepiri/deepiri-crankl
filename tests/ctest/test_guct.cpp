@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 
 static int expect_near(double a, double b, double eps, const char *msg) {
     if (std::fabs(a - b) > eps) {
@@ -46,11 +48,11 @@ int main() {
     crankl_cran_header_t hdr{};
     hdr.n_slots = 1;
     hdr.gamma = 0.3f;
-    const char *path = "/tmp/crankl_test_holo.crank";
-    if (crankl_cran_write(path, &hdr, &slot, nullptr, nullptr) != 0)
+    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_test_holo.crank";
+    if (crankl_cran_write(path.c_str(), &hdr, &slot, nullptr, nullptr) != 0)
         return 1;
     crankl_cran_t cran{};
-    if (crankl_cran_read(path, &cran) != 0)
+    if (crankl_cran_read(path.c_str(), &cran) != 0)
         return 1;
     float x[8] = {1, 0, 0, 0, 0, 0, 0, 0};
     float y[8] = {0};

@@ -1,6 +1,8 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 #include <cstring>
 #include <vector>
 
@@ -31,12 +33,12 @@ int main() {
     hdr.depth_max = 2;
     hdr.gamma = 1.0f;
 
-    const char *path = "/tmp/crankl_peel_stack_test.crank";
-    if (crankl_cran_write(path, &hdr, layer1.data(), stacks.data(), nullptr) != 0)
+    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_peel_stack_test.crank";
+    if (crankl_cran_write(path.c_str(), &hdr, layer1.data(), stacks.data(), nullptr) != 0)
         return 1;
 
     crankl_cran_t cran{};
-    if (crankl_cran_read(path, &cran) != 0)
+    if (crankl_cran_read(path.c_str(), &cran) != 0)
         return 2;
 
     std::vector<uint64_t> peeled(n_slots);

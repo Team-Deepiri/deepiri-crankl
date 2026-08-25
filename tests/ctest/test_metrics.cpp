@@ -1,6 +1,8 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 #include <vector>
 
 int main() {
@@ -27,11 +29,11 @@ int main() {
     hdr.n_slots = 2;
     hdr.depth_max = 5;
     hdr.gamma = 1.0f;
-    const char *path = "/tmp/crankl_metrics.crank";
-    if (crankl_cran_write(path, &hdr, slots, nullptr, nullptr) != CRANKL_OK)
+    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_metrics.crank";
+    if (crankl_cran_write(path.c_str(), &hdr, slots, nullptr, nullptr) != CRANKL_OK)
         return 4;
     crankl_cran_t cran{};
-    if (crankl_cran_read(path, &cran) != CRANKL_OK)
+    if (crankl_cran_read(path.c_str(), &cran) != CRANKL_OK)
         return 5;
     crankl_archive_metrics_t cm{};
     if (crankl_cran_compute_metrics(&cran, &cm) != CRANKL_OK)

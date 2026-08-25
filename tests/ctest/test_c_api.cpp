@@ -1,6 +1,8 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 #include <cstring>
 
 int main() {
@@ -29,7 +31,7 @@ int main() {
         ++fails;
     }
 
-    const char *path = "/tmp/crankl_capi_meta.crank";
+    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_capi_meta.crank";
     crankl_cran_header_t hdr{};
     hdr.n_slots = 2;
     hdr.gamma = 1.0f;
@@ -38,13 +40,13 @@ int main() {
     std::snprintf(meta.model_name, sizeof(meta.model_name), "test-adapter");
     std::snprintf(meta.source_hash, sizeof(meta.source_hash), "deadbeef");
 
-    if (crankl_cran_write_with_metadata(path, &hdr, slots, &meta) != CRANKL_OK) {
+    if (crankl_cran_write_with_metadata(path.c_str(), &hdr, slots, &meta) != CRANKL_OK) {
         std::fprintf(stderr, "FAIL: write_with_metadata\n");
         return 1;
     }
 
     crankl_cran_t cran{};
-    if (crankl_cran_read(path, &cran) != CRANKL_OK) {
+    if (crankl_cran_read(path.c_str(), &cran) != CRANKL_OK) {
         std::fprintf(stderr, "FAIL: read\n");
         return 2;
     }

@@ -1,6 +1,8 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 #include <cstring>
 #include <vector>
 
@@ -11,7 +13,7 @@
 static const uint64_t FILL_A = 0xAAAAAAAAAAAAAAAAULL;
 static const uint64_t FILL_B = 0xBBBBBBBBBBBBBBBBULL;
 
-static int write_filled(const char *path, uint64_t fill, uint64_t n_slots, const char *model) {
+static int write_filled(const std::string &path, uint64_t fill, uint64_t n_slots, const char *model) {
     std::vector<uint64_t> slots(static_cast<size_t>(n_slots), fill);
     crankl_cran_header_t hdr{};
     hdr.n_slots = n_slots;
@@ -20,9 +22,9 @@ static int write_filled(const char *path, uint64_t fill, uint64_t n_slots, const
     if (model) {
         crankl_cran_metadata_t meta{};
         std::snprintf(meta.model_name, sizeof(meta.model_name), "%s", model);
-        return crankl_cran_write_with_metadata(path, &hdr, slots.data(), &meta);
+        return crankl_cran_write_with_metadata(path.c_str(), &hdr, slots.data(), &meta);
     }
-    return crankl_cran_write(path, &hdr, slots.data(), nullptr, nullptr);
+    return crankl_cran_write(path.c_str(), &hdr, slots.data(), nullptr, nullptr);
 }
 
 // Slots start at the 124-byte packed header, so they are only 4-byte aligned. memcpy alone
@@ -38,8 +40,8 @@ static uint64_t first_slot(const crankl_cran_t *cran) {
 }
 
 int main() {
-    const char *path_a = "/tmp/crankl_multi_a.crank";
-    const char *path_b = "/tmp/crankl_multi_b.crank";
+    std::string path_a = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_a.crank";
+    std::string path_b = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_b.crank";
 
     if (write_filled(path_a, FILL_A, 4, nullptr) != CRANKL_OK)
         return 1;
@@ -48,9 +50,9 @@ int main() {
 
     crankl_cran_t a{};
     crankl_cran_t b{};
-    if (crankl_cran_read(path_a, &a) != CRANKL_OK)
+    if (crankl_cran_read(path_a.c_str(), &a) != CRANKL_OK)
         return 3;
-    if (crankl_cran_read(path_b, &b) != CRANKL_OK)
+    if (crankl_cran_read(path_b.c_str(), &b) != CRANKL_OK)
         return 4;
 
     // Both handles must remain usable while the other is open.
@@ -97,9 +99,9 @@ int main() {
     // Same pair again, closed in the opposite order.
     crankl_cran_t a2{};
     crankl_cran_t b2{};
-    if (crankl_cran_read(path_a, &a2) != CRANKL_OK)
+    if (crankl_cran_read(path_a.c_str(), &a2) != CRANKL_OK)
         return 13;
-    if (crankl_cran_read(path_b, &b2) != CRANKL_OK)
+    if (crankl_cran_read(path_b.c_str(), &b2) != CRANKL_OK)
         return 14;
     crankl_cran_close(&a2);
     if (first_slot(&b2) != FILL_B) {
@@ -117,11 +119,11 @@ int main() {
     // handle still reads the right archive after each swap. The size-changing loop below
     // is what fails on a wrong release, because that one corrupts rather than leaks.
     crankl_cran_t reload{};
-    if (crankl_cran_read(path_a, &reload) != CRANKL_OK)
+    if (crankl_cran_read(path_a.c_str(), &reload) != CRANKL_OK)
         return 16;
     for (int i = 0; i < 64; ++i) {
-        const char *next = (i % 2 == 0) ? path_b : path_a;
-        if (crankl_cran_read(next, &reload) != CRANKL_OK) {
+        const std::string &next = (i % 2 == 0) ? path_b : path_a;
+        if (crankl_cran_read(next.c_str(), &reload) != CRANKL_OK) {
             std::fprintf(stderr, "FAIL: reload %d rejected\n", i);
             return 17;
         }
@@ -144,19 +146,19 @@ int main() {
     // is mapped next -- and releases only part of it when shrinking. The archives above sit
     // within one page of each other, so they cannot expose either failure; these differ by
     // hundreds of KB.
-    const char *path_big = "/tmp/crankl_multi_big.crank";
-    const char *path_tiny = "/tmp/crankl_multi_tiny.crank";
+    std::string path_big = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_big.crank";
+    std::string path_tiny = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_tiny.crank";
     if (write_filled(path_big, FILL_A, 60000, nullptr) != CRANKL_OK)
         return 20;
     if (write_filled(path_tiny, FILL_B, 8, nullptr) != CRANKL_OK)
         return 21;
 
     crankl_cran_t sized{};
-    if (crankl_cran_read(path_big, &sized) != CRANKL_OK)
+    if (crankl_cran_read(path_big.c_str(), &sized) != CRANKL_OK)
         return 22;
     for (int i = 0; i < 256; ++i) {
         const int want_big = (i % 2 == 1);
-        if (crankl_cran_read(want_big ? path_big : path_tiny, &sized) != CRANKL_OK) {
+        if (crankl_cran_read((want_big ? path_big : path_tiny).c_str(), &sized) != CRANKL_OK) {
             std::fprintf(stderr, "FAIL: size-changing reload %d rejected\n", i);
             return 23;
         }
@@ -170,8 +172,8 @@ int main() {
         }
     }
     crankl_cran_close(&sized);
-    std::remove(path_big);
-    std::remove(path_tiny);
+    std::remove(path_big.c_str());
+    std::remove(path_tiny.c_str());
 
     std::printf("test_cran_multi_open ok a=%016llx b=%016llx\n",
                 static_cast<unsigned long long>(FILL_A), static_cast<unsigned long long>(FILL_B));
