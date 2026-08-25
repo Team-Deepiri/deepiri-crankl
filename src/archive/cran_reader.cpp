@@ -21,6 +21,9 @@
 #include <unistd.h>
 #endif
 
+namespace crankl {
+namespace io {
+
 // ---------------------------------------------------------------------------
 // Portability layer: the reader maps the archive read-only and hands the base
 // pointer + length to the public handle. POSIX uses open/fstat/mmap; Windows
@@ -175,9 +178,6 @@ class MappedRegion {
 } // namespace
 
 #endif // _WIN32
-
-namespace crankl {
-namespace io {
 
 // LEGACY v1/v2 LAYOUT VALIDATION
 // ------------------------------
