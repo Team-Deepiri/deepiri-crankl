@@ -16,6 +16,12 @@ if(CRANKL_BUILD_FUZZERS AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 
+# Put all build artifacts in the build root so that tests can find the shared
+# library at runtime without PATH tricks (fixes 0xc0000135 on Windows/MinGW).
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
 include(cmake/warnings.cmake)
 
 set(CRANKL_C_BINDINGS_SOURCES
