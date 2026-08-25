@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankl VERSION 0.5.2 LANGUAGES C CXX)
+project(deepiri-crankl VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -151,3 +151,18 @@ endif()
 if(CRANKL_BUILD_GUI)
     add_subdirectory(gui)
 endif()
+
+# -- packaging (CPack) --------------------------------------------------------
+set(CPACK_PACKAGE_NAME "crankl")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cl(3) compression engine for fast weight inference")
+set(CPACK_PACKAGE_CONTACT "Team Deepiri")
+set(CPACK_PACKAGE_VENDOR "Team Deepiri")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/Team-Deepiri/deepiri-crankl")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_EXECUTABLES "crankl;crankl CLI")
+set(CPACK_GENERATOR "TGZ;ZIP;DEB")
+set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6")
+include(CPack)
+

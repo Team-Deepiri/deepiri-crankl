@@ -3,20 +3,101 @@
 #include "xxhash.h"
 
 #include <cstring>
+#include <utility>
+
+#if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <utility>
+#endif
 
-namespace crankl {
-namespace io {
+// ---------------------------------------------------------------------------
+// Portability layer: the reader maps the archive read-only and hands the base
+// pointer + length to the public handle. POSIX uses open/fstat/mmap; Windows
+// uses CreateFileW/CreateFileMappingW/MapViewOfFile. Both paths yield the same
+// contract: base is valid until close_cran, which releases it by pointer
+// (munmap needs base+size, UnmapViewOfFile needs only base).
+// ---------------------------------------------------------------------------
+
+#if defined(_WIN32)
 
 namespace {
 
-// Move-only owners so that every early return in read_cran releases what it acquired
-// without a hand-written unwind. Both are local to this translation unit and appear in
-// no installed header, so they add nothing to the public ABI.
+struct MappedFile {
+    void *base = nullptr;
+    size_t size = 0;
+};
+
+// Returns 0 and fills mf on success; mirrors the POSIX error codes below.
+int map_file_read(const char *path, MappedFile &mf) {
+    if (!path)
+        return -1;
+    const int wlen = MultiByteToWideChar(CP_UTF8, 0, path, -1, nullptr, 0);
+    if (wlen <= 0)
+        return -2;
+    std::wstring wpath(static_cast<size_t>(wlen), L'\0');
+    if (MultiByteToWideChar(CP_UTF8, 0, path, -1, &wpath[0], wlen) != wlen)
+        return -2;
+
+    HANDLE file = CreateFileW(wpath.c_str(), GENERIC_READ,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file == INVALID_HANDLE_VALUE)
+        return -2;
+    LARGE_INTEGER li{};
+    if (!GetFileSizeEx(file, &li) || li.QuadPart < 0) {
+        CloseHandle(file);
+        return -3;
+    }
+    if (static_cast<uint64_t>(li.QuadPart) > CRANKL_MAX_FILE_BYTES) {
+        CloseHandle(file);
+        return -14;
+    }
+    if (li.QuadPart == 0) {
+        CloseHandle(file);
+        return -4;
+    }
+    // Size-zero sections are rejected above; 0/0 maps the entire current file.
+    HANDLE section = CreateFileMappingW(file, nullptr, PAGE_READONLY, 0, 0, nullptr);
+    CloseHandle(file);
+    if (!section)
+        return -4;
+    void *base = MapViewOfFile(section, FILE_MAP_READ, 0, 0, 0);
+    // The view holds its own reference to the section; it stays valid until
+    // UnmapViewOfFile even after this handle is closed.
+    CloseHandle(section);
+    if (!base)
+        return -4;
+    mf.base = base;
+    mf.size = static_cast<size_t>(li.QuadPart);
+    return 0;
+}
+
+void unmap_file(void *base, size_t /*size*/) {
+    if (base)
+        UnmapViewOfFile(base);
+}
+
+} // namespace
+
+#else // POSIX
+
+namespace {
+
+void unmap_file(void *base, size_t size) {
+    if (base)
+        munmap(base, size);
+}
+
 class UniqueFd {
   public:
     UniqueFd() = default;
@@ -92,6 +173,11 @@ class MappedRegion {
 
 } // namespace
 
+#endif // _WIN32
+
+namespace crankl {
+namespace io {
+
 // LEGACY v1/v2 LAYOUT VALIDATION
 // ------------------------------
 // Bytes after the current slots are currently ambiguous:
@@ -155,6 +241,14 @@ static int validate_cran_layout(const CranHeaderDisk *hd, size_t payload_len,
 int read_cran(const char *path, ::crankl_cran_t *out) {
     if (!path || !out)
         return -1;
+#if defined(_WIN32)
+    MappedFile mf{};
+    const int map_rc = map_file_read(path, mf);
+    if (map_rc != 0)
+        return map_rc;
+    void *base = mf.base;
+    size_t sz = mf.size;
+#else
     UniqueFd fd(open(path, O_RDONLY));
     if (!fd.valid())
         return -2;
@@ -172,6 +266,7 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     // longer needed once the mapping exists. Releasing it here is what allows a handle to
     // own its mapping using only the mmap_base/mmap_size fields it already publishes.
     fd.reset();
+#endif
     if (sz < sizeof(CranHeaderDisk))
         return -5;
     auto *hd = static_cast<CranHeaderDisk *>(base);
@@ -218,8 +313,12 @@ int read_cran(const char *path, ::crankl_cran_t *out) {
     // Only reached on a handle that already went through read_cran, since the contract
     // requires a zero-initialised or closed handle.
     if (old_base)
-        munmap(old_base, old_size);
+        unmap_file(old_base, old_size);
+#ifndef _WIN32
     out->mmap_base = map.release();
+#else
+    out->mmap_base = base;
+#endif
     return 0;
 }
 
@@ -227,7 +326,7 @@ void close_cran(::crankl_cran_t *cran) {
     if (!cran)
         return;
     if (cran->mmap_base)
-        munmap(cran->mmap_base, cran->mmap_size);
+        unmap_file(cran->mmap_base, cran->mmap_size);
     // Clearing the view makes a second close a no-op and turns any later use of a closed
     // handle into a null dereference instead of a read through a dangling pointer.
     cran->mmap_base = nullptr;

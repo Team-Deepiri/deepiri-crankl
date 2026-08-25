@@ -1,10 +1,11 @@
 #include "crankl/crankl.h"
 #include "crankl/ingest.h"
 
-#include <unistd.h>
 
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
+#include <thread>
 #include <cstring>
 #include <fstream>
 #include <string>
@@ -14,7 +15,7 @@ namespace {
 
 std::string make_temp_path(const char *suffix) {
     static int counter = 0;
-    return "/tmp/crankl_test_gguf_" + std::to_string(getpid()) + "_" + std::to_string(counter++) +
+    return std::filesystem::temp_directory_path().string() + "/crankl_test_gguf_" + std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) + "_" + std::to_string(counter++) +
            ".gguf" + suffix;
 }
 
