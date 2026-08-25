@@ -97,9 +97,15 @@ sections functor yields Betti numbers:
 Operationally, h1 ≈ 0 means the archive's internal constraints are consistent:
 the finetune stayed inside the span of its initialization. New cycles after a
 training run (h1 spike vs baseline) flag distribution drift or corruption
-before any downstream consumer touches the artifact. Because both numbers come
-from counting and ranking operations over slots, cost is O(n) with tiny
-constants (µs for LoRA-scale inputs), making it practical as a CI gate.
+before any downstream consumer touches the artifact. Because both numbers
+reduce to counting connected components of the window-2 restriction graph
+(rank theorem: `rank(delta_0) = n − c`), cost is O(n·w) with tiny constants —
+1M slots in ~0.34 s on one core (§4.7), making it practical as a CI gate.
+(Honest history: releases before 0.5.2 computed the rank by explicit sparse
+Gaussian elimination, which measured quadratic and would not have scaled past
+~10⁵ slots; the closed-form path replaced it after scale stress testing
+exposed the gap, with the elimination path retained as a cross-validation
+reference.)
 `crankl_sheaf_resonance_h1` extends this to pairs of archives, weighting
 slot agreement by cycle structure — a sharper similarity signal than plain
 Hamming or scalar resonance, which we expose alongside both for comparison.
@@ -242,6 +248,27 @@ shrinks with the signal). A Frobenius monitor would never fire; a CI gate on
 The adaptive-threshold API (`crankl_sheaf_cohomology_tol`) makes the band
 tunable: sweeping tol trades edge sensitivity against baseline variance
 (§9 notes the calibration study against real training runs as future work).
+
+### 4.7 Cohomology scaling at archive scale
+
+The drift gate above runs at LoRA scale (4096 slots). Production claims need
+the cost curve at real-archive sizes, measured on linux-x86_64 / Release
+(`crankl inspect`, which computes h0/h1 over every slot):
+
+| slots | pre-0.5.2 (elimination) | 0.5.2+ (closed form) |
+|------:|------------------------:|---------------------:|
+|   4k  | 0.29 s                  | <1 ms               |
+|   8k  | 1.92 s                  | ~4 ms               |
+|  16k  | 21.5 s                  | ~8 ms               |
+|  32k  | 113 s                   | 16 ms               |
+|  262k | (days, extrapolated)    | 85 ms               |
+|  1.0M | (infeasible)            | 337 ms              |
+
+The elimination measurements exposed the quadratic reality of the naive rank
+computation; the closed-form path is linear at ~3 µs/slot and is what ships.
+Both paths agree exactly on 280 randomized archives spanning dense, sparse,
+and low-entropy regimes (`test_cohomology_crossval`), and the golden parity
+battery pins the closed-form results to the hand-computed dims.
 
 ## 5. Multi-tensor archives and provenance
 

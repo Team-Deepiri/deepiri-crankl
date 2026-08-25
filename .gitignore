@@ -1,5 +1,7 @@
 build/
 build-gui/
+build-asan/
+build-fuzz/
 .cache/
 *.o
 *.a

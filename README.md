@@ -47,21 +47,51 @@ Install once, pipe from anything. No Python wheel required — shell out from He
 
 ## Quick start
 
+One command handles dependencies, build, and tests (Linux: apt/dnf/pacman,
+macOS: brew):
+
+```bash
+./setup.sh                  # core library + CLI + full test battery
+./setup.sh --with-gui       # + Qt6 desktop GUI
+./setup.sh --install ~/bin  # also install into a prefix
+```
+
+Manual equivalent:
+
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 python3 scripts/export_golden.py   # generate parity headers
 ctest --test-dir build --output-on-failure
-bash scripts/verify_parity.sh    # golden + 11 tests + CLI smoke
+bash scripts/verify_parity.sh    # golden + tests + CLI smoke
 bash scripts/integration_test.sh # pack → turn → peel → diff → holonomy
+bash scripts/stress_test.sh      # 256 MiB production-scale round trip
 ```
+
+## Platform support
+
+| Platform    | Status                                        |
+|-------------|-----------------------------------------------|
+| linux-x86_64| Full: AVX2 SIMD, CI matrix, release artifacts |
+| macOS arm64 | Best effort: scalar fallback, CI build+test   |
+| Windows     | Not supported yet (reader uses POSIX mmap)    |
+
+The library keeps no shared mutable state; independent handles may be used
+concurrently from multiple threads (verified by `test_threading`). Use of the
+*same* handle concurrently is not synchronized.
 
 ## What is verified
 
 - **Cl(3) algebra** — `e₁²=1`, `e₁e₂=e₁₂`, `e₁₂²=-1` (`test_clifford_parity`)
 - **Notebook parity** — `export_golden.py` → `clifford_cases.hpp` checked in CI
 - **Pack roundtrip** — 64-float matrix → crank → reconstruct (bounded error)
+- **Cohomology** — closed-form path == rank-elimination reference on 280
+  randomized archives; golden dims pinned (`test_cohomology_crossval`)
+- **Thread safety** — 8 threads × independent handles, bitwise-equal results
 - **Integration** — cran I/O, turn, holonomy, diff end-to-end
+- **Scale** — 256 MiB pack → inspect (1M slots in ~0.34 s) → holonomy
+- **Parser robustness** — deterministic mutation suite plus libFuzzer targets
+  (~1.9 M coverage-guided executions across the three parsers, zero crashes)
 
 ## Commands
 

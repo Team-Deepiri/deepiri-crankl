@@ -23,6 +23,16 @@ add_executable(test_pack_anneal ctest/test_pack_anneal.cpp)
 add_executable(test_ingest_multi ctest/test_ingest_multi.cpp)
 add_executable(test_gguf ctest/test_gguf.cpp)
 add_executable(test_fuzz_parsers ctest/test_fuzz_parsers.cpp)
+add_executable(test_threading ctest/test_threading.cpp)
+add_executable(test_cohomology_crossval ctest/test_cohomology_crossval.cpp)
+target_include_directories(test_cohomology_crossval PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_sources(test_cohomology_crossval PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/topology/sheaf.cpp
+    ${CMAKE_SOURCE_DIR}/src/algebra/clifford.cpp
+    ${CMAKE_SOURCE_DIR}/src/algebra/crank_word.cpp
+    ${CMAKE_SOURCE_DIR}/src/algebra/trit.cpp)
+find_package(Threads REQUIRED)
+target_link_libraries(test_threading PRIVATE Threads::Threads)
 
 set(CRANKL_TEST_INCLUDE ${CMAKE_SOURCE_DIR}/tests/golden)
 
@@ -48,7 +58,7 @@ foreach(t test_trit test_clifford test_cran test_pack test_guct test_diff test_s
         test_clifford_parity test_pack_roundtrip test_integration test_c_api test_safetensors
         test_turn_target test_metrics test_flow_pipeline test_pack_decrank_roundtrip test_finetune
         test_holonomy_blocked test_peel_stack test_cran_multi_open test_pack_anneal
-        test_ingest_multi test_gguf test_fuzz_parsers)
+        test_ingest_multi test_gguf test_fuzz_parsers test_threading test_cohomology_crossval)
     target_link_libraries(${t} PRIVATE crankl)
     target_include_directories(${t} PRIVATE ${CRANKL_TEST_INCLUDE})
     crankl_set_warnings(${t})
@@ -69,3 +79,11 @@ add_custom_target(golden_headers ALL
     COMMAND ${CMAKE_COMMAND} -E echo "Ensure scripts/export_golden.py has been run"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+if(CRANKL_BUILD_FUZZERS)
+    foreach(tgt IN ITEMS cran safetensors gguf)
+        add_executable(fuzz_${tgt} fuzz/fuzz_${tgt}.cpp)
+        target_compile_options(fuzz_${tgt} PRIVATE -fsanitize=fuzzer -g -O1)
+        target_link_libraries(fuzz_${tgt} PRIVATE crankl -fsanitize=fuzzer)
+    endforeach()
+endif()

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankl VERSION 0.5.1 LANGUAGES C CXX)
+project(deepiri-crankl VERSION 0.5.2 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,6 +10,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(CRANKL_BUILD_TESTS "Build tests" ON)
 option(CRANKL_ENABLE_SIMD "Enable AVX2 dispatch" ON)
 option(CRANKL_BUILD_GUI "Build the Qt desktop GUI" OFF)
+option(CRANKL_BUILD_FUZZERS "Build libFuzzer coverage-guided targets (clang only)" OFF)
+if(CRANKL_BUILD_FUZZERS AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(FATAL_ERROR "CRANKL_BUILD_FUZZERS requires clang (-fsanitize=fuzzer)")
+endif()
+
 
 include(cmake/warnings.cmake)
 

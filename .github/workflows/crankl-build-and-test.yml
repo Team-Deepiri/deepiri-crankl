@@ -117,6 +117,27 @@ jobs:
       - name: E2E integration
         run: bash scripts/integration_test.sh
 
+  build-macos:
+    name: macOS build and test
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install dependencies
+        run: brew install cmake ninja python3
+
+      - name: Configure (no AVX2 on arm64)
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCRANKL_ENABLE_SIMD=OFF
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
   sanitizer:
     name: ASan + UBSan
     runs-on: ubuntu-latest
