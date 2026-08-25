@@ -159,6 +159,11 @@ static bool has_extension(const char *path, const char *ext) {
     return len > elen && std::strcmp(path + len - elen, ext) == 0;
 }
 
+/* Both spellings are accepted everywhere an output path is taken. */
+static bool accepts_output_flag(const char *arg) {
+    return std::strcmp(arg, "-o") == 0 || std::strcmp(arg, "--output") == 0;
+}
+
 static int cmd_pack(int argc, char **argv) {
     const char *input = nullptr, *output = nullptr, *tensor = nullptr, *manifest = nullptr;
     size_t n_slots = 8;
@@ -167,7 +172,7 @@ static int cmd_pack(int argc, char **argv) {
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
         else if (std::strcmp(argv[i], "--tensor") == 0 && i + 1 < argc)
             tensor = argv[++i];
@@ -244,7 +249,7 @@ static int cmd_unpack(int argc, char **argv) {
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
         else if (std::strcmp(argv[i], "--unpack-mode") == 0 && i + 1 < argc) {
             const char *m = argv[++i];
@@ -302,7 +307,7 @@ static int cmd_turn(int argc, char **argv) {
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
         else if (std::strcmp(argv[i], "--target") == 0 && i + 1 < argc)
             target_path = argv[++i];
@@ -368,7 +373,7 @@ static int cmd_finetune(int argc, char **argv) {
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
         else if (std::strcmp(argv[i], "--target") == 0 && i + 1 < argc)
             target_path = argv[++i];
@@ -479,7 +484,7 @@ static int cmd_peel(int argc, char **argv) {
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
         else if (std::strcmp(argv[i], "--layers") == 0 && i + 1 < argc)
             layers = static_cast<uint32_t>(std::atoi(argv[++i]));
@@ -509,7 +514,7 @@ static int cmd_bind(int argc, char **argv) {
         return 1;
     const char *out = nullptr;
     for (int i = 4; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        if (accepts_output_flag(argv[i]) && i + 1 < argc)
             out = argv[++i];
     }
     if (!out)
@@ -540,7 +545,7 @@ static int cmd_holonomy(int argc, char **argv) {
             vec = argv[++i];
         else if (std::strcmp(argv[i], "--batch") == 0 && i + 1 < argc)
             batch = static_cast<size_t>(std::atoi(argv[++i]));
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
     }
     if (!input || !vec || !output || batch == 0)
@@ -789,7 +794,7 @@ static int cmd_pipeline(int argc, char **argv) {
     for (int i = 2; i < argc; ++i) {
         if (std::strcmp(argv[i], "--input") == 0 && i + 1 < argc)
             input = argv[++i];
-        else if (std::strcmp(argv[i], "-o") == 0 && i + 1 < argc)
+        else if (accepts_output_flag(argv[i]) && i + 1 < argc)
             output = argv[++i];
         else if (std::strcmp(argv[i], "--target") == 0 && i + 1 < argc)
             target_path = argv[++i];

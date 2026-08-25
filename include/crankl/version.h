@@ -4,6 +4,6 @@
 #define CRANKL_VERSION_MAJOR 0
 #define CRANKL_VERSION_MINOR 5
 #define CRANKL_VERSION_PATCH 1
-#define CRANKL_VERSION_STRING "0.5.1-alpha"
+#define CRANKL_VERSION_STRING "0.5.2-alpha"
 
 #endif

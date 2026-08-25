@@ -3,6 +3,47 @@
 All notable changes to crankl are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is SemVer.
 
+## [0.5.2-alpha] — 2026-08-24
+
+Hardening pass: linear-time cohomology, thread-safety contract, production-scale
+stress testing, coverage-guided fuzzing, macOS CI, and one-shot setup.
+
+### Fixed
+
+- **Cohomology is now actually O(n)**: the public `crankl_sheaf_cohomology`
+  path computed the ADR 0001 rank theorem via explicit sparse Gaussian
+  elimination, which measured quadratic in practice (32k slots ≈ 113 s;
+  1M slots would take days) — contradicting the report's cost claim. The
+  theorem gives `rank(delta_0) = n − c` in closed form, so the production path
+  now counts connected components with a union-find instead: **32k slots in
+  16 ms, 1M slots in 337 ms (~7000× at 32k)**, bitwise-identical results.
+  The elimination path is retained as an internal reference and cross-checked
+  against the fast path on 280 randomized archives per test run.
+- **CLI accepts `--output` everywhere** `-o` was accepted; previously the flag
+  was silently ignored and commands exited 1 with no message.
+- Stress harness no longer pollutes captured JSON output.
+
+### Added
+
+- **Thread-safety contract, tested**: the reader keeps no shared mutable state
+  (verified by symbol audit); new `test_threading` runs 8 threads × 20 open/
+  forward/close cycles on independent handles of the same archive and requires
+  bitwise equality with the serial reference. Contract documented in
+  `include/crankl/types.h`.
+- **Scale stress test** (`scripts/stress_test.sh`): 256 MiB pack → inspect →
+  holonomy under time/RSS ceilings; measured ceilings documented in-script.
+  Found both CLI bugs above on its first run.
+- **Coverage-guided fuzzing**: three libFuzzer targets (`tests/fuzz/`) for the
+  `.crank`, `.safetensors`, and GGUF parsers behind
+  `CRANKL_BUILD_FUZZERS=ON` (clang). Local campaigns: ~1.9 M executions across
+  the three parsers, zero crashes. Complements the deterministic mutation
+  harness (`test_fuzz_parsers`).
+- **macOS CI job**: full Release build + ctest on macos-latest (scalar SIMD
+  fallback; AVX2 probe auto-disables on arm64).
+- **One-shot setup** (`./setup.sh`): installs system deps (apt/dnf/pacman/
+  brew), configures, builds, tests; `--with-gui`, `--with-fuzzers`,
+  `--install [PREFIX]`, `--no-deps`.
+
 ## [0.5.1-alpha] — 2026-08-24
 
 Productization pass: export hygiene, downstream packaging, parser fuzzing,

@@ -182,9 +182,21 @@ static int gaussian_rank(const std::vector<SparseRow> &rows, size_t n_cols) {
     return rank;
 }
 
-// Shared pipeline: delta_0 rows from the sheaf complex, then rank.
-// On success fills h0/h1. Returns 0, or -1 on null pointers.
-static int cohomology_pipeline(size_t n, const SheafComplex &sc, int *h0_out, int *h1_out) {
+int sheaf_cohomology_reference(const uint64_t *slots, size_t n, int *h0_out, int *h1_out) {
+    if (!slots || !h0_out || !h1_out)
+        return -1;
+    *h0_out = 0;
+    *h1_out = 0;
+    if (n == 0)
+        return 0;
+    if (n == 1) {
+        *h0_out = 1;
+        *h1_out = 0;
+        return 0;
+    }
+    SheafComplex sc;
+    build_sheaf(slots, n, sc);
+    // delta_0 rows from the sheaf complex, then sparse Gaussian elimination.
     std::vector<SparseRow> rows;
     rows.reserve(sc.m_edges);
     for (size_t e = 0; e < sc.m_edges; ++e) {
@@ -195,6 +207,37 @@ static int cohomology_pipeline(size_t n, const SheafComplex &sc, int *h0_out, in
     const int rank = gaussian_rank(rows, 8 * n);
     *h0_out = static_cast<int>(8 * n - static_cast<size_t>(rank));
     *h1_out = static_cast<int>(sc.m_edges - static_cast<size_t>(rank));
+    return 0;
+}
+
+// Production path: the ADR 0001 rank theorem gives rank(delta_0) = n - c with
+// c = connected components of the restriction graph, so h0 = 7n + c and
+// h1 = m - n + c follow from counting alone: O(n * kSheafWindow) restriction
+// maps + a union-find. The elimination reference above cross-checks this in
+// tests; it is quadratic in practice and unusable at archive scale.
+static int cohomology_fast(size_t n, const SheafComplex &sc, int *h0_out, int *h1_out) {
+    std::vector<int> parent(n);
+    for (size_t i = 0; i < n; ++i)
+        parent[i] = static_cast<int>(i);
+    auto find = [&parent](int x) {
+        while (parent[x] != x) {
+            parent[x] = parent[parent[x]];
+            x = parent[x];
+        }
+        return x;
+    };
+    for (size_t e = 0; e < sc.m_edges; ++e) {
+        const int ru = find(static_cast<int>(sc.edge_u[e]));
+        const int rv = find(static_cast<int>(sc.edge_v[e]));
+        if (ru != rv)
+            parent[ru] = rv;
+    }
+    int components = 0;
+    for (size_t i = 0; i < n; ++i)
+        components += (find(static_cast<int>(i)) == static_cast<int>(i));
+    const long long m = static_cast<long long>(sc.m_edges);
+    *h0_out = static_cast<int>(7LL * static_cast<long long>(n) + components);
+    *h1_out = static_cast<int>(m - static_cast<long long>(n) + components);
     return 0;
 }
 
@@ -213,7 +256,7 @@ int sheaf_cohomology(const uint64_t *slots, size_t n, int *h0_out, int *h1_out) 
 
     SheafComplex sc;
     build_sheaf(slots, n, sc);
-    return cohomology_pipeline(n, sc, h0_out, h1_out);
+    return cohomology_fast(n, sc, h0_out, h1_out);
 }
 
 int sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *h0_out,
@@ -234,7 +277,7 @@ int sheaf_cohomology_tol(const uint64_t *slots, size_t n, double edge_tol, int *
 
     SheafComplex sc;
     build_sheaf(slots, n, sc, edge_tol);
-    return cohomology_pipeline(n, sc, h0_out, h1_out);
+    return cohomology_fast(n, sc, h0_out, h1_out);
 }
 
 int sheaf_h0_dim(const uint64_t *slots, size_t n) {
