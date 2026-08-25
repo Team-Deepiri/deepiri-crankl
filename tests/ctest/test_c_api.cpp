@@ -1,9 +1,9 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <thread>
-#include <cstring>
 
 int main() {
     int fails = 0;
@@ -31,7 +31,8 @@ int main() {
         ++fails;
     }
 
-    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_capi_meta.crank";
+    std::string path =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_capi_meta.crank";
     crankl_cran_header_t hdr{};
     hdr.n_slots = 2;
     hdr.gamma = 1.0f;

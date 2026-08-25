@@ -1,9 +1,9 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <thread>
-#include <cstring>
 #include <vector>
 
 // Two archives held open at once must keep independent mappings. Before per-handle
@@ -13,7 +13,8 @@
 static const uint64_t FILL_A = 0xAAAAAAAAAAAAAAAAULL;
 static const uint64_t FILL_B = 0xBBBBBBBBBBBBBBBBULL;
 
-static int write_filled(const std::string &path, uint64_t fill, uint64_t n_slots, const char *model) {
+static int write_filled(const std::string &path, uint64_t fill, uint64_t n_slots,
+                        const char *model) {
     std::vector<uint64_t> slots(static_cast<size_t>(n_slots), fill);
     crankl_cran_header_t hdr{};
     hdr.n_slots = n_slots;
@@ -40,8 +41,10 @@ static uint64_t first_slot(const crankl_cran_t *cran) {
 }
 
 int main() {
-    std::string path_a = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_a.crank";
-    std::string path_b = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_b.crank";
+    std::string path_a =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_a.crank";
+    std::string path_b =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_b.crank";
 
     if (write_filled(path_a, FILL_A, 4, nullptr) != CRANKL_OK)
         return 1;
@@ -146,8 +149,10 @@ int main() {
     // is mapped next -- and releases only part of it when shrinking. The archives above sit
     // within one page of each other, so they cannot expose either failure; these differ by
     // hundreds of KB.
-    std::string path_big = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_big.crank";
-    std::string path_tiny = std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_tiny.crank";
+    std::string path_big =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_big.crank";
+    std::string path_tiny =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_multi_tiny.crank";
     if (write_filled(path_big, FILL_A, 60000, nullptr) != CRANKL_OK)
         return 20;
     if (write_filled(path_tiny, FILL_B, 8, nullptr) != CRANKL_OK)

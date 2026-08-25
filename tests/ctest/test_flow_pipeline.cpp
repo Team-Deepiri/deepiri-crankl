@@ -1,9 +1,9 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <thread>
-#include <cstring>
 #include <vector>
 
 static int write_f32(const std::string &path, const std::vector<float> &data) {
@@ -21,7 +21,8 @@ int main() {
         data[i] = static_cast<float>(i) * 0.05f - 0.5f;
 
     std::string in = std::filesystem::temp_directory_path().string() + "/" + "crankl_flow_in.f32";
-    std::string out = std::filesystem::temp_directory_path().string() + "/" + "crankl_flow_out.crank";
+    std::string out =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_flow_out.crank";
     if (write_f32(in, data) != 0)
         return 1;
 

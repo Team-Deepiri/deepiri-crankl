@@ -1,9 +1,9 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <thread>
-#include <cstring>
 #include <vector>
 
 int main() {
@@ -33,7 +33,8 @@ int main() {
     hdr.depth_max = 2;
     hdr.gamma = 1.0f;
 
-    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_peel_stack_test.crank";
+    std::string path =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_peel_stack_test.crank";
     if (crankl_cran_write(path.c_str(), &hdr, layer1.data(), stacks.data(), nullptr) != 0)
         return 1;
 

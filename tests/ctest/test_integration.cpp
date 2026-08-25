@@ -1,9 +1,9 @@
 #include "crankl/crankl.h"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <thread>
-#include <cstring>
 #include <vector>
 
 int main() {
@@ -11,8 +11,10 @@ int main() {
     for (int i = 0; i < 16; ++i)
         data[i] = static_cast<float>(i) * 0.1f;
 
-    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_integration.crank";
-    std::string tuned = std::filesystem::temp_directory_path().string() + "/" + "crankl_integration_tuned.crank";
+    std::string path =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_integration.crank";
+    std::string tuned =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_integration_tuned.crank";
 
     std::vector<uint64_t> slots(crankl_pack_n_slots(data.size()));
     if (crankl_pack_f32(data.data(), data.size(), slots.data(), slots.size(), 0.1f, 0.01f) != 0)

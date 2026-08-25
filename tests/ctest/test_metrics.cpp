@@ -29,7 +29,8 @@ int main() {
     hdr.n_slots = 2;
     hdr.depth_max = 5;
     hdr.gamma = 1.0f;
-    std::string path = std::filesystem::temp_directory_path().string() + "/" + "crankl_metrics.crank";
+    std::string path =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_metrics.crank";
     if (crankl_cran_write(path.c_str(), &hdr, slots, nullptr, nullptr) != CRANKL_OK)
         return 4;
     crankl_cran_t cran{};
