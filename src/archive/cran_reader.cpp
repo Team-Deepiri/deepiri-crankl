@@ -3,6 +3,7 @@
 #include "xxhash.h"
 
 #include <cstring>
+#include <string>
 #include <utility>
 
 #if defined(_WIN32)
