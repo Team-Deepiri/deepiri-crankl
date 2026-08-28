@@ -215,4 +215,4 @@ jobs:
       - name: Smoke test (offscreen)
         env:
           QT_QPA_PLATFORM: offscreen
-        run: ./build-gui/gui/crankl-gui --smoke-test
+        run: ./build-gui/crankl-gui --smoke-test
