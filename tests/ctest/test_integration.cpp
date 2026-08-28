@@ -2,6 +2,8 @@
 
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
+#include <thread>
 #include <vector>
 
 int main() {
@@ -9,8 +11,10 @@ int main() {
     for (int i = 0; i < 16; ++i)
         data[i] = static_cast<float>(i) * 0.1f;
 
-    const char *path = "/tmp/crankl_integration.crank";
-    const char *tuned = "/tmp/crankl_integration_tuned.crank";
+    std::string path =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_integration.crank";
+    std::string tuned =
+        std::filesystem::temp_directory_path().string() + "/" + "crankl_integration_tuned.crank";
 
     std::vector<uint64_t> slots(crankl_pack_n_slots(data.size()));
     if (crankl_pack_f32(data.data(), data.size(), slots.data(), slots.size(), 0.1f, 0.01f) != 0)
@@ -20,11 +24,11 @@ int main() {
     hdr.n_slots = slots.size();
     hdr.depth_max = 4;
     hdr.gamma = 0.7f;
-    if (crankl_cran_write(path, &hdr, slots.data(), nullptr, nullptr) != 0)
+    if (crankl_cran_write(path.c_str(), &hdr, slots.data(), nullptr, nullptr) != 0)
         return 2;
 
     crankl_cran_t cran{};
-    if (crankl_cran_read(path, &cran) != 0)
+    if (crankl_cran_read(path.c_str(), &cran) != 0)
         return 4;
     if (crankl_cran_verify(&cran) != 0)
         return 5;
@@ -34,12 +38,12 @@ int main() {
         for (auto &w : tuned_slots)
             crankl_turn(&w, 0.02);
     }
-    if (crankl_cran_write(tuned, &hdr, tuned_slots.data(), nullptr, nullptr) != 0)
+    if (crankl_cran_write(tuned.c_str(), &hdr, tuned_slots.data(), nullptr, nullptr) != 0)
         return 6;
 
     crankl_cran_t cran2{};
     std::vector<uint64_t> loaded(cran.header.n_slots);
-    if (crankl_cran_read(tuned, &cran2) != 0)
+    if (crankl_cran_read(tuned.c_str(), &cran2) != 0)
         return 7;
     std::memcpy(loaded.data(), cran2.slots, loaded.size() * sizeof(uint64_t));
 

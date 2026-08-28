@@ -1,21 +1,22 @@
 #include "crankl/crankl.h"
 #include "crankl/ingest.h"
 
-#include <unistd.h>
-
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace {
 
 std::string make_temp_path(const char *suffix) {
     static int counter = 0;
-    return "/tmp/crankl_test_ingest_" + std::to_string(getpid()) + "_" + std::to_string(counter++) +
-           suffix;
+    return std::filesystem::temp_directory_path().string() + "/crankl_test_ingest_" +
+           std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) + "_" +
+           std::to_string(counter++) + suffix;
 }
 
 // Minimal safetensors writer: 8-byte header length + JSON header + tensor data.

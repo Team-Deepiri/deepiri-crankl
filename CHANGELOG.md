@@ -3,6 +3,28 @@
 All notable changes to crankl are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is SemVer.
 
+## [1.0.0] — 2026-08-25
+
+First stable release: Windows support, CPack installable packages, and the
+permanent "alpha" label removed.
+
+### Added
+
+- **Windows x86_64 support**: the `.crank` reader now uses the Win32 API
+  (`CreateFileMappingW` / `MapViewOfFile`) on `_WIN32` builds; CI runs a full
+  msys2/MinGW build + test on `windows-latest`. The library compiles out of
+  the box on all three major desktop platforms; Windows builds share the same
+  C API, linear cohomology, and test battery. (POSIX mmap reader unchanged.)
+- **CPack packaging**: `cpack -G TGZ` / `ZIP` / `DEB` produces installable
+  tarballs, a Windows ZIP, and a `.deb` in one command after build. Release
+  artifacts include a Windows binary tarball alongside the existing Linux one.
+
+### Changed
+
+- `CRANKL_VERSION_STRING` is now `"1.0.0"` (dropping the `-alpha` suffix).
+- Removed stale `<unistd.h>` includes from test translation units; temp paths
+  now use `std::filesystem::temp_directory_path()` for cross-platform safety.
+
 ## [0.5.2-alpha] — 2026-08-24
 
 Hardening pass: linear-time cohomology, thread-safety contract, production-scale
