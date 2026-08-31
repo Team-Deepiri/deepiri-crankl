@@ -1,6 +1,6 @@
 # Crankl: A Production Engine for Compressed Weight Artifacts in Adapter Workflows
 
-**Technical Report — deepiri-crankl v0.5.0**
+**Technical Report — deepiri-crankl v1.0.0**
 Team Deepiri, August 2026
 
 ---

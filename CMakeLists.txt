@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(deepiri-crankl VERSION 0.5.2 LANGUAGES C CXX)
+project(deepiri-crankl VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,6 +15,12 @@ if(CRANKL_BUILD_FUZZERS AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message(FATAL_ERROR "CRANKL_BUILD_FUZZERS requires clang (-fsanitize=fuzzer)")
 endif()
 
+
+# Put all build artifacts in the build root so that tests can find the shared
+# library at runtime without PATH tricks (fixes 0xc0000135 on Windows/MinGW).
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include(cmake/warnings.cmake)
 
@@ -151,3 +157,18 @@ endif()
 if(CRANKL_BUILD_GUI)
     add_subdirectory(gui)
 endif()
+
+# -- packaging (CPack) --------------------------------------------------------
+set(CPACK_PACKAGE_NAME "crankl")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cl(3) compression engine for fast weight inference")
+set(CPACK_PACKAGE_CONTACT "Team Deepiri")
+set(CPACK_PACKAGE_VENDOR "Team Deepiri")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/Team-Deepiri/deepiri-crankl")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_EXECUTABLES "crankl;crankl CLI")
+set(CPACK_GENERATOR "TGZ;ZIP;DEB")
+set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6")
+include(CPack)
+
